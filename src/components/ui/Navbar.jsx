@@ -14,9 +14,18 @@ export default function Navbar({ onOpenLeadModal }) {
     return () => window.removeEventListener('scroll', handleScroll)
   }, [])
 
+  // Lock body scroll when mobile menu is open
+  useEffect(() => {
+    if (mobileMenuOpen) {
+      document.body.style.overflow = 'hidden'
+    } else {
+      document.body.style.overflow = ''
+    }
+  }, [mobileMenuOpen])
+
   return (
     <>
-      {/* High-Gloss Liquid Glass Capsule Navbar */}
+      {/* High-Gloss Floating Pill Navbar */}
       <header
         style={{
           position: 'fixed',
@@ -28,25 +37,25 @@ export default function Navbar({ onOpenLeadModal }) {
           zIndex: 1000,
           background: scrolled
             ? 'linear-gradient(135deg, rgba(12, 9, 30, 0.92) 0%, rgba(4, 3, 10, 0.95) 100%)'
-            : 'linear-gradient(135deg, rgba(24, 18, 55, 0.75) 0%, rgba(8, 6, 22, 0.82) 100%)',
+            : 'linear-gradient(135deg, rgba(24, 18, 55, 0.78) 0%, rgba(8, 6, 22, 0.85) 100%)',
           backdropFilter: 'blur(36px) saturate(180%)',
           WebkitBackdropFilter: 'blur(36px) saturate(180%)',
           border: '1.5px solid rgba(0, 245, 212, 0.45)',
           borderRadius: '100px',
-          padding: '0.65rem 1.5rem',
+          padding: '0.65rem 1.4rem',
           boxShadow: '0 15px 45px rgba(0, 0, 0, 0.8), inset 0 1px 1px rgba(255, 255, 255, 0.35), 0 0 30px rgba(0, 245, 212, 0.25)',
           transition: 'all 0.4s cubic-bezier(0.16, 1, 0.3, 1)',
           fontFamily: 'Jost, sans-serif',
         }}
       >
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          {/* Exact Brand Logo */}
+          {/* Brand Logo */}
           <a href="#home" style={{ display: 'flex', alignItems: 'center', textDecoration: 'none' }}>
             <img
               src="/logo-original.png"
               alt="ASCORE CREATIVE"
               style={{
-                height: '56px',
+                height: '46px',
                 width: 'auto',
                 objectFit: 'contain',
                 transition: 'all 0.3s ease',
@@ -77,9 +86,9 @@ export default function Navbar({ onOpenLeadModal }) {
             ))}
           </nav>
 
-          {/* Action Buttons: Phone Icon, WhatsApp Icon, Email Icon, Mobile Hamburger */}
+          {/* Header Actions */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
-            {/* Phone Icon — Triggers Lead Modal */}
+            {/* Phone Icon */}
             <button
               onClick={onOpenLeadModal}
               title="Talk to a sales advisor"
@@ -96,16 +105,6 @@ export default function Navbar({ onOpenLeadModal }) {
                 cursor: 'pointer',
                 transition: 'all 0.3s ease',
                 boxShadow: '0 0 15px rgba(0, 245, 212, 0.25)',
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.background = '#00F5D4'
-                e.currentTarget.style.color = '#000'
-                e.currentTarget.style.boxShadow = '0 0 22px rgba(0, 245, 212, 0.7)'
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.08)'
-                e.currentTarget.style.color = '#00F5D4'
-                e.currentTarget.style.boxShadow = '0 0 15px rgba(0, 245, 212, 0.25)'
               }}
             >
               <Phone size={17} />
@@ -130,19 +129,11 @@ export default function Navbar({ onOpenLeadModal }) {
                 textDecoration: 'none',
                 transition: 'all 0.3s ease',
               }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.background = '#9D4EDD'
-                e.currentTarget.style.borderColor = '#9D4EDD'
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.08)'
-                e.currentTarget.style.borderColor = 'rgba(157, 78, 221, 0.5)'
-              }}
             >
               <MessageSquare size={17} />
             </a>
 
-            {/* Email Icon */}
+            {/* Email Icon (Desktop Only) */}
             <a
               href="mailto:info@ascore.ae"
               title="Email Us"
@@ -160,17 +151,11 @@ export default function Navbar({ onOpenLeadModal }) {
                 transition: 'all 0.3s ease',
               }}
               className="hidden-mobile"
-              onMouseEnter={(e) => {
-                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.25)'
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.08)'
-              }}
             >
               <Mail size={17} />
             </a>
 
-            {/* CTA Pill Button (Hidden on Mobile) */}
+            {/* CTA Pill Button (Desktop Only) */}
             <button
               onClick={onOpenLeadModal}
               className="hidden-mobile"
@@ -190,95 +175,119 @@ export default function Navbar({ onOpenLeadModal }) {
                 transition: 'all 0.35s ease',
                 boxShadow: '0 4px 20px rgba(0, 245, 212, 0.5)',
               }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.transform = 'translateY(-1px)'
-                e.currentTarget.style.boxShadow = '0 6px 25px rgba(0, 245, 212, 0.7)'
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.transform = 'translateY(0)'
-                e.currentTarget.style.boxShadow = '0 4px 20px rgba(0, 245, 212, 0.5)'
-              }}
             >
               Talk to an expert
               <ArrowRight size={15} />
             </button>
 
-            {/* Mobile Hamburger Icon */}
+            {/* Mobile Hamburger Toggle Button */}
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               style={{
-                background: 'transparent',
-                border: 'none',
+                background: 'rgba(255, 255, 255, 0.08)',
+                border: '1px solid rgba(255, 255, 255, 0.2)',
                 color: '#fff',
                 cursor: 'pointer',
                 display: 'none',
-                padding: '4px',
+                width: '38px',
+                height: '38px',
+                borderRadius: '50%',
+                alignItems: 'center',
+                justifyContent: 'center',
               }}
               className="mobile-hamburger-btn"
+              aria-label="Toggle Navigation Menu"
             >
-              {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+              {mobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
             </button>
           </div>
         </div>
+      </header>
 
-        {/* Mobile Dropdown Drawer */}
-        {mobileMenuOpen && (
-          <div
+      {/* Full-Screen Liquid Glass Mobile Navigation Overlay */}
+      {mobileMenuOpen && (
+        <div
+          style={{
+            position: 'fixed',
+            inset: 0,
+            zIndex: 999,
+            background: 'linear-gradient(180deg, rgba(4, 3, 10, 0.96) 0%, rgba(12, 9, 30, 0.98) 100%)',
+            backdropFilter: 'blur(36px)',
+            WebkitBackdropFilter: 'blur(36px)',
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'center',
+            alignItems: 'center',
+            padding: '2rem',
+            animation: 'fadeIn 0.3s ease',
+          }}
+        >
+          {/* Navigation Links List */}
+          <nav
             style={{
-              marginTop: '0.85rem',
-              paddingTop: '0.85rem',
-              borderTop: '1px solid rgba(255, 255, 255, 0.1)',
               display: 'flex',
               flexDirection: 'column',
-              gap: '0.85rem',
               alignItems: 'center',
+              gap: '1.75rem',
+              marginBottom: '3rem',
+              width: '100%',
             }}
           >
-            {NAV_LINKS.map((link) => (
+            {NAV_LINKS.map((link, idx) => (
               <a
                 key={link.label}
                 href={link.href}
                 onClick={() => setMobileMenuOpen(false)}
                 style={{
                   fontFamily: 'Jost, sans-serif',
-                  color: '#fff',
-                  fontSize: '1rem',
+                  color: '#ffffff',
+                  fontSize: '1.75rem',
+                  fontWeight: 300,
                   textDecoration: 'none',
-                  fontWeight: 500,
+                  letterSpacing: '0.05em',
+                  transition: 'all 0.25s ease',
                 }}
+                onMouseEnter={(e) => (e.currentTarget.style.color = '#00F5D4')}
+                onMouseLeave={(e) => (e.currentTarget.style.color = '#ffffff')}
               >
                 {link.label}
               </a>
             ))}
+          </nav>
 
-            <button
-              onClick={() => {
-                setMobileMenuOpen(false)
-                onOpenLeadModal()
-              }}
-              style={{
-                fontFamily: 'Jost, sans-serif',
-                background: 'linear-gradient(135deg, #00F5D4 0%, #0077FF 100%)',
-                color: '#000',
-                fontSize: '0.875rem',
-                fontWeight: 700,
-                padding: '0.65rem 1.6rem',
-                borderRadius: '100px',
-                border: 'none',
-                cursor: 'pointer',
-                marginTop: '0.4rem',
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '8px',
-              }}
-            >
-              Talk to an expert <ArrowRight size={15} />
-            </button>
-          </div>
-        )}
-      </header>
+          {/* Action CTA Button */}
+          <button
+            onClick={() => {
+              setMobileMenuOpen(false)
+              onOpenLeadModal()
+            }}
+            style={{
+              fontFamily: 'Jost, sans-serif',
+              background: 'linear-gradient(135deg, #00F5D4 0%, #0077FF 100%)',
+              color: '#000',
+              fontSize: '1.0625rem',
+              fontWeight: 700,
+              padding: '1rem 2.25rem',
+              borderRadius: '100px',
+              border: 'none',
+              cursor: 'pointer',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '10px',
+              boxShadow: '0 6px 30px rgba(0, 245, 212, 0.5)',
+            }}
+          >
+            Talk to an expert
+            <ArrowRight size={18} />
+          </button>
+        </div>
+      )}
 
       <style>{`
+        @keyframes fadeIn {
+          from { opacity: 0; transform: translateY(-10px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
         @media (max-width: 768px) {
           .hidden-mobile {
             display: none !important;
