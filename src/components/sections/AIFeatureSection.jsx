@@ -44,7 +44,6 @@ function InteractiveBubble3D({ mousePos, isMobile }) {
     }
   })
 
-  // Radius 1.25 on Mobile to prevent clipping; 1.85 on Desktop
   const radius = isMobile ? 1.25 : 1.85
 
   return (
@@ -110,17 +109,17 @@ export default function AIFeatureSection() {
       style={{
         position: 'relative',
         width: '100%',
-        minHeight: '90vh',
+        minHeight: isMobile ? 'auto' : '85vh',
         background: 'radial-gradient(circle at 50% 50%, #0a081d 0%, #04030a 70%, #020206 100%)',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
         overflow: 'hidden',
-        padding: isMobile ? '6.5rem 1.25rem 4rem' : '5rem 1.5rem',
+        padding: isMobile ? '5rem 1.25rem 2rem' : '5rem 1.5rem',
         fontFamily: 'Jost, sans-serif',
       }}
     >
-      {/* Real Shiny 3D Interactive Canvas (Unclipped on Mobile) */}
+      {/* Real Shiny 3D Interactive Canvas */}
       <div
         style={{
           position: 'absolute',
@@ -145,7 +144,7 @@ export default function AIFeatureSection() {
         </Canvas>
       </div>
 
-      {/* Perfectly Aligned Content Overlay */}
+      {/* Content Overlay */}
       <div
         className="site-container"
         style={{
