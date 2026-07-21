@@ -1,0 +1,11 @@
+# Prevent mobile browser & Hostinger CDN cache of HTML index file
+<IfModule mod_headers.c>
+  <FilesMatch "^(index\.html|robots\.txt|sitemap\.xml|llms\.txt)$">
+    Header set Cache-Control "no-cache, no-store, must-revalidate, max-age=0"
+    Header set Pragma "no-cache"
+    Header set Expires "0"
+  </FilesMatch>
+  <FilesMatch "\.(js|css|png|jpg|jpeg|gif|ico|svg|mp4|webm)$">
+    Header set Cache-Control "public, max-age=31536000, immutable"
+  </FilesMatch>
+</IfModule>
