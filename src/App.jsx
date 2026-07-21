@@ -10,6 +10,7 @@ import Testimonials from './components/sections/Testimonials'
 import Contact from './components/sections/Contact'
 import Footer from './components/sections/Footer'
 import LeadModal from './components/ui/LeadModal'
+import AIChatBot from './components/ui/AIChatBot'
 
 export default function App() {
   const [isLeadModalOpen, setIsLeadModalOpen] = useState(false)
@@ -45,6 +46,9 @@ export default function App() {
         isOpen={isLeadModalOpen}
         onClose={() => setIsLeadModalOpen(false)}
       />
+
+      {/* Real-time Interactive AI Assistant Chatbot */}
+      <AIChatBot />
     </div>
   )
 }
