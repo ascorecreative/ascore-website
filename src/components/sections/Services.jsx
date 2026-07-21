@@ -107,7 +107,9 @@ export default function Services() {
             Services Built for{' '}
             <span
               style={{
+                display: 'inline-block',
                 background: 'linear-gradient(135deg, #00F5D4 0%, #0077FF 50%, #9D4EDD 100%)',
+                backgroundClip: 'text',
                 WebkitBackgroundClip: 'text',
                 WebkitTextFillColor: 'transparent',
                 fontWeight: 600,

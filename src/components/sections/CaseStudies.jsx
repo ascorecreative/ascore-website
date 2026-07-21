@@ -109,11 +109,14 @@ export default function CaseStudies() {
               <span
                 style={{
                   fontFamily: 'Jost, sans-serif',
+                  display: 'inline-block',
                   background: isWhiteBg
                     ? 'linear-gradient(135deg, #7209B7 0%, #0077FF 100%)'
                     : 'linear-gradient(135deg, #00F5D4 0%, #0077FF 50%, #9D4EDD 100%)',
+                  backgroundClip: 'text',
                   WebkitBackgroundClip: 'text',
                   WebkitTextFillColor: 'transparent',
+                  color: isWhiteBg ? '#7209B7' : 'transparent',
                   fontWeight: 600,
                   fontStyle: 'italic',
                   transition: 'all 0.5s ease',
