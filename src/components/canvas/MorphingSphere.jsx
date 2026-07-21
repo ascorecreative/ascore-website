@@ -22,7 +22,7 @@ export default function MorphingSphere({ scrollProgress }) {
 
   useFrame(({ clock, pointer }) => {
     const t = clock.getElapsedTime()
-    const progress = scrollProgress.current
+    const progress = scrollProgress?.current || 0
 
     if (!materialRef.current) return
 
@@ -45,16 +45,12 @@ export default function MorphingSphere({ scrollProgress }) {
       meshRef.current.rotation.x = currentRotation.current.x
       meshRef.current.rotation.y = t * 0.1 + currentRotation.current.y
 
-      // Positioned cleanly on the right side, clear of top header & main text
-      // As user scrolls, it moves gracefully
-      const startX = 2.0
-      const startY = -0.5
-      const targetX = startX + progress * 1.5
-      const targetY = startY - progress * 0.5
-      const targetScale = 1.3 - progress * 0.3
+      const startX = 0
+      const startY = 0
+      const targetScale = 1.2
 
-      meshRef.current.position.x += (targetX - meshRef.current.position.x) * 0.05
-      meshRef.current.position.y += (targetY - meshRef.current.position.y) * 0.05
+      meshRef.current.position.x += (startX - meshRef.current.position.x) * 0.05
+      meshRef.current.position.y += (startY - meshRef.current.position.y) * 0.05
       meshRef.current.scale.setScalar(
         meshRef.current.scale.x + (targetScale - meshRef.current.scale.x) * 0.05
       )
@@ -62,8 +58,8 @@ export default function MorphingSphere({ scrollProgress }) {
   })
 
   return (
-    <mesh ref={meshRef} position={[2.0, -0.5, -1]}>
-      <icosahedronGeometry args={[1.3, 64]} />
+    <mesh ref={meshRef} position={[0, 0, 0]}>
+      <icosahedronGeometry args={[1.5, 64]} />
       <shaderMaterial
         ref={materialRef}
         vertexShader={vertexShader}

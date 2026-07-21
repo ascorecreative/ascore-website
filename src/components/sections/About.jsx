@@ -1,4 +1,5 @@
-import { useRef, useEffect, useState } from 'react'
+import { useRef, useEffect, useState, Suspense } from 'react'
+import { Canvas } from '@react-three/fiber'
 import MorphingSphere from '@/components/canvas/MorphingSphere'
 
 const ABOUT_VALUES = [
@@ -110,7 +111,15 @@ export default function About() {
               justifyContent: 'center',
             }}
           >
-            <MorphingSphere />
+            <Canvas camera={{ position: [0, 0, 5], fov: 50 }} gl={{ antialias: true, alpha: true }}>
+              <ambientLight intensity={0.6} />
+              <directionalLight position={[5, 5, 5]} intensity={1.6} color="#00F5D4" />
+              <pointLight position={[-5, -3, -5]} intensity={2.0} color="#9D4EDD" />
+
+              <Suspense fallback={null}>
+                <MorphingSphere />
+              </Suspense>
+            </Canvas>
           </div>
         </div>
 
