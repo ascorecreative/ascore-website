@@ -25,6 +25,24 @@
   --font-serif: 'Jost', sans-serif;
 }
 
+.text-gradient-cyan {
+  background: linear-gradient(135deg, #00F5D4 0%, #0077FF 50%, #9D4EDD 100%);
+  -webkit-background-clip: text !important;
+  background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+  color: transparent !important;
+  display: inline-block !important;
+}
+
+.text-gradient-purple {
+  background: linear-gradient(135deg, #7209B7 0%, #0077FF 100%);
+  -webkit-background-clip: text !important;
+  background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+  color: transparent !important;
+  display: inline-block !important;
+}
+
 *, *::before, *::after {
   box-sizing: border-box;
   margin: 0;
