@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef } from 'react'
 
 // Custom cursor (Desktop only)
 function CustomCursor() {
@@ -39,25 +39,16 @@ function CustomCursor() {
 export default function Hero() {
   const desktopVideoRef = useRef()
   const mobileVideoRef = useRef()
-  const [isMobile, setIsMobile] = useState(false)
 
+  // Instant Autoplay Trigger
   useEffect(() => {
-    const checkMobile = () => {
-      setIsMobile(window.innerWidth <= 768)
+    if (desktopVideoRef.current) {
+      desktopVideoRef.current.play().catch(() => {})
     }
-    checkMobile()
-    window.addEventListener('resize', checkMobile)
-    return () => window.removeEventListener('resize', checkMobile)
+    if (mobileVideoRef.current) {
+      mobileVideoRef.current.play().catch(() => {})
+    }
   }, [])
-
-  // Instant autoplay trigger
-  useEffect(() => {
-    if (isMobile && mobileVideoRef.current) {
-      mobileVideoRef.current.play().catch(err => console.log('Mobile video autoplay deferred:', err))
-    } else if (!isMobile && desktopVideoRef.current) {
-      desktopVideoRef.current.play().catch(err => console.log('Desktop video autoplay deferred:', err))
-    }
-  }, [isMobile])
 
   return (
     <>
@@ -76,55 +67,51 @@ export default function Hero() {
           fontFamily: 'Jost, sans-serif',
         }}
       >
-        {/* Desktop Video (Played on screens > 768px) */}
-        {!isMobile && (
-          <video
-            ref={desktopVideoRef}
-            autoPlay
-            loop
-            muted
-            playsInline
-            preload="auto"
-            style={{
-              position: 'absolute',
-              top: 0,
-              left: 0,
-              width: '100vw',
-              height: '100vh',
-              objectFit: 'cover',
-              objectPosition: 'center 55%',
-              transform: 'scale(1.22)',
-              transformOrigin: 'center center',
-              display: 'block',
-            }}
-          >
-            <source src="/hero-video.mp4" type="video/mp4" />
-          </video>
-        )}
+        {/* Desktop Video Element (Rendered in initial DOM for instant playback) */}
+        <video
+          ref={desktopVideoRef}
+          autoPlay
+          loop
+          muted
+          playsInline
+          preload="auto"
+          className="hero-video-desktop"
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            width: '100vw',
+            height: '100vh',
+            objectFit: 'cover',
+            objectPosition: 'center 55%',
+            transform: 'scale(1.22)',
+            transformOrigin: 'center center',
+          }}
+        >
+          <source src="/hero-video.mp4" type="video/mp4" />
+        </video>
 
-        {/* Mobile Optimized Video (Played on screens <= 768px) */}
-        {isMobile && (
-          <video
-            ref={mobileVideoRef}
-            autoPlay
-            loop
-            muted
-            playsInline
-            preload="auto"
-            style={{
-              position: 'absolute',
-              top: 0,
-              left: 0,
-              width: '100vw',
-              height: '100vh',
-              objectFit: 'cover',
-              objectPosition: 'center center',
-              display: 'block',
-            }}
-          >
-            <source src="/hero-video-mobile.mp4" type="video/mp4" />
-          </video>
-        )}
+        {/* Mobile Optimized Video Element (Rendered in initial DOM for instant playback) */}
+        <video
+          ref={mobileVideoRef}
+          autoPlay
+          loop
+          muted
+          playsInline
+          preload="auto"
+          className="hero-video-mobile"
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            width: '100vw',
+            height: '100vh',
+            objectFit: 'cover',
+            objectPosition: 'center center',
+          }}
+        >
+          <source src="/hero-video-mobile.mp4" type="video/mp4" />
+        </video>
 
         {/* Minimal Bottom Vignette for Smooth Transition to Next Section */}
         <div
@@ -140,7 +127,7 @@ export default function Hero() {
         <div
           style={{
             position: 'absolute',
-            bottom: '2.5rem',
+            bottom: '2rem',
             left: '50%',
             transform: 'translateX(-50%)',
             zIndex: 10,
@@ -167,6 +154,25 @@ export default function Hero() {
           </svg>
         </div>
       </section>
+
+      <style>{`
+        @media (min-width: 769px) {
+          .hero-video-desktop {
+            display: block !important;
+          }
+          .hero-video-mobile {
+            display: none !important;
+          }
+        }
+        @media (max-width: 768px) {
+          .hero-video-desktop {
+            display: none !important;
+          }
+          .hero-video-mobile {
+            display: block !important;
+          }
+        }
+      `}</style>
     </>
   )
 }

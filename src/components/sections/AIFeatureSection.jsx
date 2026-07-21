@@ -1,5 +1,6 @@
 import { useRef, useEffect, useMemo, useState, Suspense } from 'react'
 import { Canvas, useFrame, useThree } from '@react-three/fiber'
+import { useTexture } from '@react-three/drei'
 import gsap from 'gsap'
 import ScrollTrigger from 'gsap/ScrollTrigger'
 import vertexShader from '@/shaders/iridescent.vert'
@@ -7,7 +8,18 @@ import fragmentShader from '@/shaders/iridescent.frag'
 
 gsap.registerPlugin(ScrollTrigger)
 
-// Shiny 3D Liquid Morphing Bubble (Responsive size for Mobile & Desktop)
+function CenterLogo({ isMobile }) {
+  const texture = useTexture('/ascore-emblem.png')
+  const scale = isMobile ? 0.9 : 1.25
+  return (
+    <mesh position={[0, 0, 0.2]}>
+      <planeGeometry args={[scale, scale]} />
+      <meshBasicMaterial map={texture} transparent depthTest={false} />
+    </mesh>
+  )
+}
+
+// Shiny 3D Liquid Morphing Bubble
 function InteractiveBubble3D({ mousePos, isMobile }) {
   const meshRef = useRef()
   const materialRef = useRef()
@@ -47,17 +59,20 @@ function InteractiveBubble3D({ mousePos, isMobile }) {
   const radius = isMobile ? 1.25 : 1.85
 
   return (
-    <mesh ref={meshRef} position={[0, 0, 0]}>
-      <icosahedronGeometry args={[radius, 64]} />
-      <shaderMaterial
-        ref={materialRef}
-        vertexShader={vertexShader}
-        fragmentShader={fragmentShader}
-        uniforms={uniforms}
-        transparent
-        depthWrite={false}
-      />
-    </mesh>
+    <group>
+      <mesh ref={meshRef} position={[0, 0, 0]}>
+        <icosahedronGeometry args={[radius, 64]} />
+        <shaderMaterial
+          ref={materialRef}
+          vertexShader={vertexShader}
+          fragmentShader={fragmentShader}
+          uniforms={uniforms}
+          transparent
+          depthWrite={false}
+        />
+      </mesh>
+      <CenterLogo isMobile={isMobile} />
+    </group>
   )
 }
 

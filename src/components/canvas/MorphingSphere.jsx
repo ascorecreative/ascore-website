@@ -1,7 +1,18 @@
 import { useRef, useMemo } from 'react'
 import { useFrame, useThree } from '@react-three/fiber'
+import { useTexture } from '@react-three/drei'
 import vertexShader from '@/shaders/iridescent.vert'
 import fragmentShader from '@/shaders/iridescent.frag'
+
+function CenterLogo() {
+  const texture = useTexture('/ascore-emblem.png')
+  return (
+    <mesh position={[0, 0, 0.2]}>
+      <planeGeometry args={[1.15, 1.15]} />
+      <meshBasicMaterial map={texture} transparent depthTest={false} />
+    </mesh>
+  )
+}
 
 export default function MorphingSphere({ scrollProgress }) {
   const meshRef = useRef()
@@ -31,10 +42,8 @@ export default function MorphingSphere({ scrollProgress }) {
     materialRef.current.uniforms.uMorphProgress.value = progress
     materialRef.current.uniforms.uCameraPosition.value.copy(camera.position)
 
-    // Distortion decreases as we go toward precision state
     materialRef.current.uniforms.uDistortion.value = 0.45 - progress * 0.3
 
-    // Cursor follow with subtle lerp
     targetRotation.current.y = pointer.x * 0.3
     targetRotation.current.x = -pointer.y * 0.2
 
@@ -58,16 +67,19 @@ export default function MorphingSphere({ scrollProgress }) {
   })
 
   return (
-    <mesh ref={meshRef} position={[0, 0, 0]}>
-      <icosahedronGeometry args={[1.5, 64]} />
-      <shaderMaterial
-        ref={materialRef}
-        vertexShader={vertexShader}
-        fragmentShader={fragmentShader}
-        uniforms={uniforms}
-        transparent
-        depthWrite={false}
-      />
-    </mesh>
+    <group>
+      <mesh ref={meshRef} position={[0, 0, 0]}>
+        <icosahedronGeometry args={[1.5, 64]} />
+        <shaderMaterial
+          ref={materialRef}
+          vertexShader={vertexShader}
+          fragmentShader={fragmentShader}
+          uniforms={uniforms}
+          transparent
+          depthWrite={false}
+        />
+      </mesh>
+      <CenterLogo />
+    </group>
   )
 }
