@@ -130,7 +130,7 @@ export default function CaseStudies() {
               lineHeight: '1.7',
             }}
           >
-            Explore 19 of our high-impact client platforms — delivered for market leaders across the UAE and internationally.
+            Explore 600+ of our high-impact client platforms — delivered for market leaders across the UAE and internationally.
           </p>
 
           {/* Category Filter Pills */}

@@ -97,7 +97,7 @@ export const CLIENT_WORKS = [
 ]
 
 export const STATS = [
-  { number: '19+', label: 'Finished Client Works', description: 'Websites & apps engineered for enterprise growth across UAE' },
+  { number: '600+', label: 'Finished Client Works', description: 'Websites & apps engineered for enterprise growth across UAE' },
   { number: '99.8%', label: 'Tax Compliance Rate', description: 'Certified FTA corporate tax filing & VAT structuring' },
   { number: '$45M+', label: 'Client Revenue Generated', description: 'Attributable to Ascore digital growth & marketing engines' },
 ]
