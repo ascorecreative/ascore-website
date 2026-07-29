@@ -15,7 +15,6 @@ const ABOUT_VALUES = [
 export default function About() {
   const sectionRef = useRef()
   const [isMobile, setIsMobile] = useState(false)
-  const [isWhiteBg, setIsWhiteBg] = useState(false)
 
   useEffect(() => {
     const checkMobile = () => setIsMobile(window.innerWidth <= 768)
@@ -24,30 +23,12 @@ export default function About() {
     return () => window.removeEventListener('resize', checkMobile)
   }, [])
 
-  useEffect(() => {
-    const ctx = gsap.context(() => {
-      // Scroll-Driven Background Color Transition Trigger
-      ScrollTrigger.create({
-        trigger: sectionRef.current,
-        start: 'top 55%',
-        end: 'bottom 45%',
-        onEnter: () => setIsWhiteBg(true),
-        onLeave: () => setIsWhiteBg(false),
-        onEnterBack: () => setIsWhiteBg(true),
-        onLeaveBack: () => setIsWhiteBg(false),
-      })
-    }, sectionRef)
-
-    return () => ctx.revert()
-  }, [])
-
   return (
     <section
       id="about"
       ref={sectionRef}
       style={{
-        background: isWhiteBg ? '#ffffff' : '#04030a',
-        transition: 'background 0.8s cubic-bezier(0.16, 1, 0.3, 1), color 0.8s ease',
+        background: '#04030a',
         position: 'relative',
         zIndex: 10,
         fontFamily: 'Jost, sans-serif',
@@ -64,15 +45,14 @@ export default function About() {
             <span
               className="label-text"
               style={{
-                background: isWhiteBg ? 'rgba(114, 9, 183, 0.08)' : 'rgba(157, 78, 221, 0.15)',
-                border: isWhiteBg ? '1px solid rgba(114, 9, 183, 0.25)' : '1px solid rgba(157, 78, 221, 0.35)',
+                background: 'rgba(157, 78, 221, 0.15)',
+                border: '1px solid rgba(157, 78, 221, 0.35)',
                 padding: '0.4rem 1.25rem',
                 borderRadius: '100px',
-                color: isWhiteBg ? '#7209B7' : '#00F5D4',
+                color: '#00F5D4',
                 fontFamily: 'Jost, sans-serif',
                 display: 'inline-block',
                 marginBottom: '1rem',
-                transition: 'all 0.5s ease',
               }}
             >
               WHO WE ARE
@@ -87,16 +67,14 @@ export default function About() {
                 marginTop: '0.5rem',
                 marginBottom: '1.75rem',
                 lineHeight: '1.15',
-                color: isWhiteBg ? '#0f172a' : '#ffffff',
-                transition: 'color 0.5s ease',
+                color: '#ffffff',
               }}
             >
               One Agency.{' '}
               <span
-                className={isWhiteBg ? 'text-gradient-purple' : 'text-gradient-cyan'}
+                className="text-gradient-cyan"
                 style={{
                   fontWeight: 600,
-                  transition: 'all 0.5s ease',
                 }}
               >
                 Infinite Capability.
@@ -107,11 +85,10 @@ export default function About() {
               style={{
                 fontFamily: 'Jost, sans-serif',
                 fontSize: '1.0625rem',
-                color: isWhiteBg ? '#334155' : 'rgba(255, 255, 255, 0.85)',
+                color: 'rgba(255, 255, 255, 0.85)',
                 lineHeight: '1.75',
                 fontWeight: 300,
                 marginBottom: '1.5rem',
-                transition: 'color 0.5s ease',
               }}
             >
               Ascore Creative represents the fusion of digital growth and enterprise tax precision in the United Arab Emirates. We engineer ultra-high conversion web applications, scale digital presence, and manage corporate tax compliance for ambitious regional brands.
@@ -121,10 +98,9 @@ export default function About() {
               style={{
                 fontFamily: 'Jost, sans-serif',
                 fontSize: '1rem',
-                color: isWhiteBg ? '#64748b' : 'rgba(255, 255, 255, 0.65)',
+                color: 'rgba(255, 255, 255, 0.65)',
                 lineHeight: '1.7',
                 fontWeight: 300,
-                transition: 'color 0.5s ease',
               }}
             >
               Our multidisciplinary team bridges tech innovation with regulatory excellence—giving UAE businesses a unified partner for expansion.
@@ -165,35 +141,20 @@ export default function About() {
             <div
               key={val.title}
               style={{
-                background: isWhiteBg ? '#ffffff' : 'rgba(15, 12, 35, 0.55)',
+                background: 'rgba(15, 12, 35, 0.55)',
                 backdropFilter: 'blur(20px)',
-                border: isWhiteBg ? '1px solid rgba(0, 0, 0, 0.08)' : '1px solid rgba(157, 78, 221, 0.25)',
+                border: '1px solid rgba(157, 78, 221, 0.25)',
                 borderRadius: '20px',
                 padding: '2rem',
-                boxShadow: isWhiteBg
-                  ? '0 10px 30px rgba(0, 0, 0, 0.06), 0 1px 3px rgba(0, 0, 0, 0.04)'
-                  : 'none',
                 transition: 'all 0.4s cubic-bezier(0.16, 1, 0.3, 1)',
               }}
               onMouseEnter={(e) => {
-                if (isWhiteBg) {
-                  e.currentTarget.style.transform = 'translateY(-6px)'
-                  e.currentTarget.style.boxShadow = '0 20px 45px rgba(114, 9, 183, 0.15)'
-                  e.currentTarget.style.borderColor = 'rgba(114, 9, 183, 0.3)'
-                } else {
-                  e.currentTarget.style.transform = 'translateY(-6px)'
-                  e.currentTarget.style.borderColor = 'rgba(0, 245, 212, 0.5)'
-                }
+                e.currentTarget.style.transform = 'translateY(-6px)'
+                e.currentTarget.style.borderColor = 'rgba(0, 245, 212, 0.5)'
               }}
               onMouseLeave={(e) => {
                 e.currentTarget.style.transform = 'translateY(0)'
-                if (isWhiteBg) {
-                  e.currentTarget.style.boxShadow = '0 10px 30px rgba(0, 0, 0, 0.06), 0 1px 3px rgba(0, 0, 0, 0.04)'
-                  e.currentTarget.style.borderColor = 'rgba(0, 0, 0, 0.08)'
-                } else {
-                  e.currentTarget.style.boxShadow = 'none'
-                  e.currentTarget.style.borderColor = 'rgba(157, 78, 221, 0.25)'
-                }
+                e.currentTarget.style.borderColor = 'rgba(157, 78, 221, 0.25)'
               }}
             >
               <div
@@ -201,10 +162,9 @@ export default function About() {
                   fontFamily: 'Jost, sans-serif',
                   fontSize: '0.8125rem',
                   fontWeight: 700,
-                  color: isWhiteBg ? '#7209B7' : '#00F5D4',
+                  color: '#00F5D4',
                   letterSpacing: '0.12em',
                   marginBottom: '1rem',
-                  transition: 'color 0.5s ease',
                 }}
               >
                 {val.num}
@@ -215,9 +175,8 @@ export default function About() {
                   fontFamily: 'Jost, sans-serif',
                   fontSize: '1.35rem',
                   fontWeight: 600,
-                  color: isWhiteBg ? '#0f172a' : '#ffffff',
+                  color: '#ffffff',
                   marginBottom: '0.75rem',
-                  transition: 'color 0.5s ease',
                 }}
               >
                 {val.title}
@@ -227,9 +186,8 @@ export default function About() {
                 style={{
                   fontFamily: 'Jost, sans-serif',
                   fontSize: '0.9375rem',
-                  color: isWhiteBg ? '#475569' : 'rgba(255, 255, 255, 0.7)',
+                  color: 'rgba(255, 255, 255, 0.7)',
                   lineHeight: '1.65',
-                  transition: 'color 0.5s ease',
                 }}
               >
                 {val.desc}

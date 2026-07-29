@@ -1,7 +1,6 @@
-import { useRef, useMemo } from 'react'
+import { useRef } from 'react'
 import { useFrame } from '@react-three/fiber'
 import { MeshDistortMaterial, Edges } from '@react-three/drei'
-import * as THREE from 'three'
 
 // Digital Growth — Fluid blob
 function FluidBlob({ position, scale }) {

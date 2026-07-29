@@ -11,6 +11,7 @@ import Contact from './components/sections/Contact'
 import Footer from './components/sections/Footer'
 import LeadModal from './components/ui/LeadModal'
 import AIChatBot from './components/ui/AIChatBot'
+import ErrorBoundary from './components/ui/ErrorBoundary'
 
 export default function App() {
   const [isLeadModalOpen, setIsLeadModalOpen] = useState(false)
@@ -28,27 +29,53 @@ export default function App() {
 
   return (
     <div className="bg-void text-light font-sans relative overflow-x-hidden min-h-screen">
-      <Navbar onOpenLeadModal={() => setIsLeadModalOpen(true)} />
+      <ErrorBoundary>
+        <Navbar onOpenLeadModal={() => setIsLeadModalOpen(true)} />
+      </ErrorBoundary>
+
       <main>
-        <Hero />
-        <AIFeatureSection />
-        <About />
-        <Services />
-        <Stats />
-        <CaseStudies />
-        <Testimonials />
-        <Contact />
+        <ErrorBoundary>
+          <Hero />
+        </ErrorBoundary>
+        <ErrorBoundary>
+          <AIFeatureSection />
+        </ErrorBoundary>
+        <ErrorBoundary>
+          <About />
+        </ErrorBoundary>
+        <ErrorBoundary>
+          <Services />
+        </ErrorBoundary>
+        <ErrorBoundary>
+          <Stats />
+        </ErrorBoundary>
+        <ErrorBoundary>
+          <CaseStudies />
+        </ErrorBoundary>
+        <ErrorBoundary>
+          <Testimonials />
+        </ErrorBoundary>
+        <ErrorBoundary>
+          <Contact />
+        </ErrorBoundary>
       </main>
-      <Footer />
+
+      <ErrorBoundary>
+        <Footer />
+      </ErrorBoundary>
 
       {/* Floating Lead Capture Modal */}
-      <LeadModal
-        isOpen={isLeadModalOpen}
-        onClose={() => setIsLeadModalOpen(false)}
-      />
+      <ErrorBoundary>
+        <LeadModal
+          isOpen={isLeadModalOpen}
+          onClose={() => setIsLeadModalOpen(false)}
+        />
+      </ErrorBoundary>
 
       {/* Real-time Interactive AI Assistant Chatbot */}
-      <AIChatBot />
+      <ErrorBoundary>
+        <AIChatBot />
+      </ErrorBoundary>
     </div>
   )
 }

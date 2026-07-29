@@ -1,15 +1,13 @@
-import { Suspense, useRef } from 'react'
+import { Suspense } from 'react'
 import { Canvas } from '@react-three/fiber'
 import { Environment, AdaptiveDpr, PerformanceMonitor } from '@react-three/drei'
-import MorphingSphere from './MorphingSphere'
-import ParticleField from './ParticleField'
 import ServicesOrbit from './ServicesOrbit'
 
 function SceneLoader() {
   return null // Suspense fallback handled by HTML overlay
 }
 
-export default function Scene({ scrollProgress, showServices = false }) {
+export default function Scene({ showServices = false }) {
   const isMobile = window.innerWidth < 768
 
   // Don't render WebGL on very small devices to preserve battery/perf

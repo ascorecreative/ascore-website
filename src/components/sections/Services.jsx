@@ -1,4 +1,4 @@
-import { useRef, useEffect, useState, Suspense } from 'react'
+import { useRef, useState, Suspense } from 'react'
 import { Canvas, useFrame } from '@react-three/fiber'
 import { ArrowUpRight, ChevronDown, CheckCircle2 } from 'lucide-react'
 import { SERVICES } from '@/constants/data'
@@ -25,7 +25,7 @@ function FloatingLines3D() {
           <mesh
             key={i}
             position={[Math.cos(angle) * radius, Math.sin(angle) * (radius * 0.6), (i % 3) * 0.4 - 0.6]}
-            rotation={[i * 0.5, i * 0.8, t => i]}
+            rotation={[i * 0.5, i * 0.8, i * 0.2]}
           >
             <octahedronGeometry args={[0.6 + (i % 2) * 0.25, 1]} />
             <meshStandardMaterial

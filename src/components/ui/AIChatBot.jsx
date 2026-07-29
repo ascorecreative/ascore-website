@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react'
-import { Bot, X, Send, Sparkles, User, MessageCircle, Phone, ArrowRight } from 'lucide-react'
+import { Bot, X, Send, Sparkles } from 'lucide-react'
 
 const KNOWLEDGE_BASE = [
   {

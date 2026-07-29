@@ -4,7 +4,7 @@ import { useRef, useEffect } from 'react'
  * A button that magnetically follows the cursor.
  * Wraps children — pass any content as children.
  */
-export default function MagneticButton({ children, className = '', style = {}, onClick, href, as: Tag = 'button', ...props }) {
+export default function MagneticButton({ children, className = '', style = {}, onClick, href, ...props }) {
   const btnRef = useRef()
   const boundRef = useRef(null)
 

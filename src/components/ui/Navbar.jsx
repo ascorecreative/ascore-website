@@ -233,7 +233,7 @@ export default function Navbar({ onOpenLeadModal }) {
               width: '100%',
             }}
           >
-            {NAV_LINKS.map((link, idx) => (
+            {NAV_LINKS.map((link) => (
               <a
                 key={link.label}
                 href={link.href}
