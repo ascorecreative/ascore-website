@@ -299,7 +299,7 @@ export default function Hero() {
                 style={{
                   position: 'absolute',
                   top: '-5%',
-                  left: '71.5%',
+                  left: '74.5%',
                   transform: 'translateX(-50%)',
                   width: '165px',
                   height: '225px',
@@ -756,9 +756,6 @@ export default function Hero() {
 
       <style>{`
         @media (min-width: 992px) {
-          .hero-main-headline {
-            transform: translateX(45px);
-          }
           .hero-video-desktop {
             display: block !important;
           }
