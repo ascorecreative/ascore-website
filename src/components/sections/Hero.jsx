@@ -254,6 +254,7 @@ export default function Hero() {
               }}
             >
                <h1
+                className="hero-main-headline"
                 style={{
                   fontFamily: 'Jost, sans-serif',
                   fontSize: 'clamp(1.8rem, 6.5vw, 5.8rem)',
@@ -755,6 +756,9 @@ export default function Hero() {
 
       <style>{`
         @media (min-width: 992px) {
+          .hero-main-headline {
+            transform: translateX(45px);
+          }
           .hero-video-desktop {
             display: block !important;
           }
