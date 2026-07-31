@@ -247,6 +247,7 @@ export default function Hero() {
           >
             {/* Title & Floating 3D Cards Stack Container */}
             <div
+              className="hero-title-cards-wrapper"
               style={{
                 position: 'relative',
                 width: '100%',
@@ -756,6 +757,9 @@ export default function Hero() {
 
       <style>{`
         @media (min-width: 992px) {
+          .hero-title-cards-wrapper {
+            transform: translateX(-60px);
+          }
           .hero-video-desktop {
             display: block !important;
           }
