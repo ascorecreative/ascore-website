@@ -6,7 +6,7 @@ export default function Footer() {
     <footer
       style={{
         background: '#020206',
-        borderTop: '1px solid rgba(157, 78, 221, 0.25)',
+        borderTop: '1px solid rgba(255, 255, 255, 0.06)',
         padding: '5rem 0 2.5rem',
         position: 'relative',
         zIndex: 10,
@@ -28,7 +28,7 @@ export default function Footer() {
           <div>
             <a href="#home" style={{ display: 'inline-block', marginBottom: '1.25rem', textDecoration: 'none' }}>
               <img
-                src="/logo-original.png"
+                src="/logo-white.png"
                 alt="ASCORE CREATIVE"
                 style={{ height: '36px', width: 'auto', objectFit: 'contain' }}
               />
@@ -53,7 +53,7 @@ export default function Footer() {
                 fontFamily: 'Jost, sans-serif',
                 fontSize: '0.8125rem',
                 fontWeight: 700,
-                color: '#00F5D4',
+                color: '#8bf825',
                 letterSpacing: '0.12em',
                 textTransform: 'uppercase',
                 marginBottom: '1.25rem',
@@ -73,7 +73,7 @@ export default function Footer() {
                       textDecoration: 'none',
                       transition: 'color 0.25s ease',
                     }}
-                    onMouseEnter={(e) => (e.currentTarget.style.color = '#00F5D4')}
+                    onMouseEnter={(e) => (e.currentTarget.style.color = '#8bf825')}
                     onMouseLeave={(e) => (e.currentTarget.style.color = 'rgba(255, 255, 255, 0.75)')}
                   >
                     {link.label}
@@ -90,7 +90,7 @@ export default function Footer() {
                 fontFamily: 'Jost, sans-serif',
                 fontSize: '0.8125rem',
                 fontWeight: 700,
-                color: '#9D4EDD',
+                color: '#8bf825',
                 letterSpacing: '0.12em',
                 textTransform: 'uppercase',
                 marginBottom: '1.25rem',
@@ -114,7 +114,7 @@ export default function Footer() {
                 fontFamily: 'Jost, sans-serif',
                 fontSize: '0.8125rem',
                 fontWeight: 700,
-                color: '#00F5D4',
+                color: '#8bf825',
                 letterSpacing: '0.12em',
                 textTransform: 'uppercase',
                 marginBottom: '1.25rem',
@@ -130,7 +130,7 @@ export default function Footer() {
                   display: 'flex',
                   alignItems: 'center',
                   gap: '10px',
-                  color: '#00F5D4',
+                  color: '#8bf825',
                   fontWeight: 600,
                   textDecoration: 'none',
                 }}
@@ -149,12 +149,12 @@ export default function Footer() {
                   textDecoration: 'none',
                 }}
               >
-                <Mail size={16} style={{ color: '#00F5D4' }} />
+                <Mail size={16} style={{ color: '#8bf825' }} />
                 info@ascore.ae
               </a>
 
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px', color: 'rgba(255, 255, 255, 0.65)' }}>
-                <MapPin size={16} style={{ color: '#00F5D4' }} />
+                <MapPin size={16} style={{ color: '#8bf825' }} />
                 Dubai & Abu Dhabi, UAE
               </div>
 
@@ -164,9 +164,9 @@ export default function Footer() {
                 rel="noopener noreferrer"
                 style={{
                   fontFamily: 'Jost, sans-serif',
-                  background: 'rgba(0, 245, 212, 0.12)',
-                  border: '1px solid rgba(0, 245, 212, 0.4)',
-                  color: '#00F5D4',
+                  background: 'rgba(139, 248, 37, 0.08)',
+                  border: '1px solid rgba(139, 248, 37, 0.3)',
+                  color: '#8bf825',
                   fontSize: '0.8125rem',
                   fontWeight: 600,
                   padding: '0.5rem 1rem',

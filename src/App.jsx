@@ -38,9 +38,6 @@ export default function App() {
           <Hero />
         </ErrorBoundary>
         <ErrorBoundary>
-          <AIFeatureSection />
-        </ErrorBoundary>
-        <ErrorBoundary>
           <About />
         </ErrorBoundary>
         <ErrorBoundary>

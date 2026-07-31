@@ -67,11 +67,11 @@ export default function CaseStudies() {
             <span
               className="label-text"
               style={{
-                background: 'rgba(157, 78, 221, 0.15)',
-                border: '1px solid rgba(157, 78, 221, 0.35)',
+                background: 'rgba(139, 248, 37, 0.08)',
+                border: '1px solid rgba(139, 248, 37, 0.25)',
                 padding: '0.4rem 1.25rem',
                 borderRadius: '100px',
-                color: '#00F5D4',
+                color: '#8bf825',
                 fontFamily: 'Jost, sans-serif',
                 display: 'inline-block',
               }}
@@ -132,8 +132,8 @@ export default function CaseStudies() {
                   key={cat}
                   onClick={() => setActiveCategory(cat)}
                   style={{
-                    background: isSelected ? '#00F5D4' : 'rgba(255,255,255,0.05)',
-                    color: isSelected ? '#000000' : 'rgba(255,255,255,0.7)',
+                    background: isSelected ? '#8bf825' : 'rgba(255,255,255,0.05)',
+                    color: isSelected ? '#04030a' : 'rgba(255,255,255,0.7)',
                     border: isSelected ? 'none' : '1px solid rgba(255,255,255,0.1)',
                     padding: '0.55rem 1.35rem',
                     borderRadius: '100px',
@@ -141,7 +141,7 @@ export default function CaseStudies() {
                     fontWeight: 600,
                     cursor: 'pointer',
                     transition: 'all 0.35s ease',
-                    boxShadow: isSelected ? '0 4px 15px rgba(0, 245, 212, 0.4)' : 'none',
+                    boxShadow: isSelected ? '0 4px 15px rgba(139, 248, 37, 0.3)' : 'none',
                   }}
                 >
                   {cat}
@@ -162,7 +162,7 @@ export default function CaseStudies() {
               className="client-card work-reveal"
               style={{
                 background: 'rgba(15, 12, 35, 0.65)',
-                border: '1px solid rgba(157, 78, 221, 0.22)',
+                border: '1px solid rgba(255, 255, 255, 0.08)',
                 boxShadow: '0 15px 35px rgba(0, 0, 0, 0.4)',
                 borderRadius: '20px',
                 padding: '2rem',
@@ -174,13 +174,13 @@ export default function CaseStudies() {
               }}
               onMouseEnter={(e) => {
                 e.currentTarget.style.transform = 'translateY(-6px)'
-                e.currentTarget.style.boxShadow = '0 25px 50px rgba(114, 9, 183, 0.25), 0 0 25px rgba(0, 245, 212, 0.2)'
-                e.currentTarget.style.borderColor = 'rgba(0, 245, 212, 0.5)'
+                e.currentTarget.style.boxShadow = '0 25px 50px rgba(0, 0, 0, 0.5), 0 0 20px rgba(139, 248, 37, 0.15)'
+                e.currentTarget.style.borderColor = 'rgba(139, 248, 37, 0.4)'
               }}
               onMouseLeave={(e) => {
                 e.currentTarget.style.transform = 'translateY(0)'
                 e.currentTarget.style.boxShadow = '0 15px 35px rgba(0, 0, 0, 0.4)'
-                e.currentTarget.style.borderColor = 'rgba(157, 78, 221, 0.22)'
+                e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.08)'
               }}
             >
               {/* Top Meta */}
@@ -313,7 +313,7 @@ export default function CaseStudies() {
             textAlign: 'center',
             padding: '3.5rem 2rem',
             background: 'rgba(15, 12, 35, 0.65)',
-            border: '1px solid rgba(157, 78, 221, 0.25)',
+            border: '1px solid rgba(255, 255, 255, 0.08)',
             borderRadius: '24px',
           }}
         >
@@ -343,8 +343,8 @@ export default function CaseStudies() {
             href="#contact"
             style={{
               fontFamily: 'Jost, sans-serif',
-              background: 'linear-gradient(135deg, #00F5D4 0%, #0077FF 100%)',
-              color: '#000000',
+              background: '#8bf825',
+              color: '#04030a',
               fontSize: '0.9375rem',
               fontWeight: 700,
               padding: '0.85rem 2rem',
@@ -353,7 +353,7 @@ export default function CaseStudies() {
               display: 'inline-flex',
               alignItems: 'center',
               gap: '10px',
-              boxShadow: '0 4px 20px rgba(0, 245, 212, 0.45)',
+              boxShadow: '0 4px 20px rgba(139, 248, 37, 0.35)',
               transition: 'all 0.35s ease',
             }}
             onClick={(e) => {

@@ -30,7 +30,7 @@ export default function About() {
       style={{
         background: '#04030a',
         position: 'relative',
-        zIndex: 10,
+        zIndex: 5,
         fontFamily: 'Jost, sans-serif',
         overflow: 'hidden',
         paddingTop: isMobile ? '3rem' : '7rem',
@@ -45,11 +45,11 @@ export default function About() {
             <span
               className="label-text"
               style={{
-                background: 'rgba(157, 78, 221, 0.15)',
-                border: '1px solid rgba(157, 78, 221, 0.35)',
+                background: 'rgba(139, 248, 37, 0.08)',
+                border: '1px solid rgba(139, 248, 37, 0.25)',
                 padding: '0.4rem 1.25rem',
                 borderRadius: '100px',
-                color: '#00F5D4',
+                color: '#8bf825',
                 fontFamily: 'Jost, sans-serif',
                 display: 'inline-block',
                 marginBottom: '1rem',
@@ -119,8 +119,8 @@ export default function About() {
           >
             <Canvas camera={{ position: [0, 0, 5], fov: 50 }} gl={{ antialias: true, alpha: true }}>
               <ambientLight intensity={0.6} />
-              <directionalLight position={[5, 5, 5]} intensity={1.6} color={isWhiteBg ? "#7209B7" : "#00F5D4"} />
-              <pointLight position={[-5, -3, -5]} intensity={2.0} color={isWhiteBg ? "#0077FF" : "#9D4EDD"} />
+              <directionalLight position={[5, 5, 5]} intensity={1.6} color="#00F5D4" />
+              <pointLight position={[-5, -3, -5]} intensity={2.0} color="#9D4EDD" />
 
               <Suspense fallback={null}>
                 <MorphingSphere />
@@ -143,18 +143,18 @@ export default function About() {
               style={{
                 background: 'rgba(15, 12, 35, 0.55)',
                 backdropFilter: 'blur(20px)',
-                border: '1px solid rgba(157, 78, 221, 0.25)',
+                border: '1px solid rgba(255, 255, 255, 0.08)',
                 borderRadius: '20px',
                 padding: '2rem',
                 transition: 'all 0.4s cubic-bezier(0.16, 1, 0.3, 1)',
               }}
               onMouseEnter={(e) => {
                 e.currentTarget.style.transform = 'translateY(-6px)'
-                e.currentTarget.style.borderColor = 'rgba(0, 245, 212, 0.5)'
+                e.currentTarget.style.borderColor = 'rgba(139, 248, 37, 0.35)'
               }}
               onMouseLeave={(e) => {
                 e.currentTarget.style.transform = 'translateY(0)'
-                e.currentTarget.style.borderColor = 'rgba(157, 78, 221, 0.25)'
+                e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.08)'
               }}
             >
               <div
@@ -162,7 +162,7 @@ export default function About() {
                   fontFamily: 'Jost, sans-serif',
                   fontSize: '0.8125rem',
                   fontWeight: 700,
-                  color: '#00F5D4',
+                  color: '#8bf825',
                   letterSpacing: '0.12em',
                   marginBottom: '1rem',
                 }}

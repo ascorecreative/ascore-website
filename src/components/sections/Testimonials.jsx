@@ -11,7 +11,7 @@ export default function Testimonials() {
     <section
       id="testimonials"
       style={{
-        background: 'linear-gradient(180deg, #04030a 0%, #09071c 50%, #04030a 100%)',
+        background: '#04030a',
         padding: '6rem 0',
         position: 'relative',
         zIndex: 10,
@@ -24,11 +24,11 @@ export default function Testimonials() {
           <span
             className="label-text"
             style={{
-              background: 'rgba(157, 78, 221, 0.15)',
-              border: '1px solid rgba(157, 78, 221, 0.35)',
+              background: 'rgba(139, 248, 37, 0.08)',
+              border: '1px solid rgba(139, 248, 37, 0.25)',
               padding: '0.4rem 1.25rem',
               borderRadius: '100px',
-              color: '#00F5D4',
+              color: '#8bf825',
               fontFamily: 'Jost, sans-serif',
             }}
           >
@@ -46,7 +46,7 @@ export default function Testimonials() {
             What Our Clients{' '}
             <span
               style={{
-                background: 'linear-gradient(135deg, #00F5D4 0%, #0077FF 50%, #9D4EDD 100%)',
+                background: 'linear-gradient(135deg, #8bf825 0%, #00F5D4 100%)',
                 WebkitBackgroundClip: 'text',
                 WebkitTextFillColor: 'transparent',
                 fontWeight: 600,
@@ -64,11 +64,11 @@ export default function Testimonials() {
             margin: '0 auto',
             background: 'rgba(15, 12, 35, 0.75)',
             backdropFilter: 'blur(28px)',
-            border: '1px solid rgba(157, 78, 221, 0.3)',
+            border: '1px solid rgba(255, 255, 255, 0.08)',
             borderRadius: '24px',
             padding: '3.5rem 3rem',
             position: 'relative',
-            boxShadow: '0 20px 50px rgba(0, 0, 0, 0.5), 0 0 30px rgba(114, 9, 183, 0.2)',
+            boxShadow: '0 20px 50px rgba(0, 0, 0, 0.5)',
           }}
           className="testimonial-card-box"
         >
@@ -78,9 +78,9 @@ export default function Testimonials() {
               width: '52px',
               height: '52px',
               borderRadius: '50%',
-              background: 'rgba(0, 245, 212, 0.12)',
-              border: '1px solid rgba(0, 245, 212, 0.4)',
-              color: '#00F5D4',
+              background: 'rgba(139, 248, 37, 0.1)',
+              border: '1px solid rgba(139, 248, 37, 0.3)',
+              color: '#8bf825',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
@@ -91,9 +91,9 @@ export default function Testimonials() {
           </div>
 
           {/* Stars */}
-          <div style={{ display: 'flex', gap: '4px', color: '#00F5D4', marginBottom: '1.25rem' }}>
+          <div style={{ display: 'flex', gap: '4px', color: '#8bf825', marginBottom: '1.25rem' }}>
             {[...Array(5)].map((_, i) => (
-              <Star key={i} size={18} fill="#00F5D4" />
+              <Star key={i} size={18} fill="#8bf825" />
             ))}
           </div>
 
@@ -118,7 +118,7 @@ export default function Testimonials() {
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'space-between',
-              borderTop: '1px solid rgba(157, 78, 221, 0.2)',
+              borderTop: '1px solid rgba(255, 255, 255, 0.08)',
               paddingTop: '1.5rem',
               flexWrap: 'wrap',
               gap: '1rem',
@@ -128,7 +128,7 @@ export default function Testimonials() {
               <h4 style={{ fontFamily: 'Jost, sans-serif', fontSize: '1.25rem', fontWeight: 600, color: '#fff', marginBottom: '0.2rem' }}>
                 {current.name}
               </h4>
-              <span style={{ fontFamily: 'Jost, sans-serif', fontSize: '0.9375rem', color: '#00F5D4', fontWeight: 500 }}>
+              <span style={{ fontFamily: 'Jost, sans-serif', fontSize: '0.9375rem', color: '#8bf825', fontWeight: 500 }}>
                 {current.role} • {current.company}
               </span>
             </div>
@@ -142,7 +142,7 @@ export default function Testimonials() {
                   height: '42px',
                   borderRadius: '50%',
                   background: 'rgba(255, 255, 255, 0.06)',
-                  border: '1px solid rgba(157, 78, 221, 0.3)',
+                  border: '1px solid rgba(255, 255, 255, 0.12)',
                   color: '#fff',
                   display: 'flex',
                   alignItems: 'center',
@@ -151,11 +151,11 @@ export default function Testimonials() {
                   transition: 'all 0.3s ease',
                 }}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.borderColor = '#00F5D4'
-                  e.currentTarget.style.color = '#00F5D4'
+                  e.currentTarget.style.borderColor = '#8bf825'
+                  e.currentTarget.style.color = '#8bf825'
                 }}
                 onMouseLeave={(e) => {
-                  e.currentTarget.style.borderColor = 'rgba(157, 78, 221, 0.3)'
+                  e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.12)'
                   e.currentTarget.style.color = '#fff'
                 }}
               >
@@ -169,7 +169,7 @@ export default function Testimonials() {
                   height: '42px',
                   borderRadius: '50%',
                   background: 'rgba(255, 255, 255, 0.06)',
-                  border: '1px solid rgba(157, 78, 221, 0.3)',
+                  border: '1px solid rgba(255, 255, 255, 0.12)',
                   color: '#fff',
                   display: 'flex',
                   alignItems: 'center',
@@ -178,11 +178,11 @@ export default function Testimonials() {
                   transition: 'all 0.3s ease',
                 }}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.borderColor = '#00F5D4'
-                  e.currentTarget.style.color = '#00F5D4'
+                  e.currentTarget.style.borderColor = '#8bf825'
+                  e.currentTarget.style.color = '#8bf825'
                 }}
                 onMouseLeave={(e) => {
-                  e.currentTarget.style.borderColor = 'rgba(157, 78, 221, 0.3)'
+                  e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.12)'
                   e.currentTarget.style.color = '#fff'
                 }}
               >

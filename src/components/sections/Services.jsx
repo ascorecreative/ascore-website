@@ -85,11 +85,11 @@ export default function Services() {
           <span
             className="label-text"
             style={{
-              background: 'rgba(157, 78, 221, 0.15)',
-              border: '1px solid rgba(157, 78, 221, 0.35)',
+              background: 'rgba(139, 248, 37, 0.08)',
+              border: '1px solid rgba(139, 248, 37, 0.25)',
               padding: '0.4rem 1.25rem',
               borderRadius: '100px',
-              color: '#00F5D4',
+              color: '#8bf825',
               fontFamily: 'Jost, sans-serif',
             }}
           >
@@ -121,14 +121,14 @@ export default function Services() {
         </div>
 
         {/* Detailed Interactive Services Accordion / Expanders */}
-        <div style={{ borderTop: '1px solid rgba(157, 78, 221, 0.25)' }}>
+        <div style={{ borderTop: '1px solid rgba(255, 255, 255, 0.08)' }}>
           {SERVICES.map((srv, index) => {
             const isExpanded = expandedService === index
             return (
               <div
                 key={srv.id}
                 style={{
-                  borderBottom: '1px solid rgba(157, 78, 221, 0.22)',
+                  borderBottom: '1px solid rgba(255, 255, 255, 0.06)',
                   padding: '2rem 0',
                   transition: 'all 0.4s ease',
                   background: isExpanded ? 'rgba(15, 12, 35, 0.55)' : 'transparent',
@@ -152,7 +152,7 @@ export default function Services() {
                         fontFamily: 'Jost, sans-serif',
                         fontSize: '1rem',
                         fontWeight: 700,
-                        color: index === activeService ? '#00F5D4' : 'rgba(255, 255, 255, 0.4)',
+                        color: index === activeService ? '#8bf825' : 'rgba(255, 255, 255, 0.4)',
                         width: '35px',
                         transition: 'color 0.3s ease',
                       }}
@@ -166,7 +166,7 @@ export default function Services() {
                           fontFamily: 'Jost, sans-serif',
                           fontSize: '0.75rem',
                           fontWeight: 700,
-                          color: '#9D4EDD',
+                          color: '#8bf825',
                           letterSpacing: '0.12em',
                           textTransform: 'uppercase',
                           display: 'block',
@@ -195,7 +195,7 @@ export default function Services() {
                         width: '40px',
                         height: '40px',
                         borderRadius: '50%',
-                        background: isExpanded ? '#00F5D4' : 'rgba(255, 255, 255, 0.08)',
+                        background: isExpanded ? '#8bf825' : 'rgba(255, 255, 255, 0.08)',
                         color: isExpanded ? '#000' : '#fff',
                         display: 'flex',
                         alignItems: 'center',
@@ -215,7 +215,7 @@ export default function Services() {
                     style={{
                       padding: '2rem 1rem 1rem 5rem',
                       marginTop: '1.25rem',
-                      borderTop: '1px dashed rgba(157, 78, 221, 0.25)',
+                      borderTop: '1px dashed rgba(255, 255, 255, 0.08)',
                       display: 'grid',
                       gridTemplateColumns: '1.2fr 1fr',
                       gap: '2.5rem',
@@ -242,8 +242,8 @@ export default function Services() {
                         rel="noopener noreferrer"
                         style={{
                           fontFamily: 'Jost, sans-serif',
-                          background: 'linear-gradient(135deg, #00F5D4 0%, #0077FF 100%)',
-                          color: '#000',
+                          background: '#8bf825',
+                          color: '#04030a',
                           fontSize: '0.875rem',
                           fontWeight: 700,
                           padding: '0.65rem 1.4rem',
@@ -252,7 +252,7 @@ export default function Services() {
                           display: 'inline-flex',
                           alignItems: 'center',
                           gap: '8px',
-                          boxShadow: '0 4px 18px rgba(0, 245, 212, 0.4)',
+                          boxShadow: '0 4px 18px rgba(139, 248, 37, 0.3)',
                         }}
                       >
                         Inquire About {srv.title}
@@ -266,7 +266,7 @@ export default function Services() {
                           fontFamily: 'Jost, sans-serif',
                           fontSize: '0.8125rem',
                           fontWeight: 700,
-                          color: '#00F5D4',
+                          color: '#8bf825',
                           letterSpacing: '0.12em',
                           textTransform: 'uppercase',
                           marginBottom: '1rem',
@@ -288,7 +288,7 @@ export default function Services() {
                               color: 'rgba(255, 255, 255, 0.8)',
                             }}
                           >
-                            <CheckCircle2 size={16} style={{ color: '#00F5D4', flexShrink: 0 }} />
+                            <CheckCircle2 size={16} style={{ color: '#8bf825', flexShrink: 0 }} />
                             {item}
                           </li>
                         ))}

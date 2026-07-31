@@ -50,7 +50,7 @@ export default function Contact() {
       id="contact"
       className="section-gap"
       style={{
-        background: 'linear-gradient(180deg, #04030a 0%, #09071c 50%, #04030a 100%)',
+        background: '#04030a',
         position: 'relative',
         zIndex: 10,
         fontFamily: 'Jost, sans-serif',
@@ -64,11 +64,11 @@ export default function Contact() {
           <span
             className="label-text"
             style={{
-              background: 'rgba(157, 78, 221, 0.15)',
-              border: '1px solid rgba(157, 78, 221, 0.35)',
+              background: 'rgba(139, 248, 37, 0.08)',
+              border: '1px solid rgba(139, 248, 37, 0.25)',
               padding: '0.4rem 1.25rem',
               borderRadius: '100px',
-              color: '#00F5D4',
+              color: '#8bf825',
               fontFamily: 'Jost, sans-serif',
             }}
           >
@@ -86,7 +86,7 @@ export default function Contact() {
             Start Your{' '}
             <span
               style={{
-                background: 'linear-gradient(135deg, #00F5D4 0%, #0077FF 50%, #9D4EDD 100%)',
+                background: 'linear-gradient(135deg, #8bf825 0%, #00F5D4 100%)',
                 WebkitBackgroundClip: 'text',
                 WebkitTextFillColor: 'transparent',
                 fontWeight: 600,
@@ -101,12 +101,12 @@ export default function Contact() {
           {/* Form Box */}
           <div
             style={{
-              background: 'rgba(15, 12, 35, 0.75)',
+              background: 'rgba(12, 10, 25, 0.85)',
               backdropFilter: 'blur(24px)',
-              border: '1px solid rgba(157, 78, 221, 0.3)',
+              border: '1px solid rgba(255, 255, 255, 0.1)',
               borderRadius: '24px',
               padding: '2.5rem',
-              boxShadow: '0 20px 50px rgba(0, 0, 0, 0.4)',
+              boxShadow: '0 20px 50px rgba(0, 0, 0, 0.5)',
             }}
             className="contact-card-box"
           >
@@ -126,7 +126,7 @@ export default function Contact() {
                     width: '100%',
                     padding: '0.9rem 1.1rem',
                     background: 'rgba(255,255,255,0.06)',
-                    border: '1px solid rgba(157, 78, 221, 0.35)',
+                    border: '1px solid rgba(255, 255, 255, 0.1)',
                     borderRadius: '12px',
                     color: '#fff',
                     fontSize: '1rem',
@@ -151,7 +151,7 @@ export default function Contact() {
                       width: '100%',
                       padding: '0.9rem 1.1rem',
                       background: 'rgba(255,255,255,0.06)',
-                      border: '1px solid rgba(157, 78, 221, 0.35)',
+                      border: '1px solid rgba(255, 255, 255, 0.1)',
                       borderRadius: '12px',
                       color: '#fff',
                       fontSize: '1rem',
@@ -172,10 +172,10 @@ export default function Contact() {
                         fontFamily: 'Jost, sans-serif',
                         width: '105px',
                         padding: '0.9rem 0.4rem',
-                        background: 'rgba(15, 12, 35, 0.95)',
-                        border: '1px solid rgba(157, 78, 221, 0.35)',
+                        background: 'rgba(255, 255, 255, 0.06)',
+                        border: '1px solid rgba(255, 255, 255, 0.1)',
                         borderRadius: '12px',
-                        color: '#00F5D4',
+                        color: '#8bf825',
                         fontWeight: 600,
                         fontSize: '0.9375rem',
                         outline: 'none',
@@ -198,7 +198,7 @@ export default function Contact() {
                         flex: 1,
                         padding: '0.9rem 1.1rem',
                         background: 'rgba(255,255,255,0.06)',
-                        border: '1px solid rgba(157, 78, 221, 0.35)',
+                        border: '1px solid rgba(255, 255, 255, 0.1)',
                         borderRadius: '12px',
                         color: '#fff',
                         fontSize: '1rem',
@@ -220,8 +220,8 @@ export default function Contact() {
                     fontFamily: 'Jost, sans-serif',
                     width: '100%',
                     padding: '0.9rem 1.1rem',
-                    background: 'rgba(15, 12, 35, 0.95)',
-                    border: '1px solid rgba(157, 78, 221, 0.35)',
+                    background: 'rgba(255,255,255,0.06)',
+                    border: '1px solid rgba(255, 255, 255, 0.1)',
                     borderRadius: '12px',
                     color: '#fff',
                     fontSize: '1rem',
@@ -251,7 +251,7 @@ export default function Contact() {
                     width: '100%',
                     padding: '0.9rem 1.1rem',
                     background: 'rgba(255,255,255,0.06)',
-                    border: '1px solid rgba(157, 78, 221, 0.35)',
+                    border: '1px solid rgba(255, 255, 255, 0.1)',
                     borderRadius: '12px',
                     color: '#fff',
                     fontSize: '1rem',
@@ -265,8 +265,8 @@ export default function Contact() {
                 type="submit"
                 style={{
                   fontFamily: 'Jost, sans-serif',
-                  background: 'linear-gradient(135deg, #00F5D4 0%, #0077FF 100%)',
-                  color: '#000',
+                  background: '#8bf825',
+                  color: '#04030a',
                   fontSize: '1rem',
                   fontWeight: 700,
                   padding: '1.05rem',
@@ -278,7 +278,7 @@ export default function Contact() {
                   justifyContent: 'center',
                   gap: '10px',
                   transition: 'all 0.3s ease',
-                  boxShadow: '0 4px 22px rgba(0, 245, 212, 0.45)',
+                  boxShadow: '0 4px 22px rgba(139, 248, 37, 0.35)',
                   marginTop: '0.5rem',
                 }}
               >
@@ -292,9 +292,9 @@ export default function Contact() {
           <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: '1.5rem' }}>
             <div
               style={{
-                background: 'rgba(15, 12, 35, 0.75)',
+                background: 'rgba(12, 10, 25, 0.85)',
                 backdropFilter: 'blur(24px)',
-                border: '1px solid rgba(157, 78, 221, 0.3)',
+                border: '1px solid rgba(255, 255, 255, 0.1)',
                 borderRadius: '20px',
                 padding: '2rem',
               }}
@@ -310,7 +310,7 @@ export default function Contact() {
                     display: 'flex',
                     alignItems: 'center',
                     gap: '14px',
-                    color: '#00F5D4',
+                    color: '#8bf825',
                     fontWeight: 700,
                     fontSize: '1.125rem',
                     textDecoration: 'none',
@@ -331,12 +331,12 @@ export default function Contact() {
                     textDecoration: 'none',
                   }}
                 >
-                  <Mail size={22} style={{ color: '#00F5D4' }} />
+                  <Mail size={22} style={{ color: '#8bf825' }} />
                   info@ascore.ae
                 </a>
 
                 <div style={{ display: 'flex', alignItems: 'center', gap: '14px', color: 'rgba(255, 255, 255, 0.85)', fontSize: '1rem' }}>
-                  <MapPin size={22} style={{ color: '#00F5D4' }} />
+                  <MapPin size={22} style={{ color: '#8bf825' }} />
                   Dubai & Abu Dhabi, United Arab Emirates
                 </div>
               </div>
@@ -344,8 +344,8 @@ export default function Contact() {
 
             <div
               style={{
-                background: 'linear-gradient(135deg, rgba(114, 9, 183, 0.25) 0%, rgba(0, 119, 255, 0.25) 100%)',
-                border: '1px solid rgba(0, 245, 212, 0.35)',
+                background: 'rgba(139, 248, 37, 0.06)',
+                border: '1px solid rgba(139, 248, 37, 0.2)',
                 borderRadius: '20px',
                 padding: '2rem',
               }}
@@ -362,8 +362,8 @@ export default function Contact() {
                 rel="noopener noreferrer"
                 style={{
                   fontFamily: 'Jost, sans-serif',
-                  background: '#00F5D4',
-                  color: '#000',
+                  background: '#8bf825',
+                  color: '#04030a',
                   fontWeight: 700,
                   fontSize: '0.875rem',
                   padding: '0.75rem 1.5rem',

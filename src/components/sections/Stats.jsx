@@ -4,12 +4,12 @@ export default function Stats() {
   return (
     <section
       style={{
-        background: 'linear-gradient(180deg, #04030a 0%, #09071c 50%, #04030a 100%)',
+        background: '#04030a',
         padding: '5rem 0',
         position: 'relative',
         zIndex: 10,
-        borderTop: '1px solid rgba(157, 78, 221, 0.2)',
-        borderBottom: '1px solid rgba(157, 78, 221, 0.2)',
+        borderTop: '1px solid rgba(255, 255, 255, 0.06)',
+        borderBottom: '1px solid rgba(255, 255, 255, 0.06)',
         fontFamily: 'Jost, sans-serif',
       }}
     >
@@ -21,19 +21,19 @@ export default function Stats() {
               style={{
                 background: 'rgba(15, 12, 35, 0.7)',
                 backdropFilter: 'blur(24px)',
-                border: '1px solid rgba(157, 78, 221, 0.25)',
+                border: '1px solid rgba(255, 255, 255, 0.08)',
                 borderRadius: '20px',
                 padding: '2.5rem 2rem',
                 textAlign: 'center',
                 transition: 'all 0.35s ease',
               }}
               onMouseEnter={(e) => {
-                e.currentTarget.style.borderColor = 'rgba(0, 245, 212, 0.5)'
+                e.currentTarget.style.borderColor = 'rgba(139, 248, 37, 0.35)'
                 e.currentTarget.style.transform = 'translateY(-5px)'
-                e.currentTarget.style.boxShadow = '0 20px 40px rgba(114, 9, 183, 0.3)'
+                e.currentTarget.style.boxShadow = '0 20px 40px rgba(0, 0, 0, 0.4)'
               }}
               onMouseLeave={(e) => {
-                e.currentTarget.style.borderColor = 'rgba(157, 78, 221, 0.25)'
+                e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.08)'
                 e.currentTarget.style.transform = 'translateY(0)'
                 e.currentTarget.style.boxShadow = 'none'
               }}
@@ -43,7 +43,7 @@ export default function Stats() {
                   fontFamily: 'Jost, sans-serif',
                   fontSize: 'clamp(2.8rem, 4.5vw, 4.5rem)',
                   fontWeight: 700,
-                  background: 'linear-gradient(135deg, #00F5D4 0%, #0077FF 50%, #9D4EDD 100%)',
+                  background: 'linear-gradient(135deg, #8bf825 0%, #00F5D4 100%)',
                   WebkitBackgroundClip: 'text',
                   WebkitTextFillColor: 'transparent',
                   lineHeight: 1,
