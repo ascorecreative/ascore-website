@@ -253,11 +253,10 @@ export default function Hero() {
                 marginBottom: '2.5rem',
               }}
             >
-              {/* Hero Main Headline */}
-              <h1
+               <h1
                 style={{
                   fontFamily: 'Jost, sans-serif',
-                  fontSize: 'clamp(2.8rem, 6.5vw, 5.8rem)',
+                  fontSize: 'clamp(1.8rem, 6.5vw, 5.8rem)',
                   fontWeight: 600,
                   lineHeight: 1.05,
                   letterSpacing: '-0.03em',
@@ -267,19 +266,23 @@ export default function Hero() {
                   position: 'relative',
                   zIndex: 5,
                   pointerEvents: 'none',
+                  paddingLeft: '1.25rem',
+                  paddingRight: '1.25rem',
                 }}
               >
                 <span
                   style={{
                     fontStyle: 'italic',
                     fontWeight: 300,
-                    marginRight: '0.35rem',
+                    marginRight: '0.5rem',
                     fontFamily: 'Georgia, "Times New Roman", serif',
                     color: '#ffffff',
+                    display: 'inline-block',
                   }}
                 >
                   UI UX
                 </span>
+                {' '}
                 <span className="hero-title-line">
                   Design<span className="hero-gap-spacer" />&
                 </span>
