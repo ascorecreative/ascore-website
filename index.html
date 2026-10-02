@@ -3,6 +3,21 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script>
+      // Some phone browser modes retain a wide layout viewport. Normalize that
+      // initial mismatch before the page paints; leave pinch zoom unrestricted.
+      (() => {
+        if (!navigator.maxTouchPoints || Math.min(screen.width, screen.height) > 600) return;
+        const viewport = document.querySelector('meta[name="viewport"]');
+        const deviceWidth = () => screen.orientation?.type
+          ? (screen.orientation.type.startsWith('landscape') ? Math.max(screen.width, screen.height) : Math.min(screen.width, screen.height))
+          : (Math.abs(window.orientation || 0) === 90 ? Math.max(screen.width, screen.height) : Math.min(screen.width, screen.height));
+        if (innerWidth <= deviceWidth() * 1.25) return;
+        const sync = () => viewport.setAttribute('content', `width=${deviceWidth()}, initial-scale=1.0`);
+        sync();
+        window.addEventListener('orientationchange', sync);
+      })();
+    </script>
     <meta name="theme-color" content="#111513" />
     <link rel="icon" type="image/png" href="/favicon.png" />
     <link rel="canonical" href="https://ascore.ae/" />

@@ -119,7 +119,7 @@ body.site-menu-open { overflow:hidden; }
 .new-site .footer-bottom nav { display:flex; gap:30px; }
 .new-site .footer-bottom a:hover,.new-site .footer-bottom button:hover,.new-site .contact-ways a:hover { opacity:.58; }
 @media (max-width:1050px) { .new-site .site-nav { gap:17px; } .new-site .header-cta { display:none; } .new-site .hero-art { width:67vw; right:-7%; top:13%; } .new-site .hero h1 { font-size:clamp(74px,12vw,135px); } }
-@media (max-width:760px) {
+@media (max-width:1024px) {
  .new-site .site-header { min-height:75px; padding:12px 22px; }
  .new-site .site-header .brand-lockup img { width:130px; }
  .new-site .menu-toggle { display:block; z-index:92; }

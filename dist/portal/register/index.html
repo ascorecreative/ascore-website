@@ -3,6 +3,21 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script>
+      // Some phone browser modes retain a wide layout viewport. Normalize that
+      // initial mismatch before the page paints; leave pinch zoom unrestricted.
+      (() => {
+        if (!navigator.maxTouchPoints || Math.min(screen.width, screen.height) > 600) return;
+        const viewport = document.querySelector('meta[name="viewport"]');
+        const deviceWidth = () => screen.orientation?.type
+          ? (screen.orientation.type.startsWith('landscape') ? Math.max(screen.width, screen.height) : Math.min(screen.width, screen.height))
+          : (Math.abs(window.orientation || 0) === 90 ? Math.max(screen.width, screen.height) : Math.min(screen.width, screen.height));
+        if (innerWidth <= deviceWidth() * 1.25) return;
+        const sync = () => viewport.setAttribute('content', `width=${deviceWidth()}, initial-scale=1.0`);
+        sync();
+        window.addEventListener('orientationchange', sync);
+      })();
+    </script>
     <meta name="theme-color" content="#111513" />
     <link rel="icon" type="image/png" href="/favicon.png" />
     <title>Client &amp; Agency Portal | Ascore Creative</title>
@@ -10,9 +25,9 @@
     <meta property="og:image" content="https://ascore.ae/og-preview.jpg" />
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:image" content="https://ascore.ae/og-preview.jpg" />
-    <script type="module" crossorigin src="/assets/index-BlV3whrq.js"></script>
+    <script type="module" crossorigin src="/assets/index-DLRz8Gz_.js"></script>
     <link rel="modulepreload" crossorigin href="/assets/jsx-runtime-n5LQ9ujS.js">
-    <link rel="stylesheet" crossorigin href="/assets/index-DSYghOlS.css">
+    <link rel="stylesheet" crossorigin href="/assets/index-6i2v_L5m.css">
   <meta name="description" content="Private client and agency workspace. Sign in to access your authorized projects and records." />
 <meta name="robots" content="noindex,nofollow" />
 <meta property="og:title" content="Client &amp; Agency Portal | Ascore Creative" />
