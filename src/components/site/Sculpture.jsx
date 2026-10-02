@@ -1,3 +1,4 @@
+import { isCompactHero } from '../../lib/heroViewport'
 import { Suspense,useEffect,useMemo,useRef,useState } from 'react'
 import { Canvas,useFrame,useLoader,useThree } from '@react-three/fiber'
 import * as THREE from 'three'
@@ -61,7 +62,7 @@ function CloudEngine({progress,visible,onReady,onAnchors}) {
     renderScene.environmentIntensity=.8+opening*.6
     gl.toneMappingExposure=.9+opening*.15
     if(reflectionKey.current){reflectionKey.current.position.set(-2.5+opening*5,6,4+opening);reflectionKey.current.intensity=1.6+opening*1.4}
-    const compact=size.width<760
+    const compact=isCompactHero(size)
     const initial=compact?(size.height<650?.37:.4):.58
     wrapper.current.scale.setScalar(modelScale*initial)
     wrapper.current.updateWorldMatrix(true,true)

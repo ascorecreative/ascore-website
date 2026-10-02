@@ -52,3 +52,51 @@
 @media(max-width:1100px){.new-site .idea-hero[data-linked-labels] .idea-service-label{width:165px}}
 @media(max-width:760px){.new-site .idea-hero[data-linked-labels] .idea-service-label{width:min(255px,64%);will-change:auto}}
 @media(max-height:500px) and (min-width:600px){.new-site .idea-hero[data-linked-labels] .idea-service-label{width:135px}}
+
+/* Keep actual phone text readable; short viewports must not shrink body copy to 9px. */
+@media(max-width:760px){
+ .new-site .idea-topline,.new-site .idea-topline span:last-child{font-size:11px;line-height:1.4;letter-spacing:.08em}
+ .new-site .idea-eyebrow{font-size:11px;line-height:1.4;letter-spacing:.1em}
+ .new-site .idea-copy h1{font-size:clamp(44px,12vw,56px);line-height:1.02}
+ .new-site .idea-description{font-size:16px;line-height:1.45;max-width:360px}
+ .new-site .idea-actions{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:12px;max-width:370px;width:100%;margin-inline:auto;align-items:center}
+ .new-site .idea-primary,.new-site .idea-explore{font-size:13px;line-height:1.4;min-height:48px}
+ .new-site .idea-primary{padding:10px 12px;gap:8px}.new-site .idea-primary svg{width:18px;height:18px;flex-shrink:0}
+ .new-site .idea-explore{justify-content:center;gap:6px}.new-site .idea-explore svg{flex-shrink:0}
+ .new-site .idea-chapters > span,.new-site .idea-chapters b{font-size:11px;line-height:1.35}
+ .new-site .idea-service-label h2{font-size:28px;line-height:1.1}
+ .new-site .idea-service-label p{font-size:15px;line-height:1.45}
+ .new-site .idea-service-label > span{font-size:11px;line-height:1.4;letter-spacing:.05em}
+ .new-site .idea-specimen{display:none}
+}
+@media(max-height:620px) and (max-width:760px){
+ .new-site .idea-stage{padding-top:85px;padding-bottom:18px}
+ .new-site .idea-topline{gap:5px}.new-site .idea-copy{margin-top:10px}
+ .new-site .idea-copy h1{font-size:44px}.new-site .idea-description{font-size:15px}
+ .new-site .idea-support{margin-bottom:12px}.new-site .idea-actions{margin-top:12px}
+ .new-site .idea-footer{padding-top:12px}
+}
+@media(max-height:480px) and (max-width:760px){
+ .new-site .idea-copy h1{font-size:36px}.new-site .idea-copy h1 em{display:inline}
+ .new-site .idea-service-label h2{font-size:26px}
+}
+/* A phone remains a compact interaction layout when rotated into landscape. */
+@media(pointer:coarse) and (max-height:500px) and (min-width:761px) and (max-width:1024px){
+ .new-site .idea-stage{padding:82px 22px 18px}
+ .new-site .idea-topline,.new-site .idea-eyebrow,.new-site .idea-specimen{display:none}
+ .new-site .idea-copy{margin-top:10px}.new-site .idea-copy h1{font-size:38px;line-height:1.02;margin-top:0}
+ .new-site .idea-description{display:none}
+ .new-site .idea-primary,.new-site .idea-explore{font-size:14px;line-height:1.4;min-height:44px}
+ .new-site .idea-primary{padding:10px 16px}
+ .new-site .idea-support{margin-bottom:12px}
+ .new-site .idea-footer{padding-top:12px}
+ .new-site .idea-chapters{width:100%;justify-content:space-between;gap:12px}
+ .new-site .idea-chapters > span,.new-site .idea-chapters b{font-size:11px;line-height:1.35}
+ .new-site .idea-scroll{display:none}
+ .new-site .idea-service-label,.new-site .idea-hero[data-linked-labels] .idea-service-label{width:min(300px,44%);display:none;background:#101b18e6;border-left:1px solid #68adaf;padding:0 0 0 15px;will-change:auto}
+ .new-site .idea-service-label.is-active,.new-site .idea-hero[data-linked-labels] .idea-service-label.is-active{display:block}
+ .new-site .idea-service-label h2{font-size:26px;line-height:1.1}
+ .new-site .idea-service-label p{font-size:15px;line-height:1.45}
+ .new-site .idea-service-label > span{font-size:11px;line-height:1.4;letter-spacing:.05em}
+ .new-site .idea-service-icon{width:24px;height:24px;margin-bottom:6px}
+}

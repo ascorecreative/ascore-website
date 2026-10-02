@@ -1,3 +1,4 @@
+import { isCompactHero } from '../../lib/heroViewport'
 import { lazy, Suspense, useCallback, useEffect, useRef, useState } from 'react'
 import { ArrowDown, ArrowUpRight, Monitor, PenTool, Box, Workflow, BriefcaseBusiness } from 'lucide-react'
 import ErrorBoundary from '../ui/ErrorBoundary'
@@ -21,7 +22,7 @@ export default function IdeaHero({ reducedMotion, onOpenService }) {
     if(!section.current)return
     section.current.dataset.linkedLabels='true'
     section.current.style.setProperty('--label-reveal',Math.max(0,Math.min(1,(p-.16)*8)))
-    const compact=size.width<760,margin=compact?20:24,pad=compact?48:82
+    const compact=isCompactHero(size),margin=compact?20:24,pad=compact?48:82
     const clamp=(value,low,high)=>Math.min(Math.max(value,low),Math.max(low,high))
     const items=anchors.slice(0,5).map((anchor,index)=>{
       const [w,h]=labelSizes.current[index]||[compact?Math.min(255,size.width*.64):185,compact?145:125]
