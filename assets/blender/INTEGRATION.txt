@@ -1,0 +1,26 @@
+ASCORE / IDEA ENGINE
+Created in Blender 4.3.2 on the cloud computer. Abstract agency sculpture, not a reconstruction of the logo.
+
+Files
+ascore-idea-engine.blend: editable source, camera, studio lights, 121-frame animation
+ascore-idea-engine.glb: 105 KB approximate, 1,784 triangles, no textures, 7 named blades and faceted core
+iris-transparent.png: alpha fallback / reduced-motion poster
+iris-assembled/opening/exploded-final.png: actual rendered scroll-pose previews
+
+Three.js / React Three Fiber integration
+GLB is Y-up and exported with seven individually named aperture blades, one core and a common parent. Preserve the scene transform hierarchy. Names in Three.js may have spaces/punctuation normalized by GLTFLoader; identify objects through the loaded scene traversal, not a guessed property name.
+
+Animation
+There are nine animation clips, one per animated object. All span frames 1–121 at 24 fps, i.e. five seconds. Activate every clip in a single THREE.AnimationMixer, set LoopOnce and clampWhenFinished, and scrub the mixer to progress * 5 seconds. Do not play only the first clip, which rotates only the parent. Pause the actions and set time explicitly, or set mixer time without running a competing delta-based clock. For GSAP ScrollTrigger, map normalized progress to the shared animation time; invalidate on resize. A custom articulation can instead drive the named blades, but avoid simultaneous baked animation and transform overrides.
+
+Rendering
+Use a studio environment (PMREM / RoomEnvironment or existing HDRI) so titanium has broad reflections. Asset intentionally includes no web lights/cameras/environment; adapt lighting to the actual page. Cyan and violet material bands complement the existing logo; preserve the page's ink, ivory and acid accents. Cap mobile DPR at 1.5, render on demand when static, and suspend off-screen. Disable scroll animation under prefers-reduced-motion and retain assembled pose. The geometry needs no Draco download/runtime.
+
+Suggested choreography
+0.00–0.25: assembled aperture slowly tilts toward headline
+0.25–0.65: seven blades unlock and open around the luminous core
+0.65–1.00: separated facets turn strongly in depth as work/services enters
+Keep the headline 'Ideas with dimension.' readable, and reduce the sculpture scale on phones.
+
+Verification
+GLB parsed: 1,784 indexed triangles; nine named animated nodes; nine animation clips. Actual Blender previews rendered and visually inspected. No website deployment performed by asset creation task.

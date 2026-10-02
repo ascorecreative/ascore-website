@@ -1,0 +1,25 @@
+ASCORE — ORIGINAL SEVEN BLADES WITH EXACT EXTRUDED SYMBOL CENTER
+
+This variant preserves the original seven metallic blades, their materials, bevels, transforms and scroll animation. Only the original faceted cyan core has been replaced. No wordmark, no service glyphs and no labels are baked into this model. Service labels belong in the website layer.
+
+Center construction
+The approved logo PNG was isolated at x=0..299 (the wordmark starts farther right). Its actual alpha outline and inner hole were traced to 0.7-pixel tolerance at source size. The front face uses the unchanged symbol's original facet artwork, preserving its internal design and proportions. This is a solid, extruded silhouette with real sidewalls and depth, not a flat rectangular billboard. Internal facet artwork is a texture, not separately raised facet geometry.
+
+Front contour: 20 outer vertices and 14 inner vertices. Front triangulation area equals the outer outline minus inner hole area to floating-point tolerance, avoiding gaps or infill of the hole. Center mesh: 136 triangles; depth 0.22 Blender units; height approximately 1.46 units, nominal canvas height 1.52. Deep teal physically lit sidewalls. Front has minimal specular so studio lighting does not bleach the official artwork.
+
+Deliverables
+ascore-symbol-center.glb — standalone replacement center; preserves its own scene-local position/orientation. Add beside the original root, not under the blade animation root. Hide/remove only original node 'Faceted cyan core'. Do not add both old and new centers.
+ascore-original-symbol-center.glb — full drop-in hero including original blades and new center; recommended.
+ascore-original-symbol-center.blend — editable source with packed symbol texture and original camera/lights.
+symbol-center-poster.webp — transparent assembled fallback.
+symbol-center-assembled.png / symbol-center-opening.png — actual scene renders.
+symbol-depth-inspection.png — oblique close-up verifying real extrusion and open center.
+
+Animation compatibility
+Full GLB has EIGHT clips: the original parent plus seven blade clips. The removed cyan core's ninth clip is intentionally absent. Play/scrub all eight on a single AnimationMixer over five seconds. Use mixer.setTime(progress*5), active actions, LoopOnce + clampWhenFinished, and no competing update(delta). The new logo is static outside the rotating blade assembly to remain recognizable. Optional subtle logo float/tilt can be added separately, but avoid spins that make the symbol unreadable.
+
+Coordinates
+Exports are standard Y-up glTF. Blender symbol location is (0,0,0.48), i.e. glTF (0,0.48,0), with a small built-in tilt. Preserve the supplied local transform. Original reference camera converts from Blender (0,-3,9) to approximately glTF/Three (0,9,3), looking toward origin. Keep existing site camera choreography and adjust only if needed for readable logo framing.
+
+Performance
+Standalone center approximately 85 KB. Full hero approximately 183 KB, 1,900 triangles. Embedded texture, no Draco decoder required. Keep original environment reflections and cyan/violet rim lighting for metallic blades. Cap mobile DPR, respect reduced motion, and use transparent poster if WebGL unavailable.

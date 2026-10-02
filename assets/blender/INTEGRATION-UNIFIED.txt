@@ -1,0 +1,34 @@
+ASCORE — UNIFIED PHYSICALLY LIT SCULPTED HERO
+
+This revision addresses the flat/decal appearance and unwanted pink tint while preserving the accepted seven original blade meshes, bevels, transforms and eight animation clips.
+
+What changed
+The center is real non-planar, folded/faceted geometry with physical thickness, softened machined edges and a genuine hole. Front materials use the actual richer Ascore teal/turquoise/blue/indigo swatches selected from sampled artwork, stored as vertex colors, with metallic 1.00 and roughness 0.32. There is NO logo image/texture, NO emissive front, NO flat decal, NO HTML overlay or white badge. Side/rim material is dark teal titanium, metallic 0.94 and roughness 0.22. Its silhouette and hole remain the unchanged traced official outline (0.7 source-pixel tolerance). Internal surface facets are a newly sculpted dimensional interpretation, not a claim of receiving an official 3D source.
+
+Palette
+Blade edge bands formerly named 'Ascore violet' now use sampled deep indigo (#333983), not pink/magenta. Cyan bands use sampled turquoise (#3EA8AA). Original body titanium remains neutral. Blender rim lights are neutral/cyan/blue; no magenta/violet light is used. Legacy names can remain in material/light metadata; use actual RGB values, not names, to judge colors.
+
+Runtime coordination
+Inspection confirmed the site uses ONE GLB and ONE R3F canvas with no HTML center overlay or material overrides. Therefore replacing the previous GLB directly fixes the emissive, planar source material. Preserve imported vertex colors and PBR materials; do not replace center material with MeshBasicMaterial, emissive logo textures, decals or hard-coded colors.
+
+The GLB intentionally does not embed Blender lights. Match web RoomEnvironment/area/directional lighting to neutral + cyan + blue. Remove pink/magenta/lavender lights or CSS filters in the website separately. Suggested neutral/cyan soft key and blue rim; avoid a saturated red+blue rim. Studio highlights naturally lighten the sampled metal colors.
+
+Files
+ascore-unified-sculpted.glb — complete drop-in hero; original blades + new sculpted center, no textures, eight clips
+ascore-unified-sculpted.blend — editable unified Blender scene and exact lighting used in the preview
+rich-center-final.png — final richer unified scene render
+rich-center-reflection-final.png — same geometry with rotated physical lights, demonstrating real reflection response
+sculpted-center-poster.webp — transparent assembled fallback
+
+Animation
+Eight clips: original root + seven original blade actions. Use all eight, single AnimationMixer, time = scrollProgress*5 seconds, LoopOnce + clampWhenFinished, no competing delta playback. Center node 'ASCORE sculpted metal emblem' remains in the same scene at the same established center transform. It shares camera, environment, lights and shadows with all blades. Existing explosion/rest choreography remains compatible. Service names/icons belong outside the pieces in the website, not baked into this asset.
+
+Mobile
+No texture or decoder downloads. Imported COLOR_0 vertex attributes carry the center colors. Center uses two material groups (front + side), avoiding dozens of per-facet draw calls. Use existing DPR cap/reduced-motion fallback/offscreen pause. Keep site full-screen video transition separate; this asset task does not modify video.
+
+Final richer rendering / live reflection guidance
+The earlier pale proof is superseded. Final front swatches include #097F80, #3EA8AA, #096084, #2C5C9A, #333983 and #4E60A5 as chosen per source region, with no emission and no texture. The source Blender preview uses AgX at exposure -1.4 to protect color saturation under studio cards. Blender exposure is not embedded in GLB, and its lights are not numerically equivalent to browser RoomEnvironment. Start with restrained environment intensity (roughly 0.5–0.7) and renderer exposure around 0.8, then compare against rich-center-final.png rather than copying Blender's numeric exposure literally. Keep clear teal/blue body colors between moving highlights; avoid broad white light flooding the whole center.
+
+Move reflection/environment orientation or a soft key light gently with scroll/pointer, preferably around 10–20 degrees, while retaining the accepted blade choreography. This must remain physically rendered lighting on the PBR materials, not an emissive overlay or a CSS shine. Respect reduced motion. rich-center-reflection-final.png uses the same geometry/materials and a deliberately larger light rotation as a visible comparison, not an animation prescription.
+
+Final verified budget: 191,112 bytes, 3,388 triangles, eight animation clips, sixteen total material groups including only two on the center, zero image textures. Recheck exact file size after upload if needed.

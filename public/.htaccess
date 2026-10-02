@@ -9,3 +9,7 @@
     Header set Cache-Control "public, max-age=31536000, immutable"
   </FilesMatch>
 </IfModule>
+
+# Public routes are physical prerendered directories; no SPA rewrite is required.
+DirectoryIndex index.html
+ErrorDocument 404 /404.html

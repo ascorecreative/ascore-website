@@ -1,0 +1,98 @@
+html:has(.new-site),body:has(.new-site),#root:has(.new-site) { overflow-x:clip !important; overflow-y:visible !important; }
+/* One viewport-centered specimen, pinned only within its scroll sequence. */
+.new-site .idea-hero { position:relative; height:240svh; background:#0d1211; color:#f0f2ed; scroll-margin-top:0; }
+.new-site .idea-stage { position:sticky; top:0; height:100svh; min-height:0; box-sizing:border-box; overflow:hidden; display:flex; flex-direction:column; padding:132px clamp(24px,4vw,72px) 29px; background:radial-gradient(ellipse at 50% 50%,#243833 0%,#131d1b 38%,#0d1211 75%); }
+.new-site .idea-topline { position:relative; z-index:3; display:flex; justify-content:space-between; font-size:10px; font-weight:600; color:#becac3; text-transform:uppercase; letter-spacing:.14em; }
+.new-site .idea-copy { position:relative; z-index:3; width:100%; margin:12px 0 0; text-align:center; pointer-events:none; opacity:clamp(0,calc(1 - var(--idea-progress) * 4),1); transform:translateY(calc(var(--idea-progress) * -50px)); }
+.new-site .idea-eyebrow { display:flex; justify-content:center; align-items:center; gap:11px; font-size:9px; font-weight:600; text-transform:uppercase; letter-spacing:.17em; color:#b8c8bb; }
+.new-site .idea-eyebrow > span { height:5px; width:5px; background:#68adaf; border-radius:50%; box-shadow:0 0 14px #68adaf55; }
+.new-site .idea-copy h1 { margin:14px 0 0; font:600 clamp(44px,5.6vw,84px)/1 Manrope,sans-serif; letter-spacing:-.075em; }
+.new-site .idea-copy h1 em { font-family:Georgia,serif; font-weight:400; letter-spacing:-.06em; color:#68adaf; }
+.new-site .idea-support { position:relative; z-index:3; width:100%; margin:auto 0 23px; text-align:center; }
+.new-site .idea-description { max-width:550px; margin:0 auto; color:#c8d1c9; font-size:15px; line-height:1.55; opacity:clamp(0,calc(1 - var(--idea-progress) * 4),1); }
+.new-site .idea-actions { display:flex; justify-content:center; gap:24px; align-items:center; margin-top:18px; }
+.new-site .idea-primary { display:inline-flex; gap:22px; align-items:center; border-radius:3px; padding:14px 20px; color:#122017; background:#68adaf; font-size:12px; font-weight:700; transition:background .2s; }
+.new-site .idea-primary:hover { background:#a6e5e3; }
+.new-site .idea-explore { display:inline-flex; gap:10px; align-items:center; border-bottom:1px solid #ffffff50; padding:11px 0; font-size:11px; }
+.new-site .idea-art { position:absolute; width:min(62vw,58svh,760px); aspect-ratio:1; left:50%; top:50%; transform:translate(-50%,-50%); pointer-events:none; }
+.new-site .idea-canvas,.new-site .idea-poster { position:absolute; inset:0; width:100%; height:100%; object-fit:contain; }
+.new-site .idea-poster { opacity:1; transition:opacity .3s; }
+.new-site .idea-poster.has-webgl { opacity:0; }
+.new-site .idea-orbit { position:absolute; border:1px solid #b8e3d019; border-radius:50%; inset:9%; }
+.new-site .idea-orbit-inner { inset:21%; border-style:dashed; transform:rotate(calc(var(--idea-progress) * 60deg)); }
+.new-site .idea-orbit-outer::before { content:''; position:absolute; width:7px; height:7px; background:#68adaf; border-radius:50%; top:16%; left:12%; }
+.new-site .idea-axis { position:absolute; inset:16%; border-left:1px solid #ffffff0c; border-bottom:1px solid #ffffff0c; color:#7f9487; font-size:9px; }
+.new-site .idea-axis span:first-child { position:absolute; left:-3px; top:-18px; }
+.new-site .idea-axis span:last-child { position:absolute; right:-16px; bottom:-4px; }
+.new-site .idea-specimen { position:absolute; left:0; right:0; bottom:3%; display:flex; flex-direction:column; gap:7px; text-align:center; font-size:8px; font-weight:600; letter-spacing:.14em; color:#b7c5bc; }
+.new-site .idea-specimen span:last-child { color:#7c9387; text-transform:uppercase; font-size:7px; }
+.new-site .idea-footer { position:relative; z-index:3; display:flex; justify-content:space-between; align-items:center; gap:20px; border-top:1px solid #ffffff25; padding-top:19px; }
+.new-site .idea-chapters { display:flex; gap:36px; }
+.new-site .idea-chapters > span { display:flex; align-items:center; gap:9px; font-size:10px; color:#9bad9f; transition:color .25s; }
+.new-site .idea-chapters b { font-size:9px; font-weight:400; }
+.new-site .idea-chapters .is-current { color:#68adaf; }
+.new-site .idea-scroll { display:flex; gap:12px; align-items:center; font-size:8px; color:#b0bfb5; letter-spacing:.14em; }
+.new-site .idea-track { position:absolute; left:0; right:0; top:-1px; height:1px; }
+.new-site .idea-track span { display:block; width:calc(var(--idea-progress) * 100%); height:1px; background:#68adaf; }
+@media (max-width:1050px) and (min-width:761px) { .new-site .idea-copy h1 { font-size:6.7vw; } .new-site .idea-chapters { gap:20px; } }
+@media (max-width:760px) {
+ .new-site .idea-hero { height:225svh; }
+ .new-site .idea-stage { padding:98px 22px 24px; }
+ .new-site .idea-topline { font-size:8px; letter-spacing:.1em; }
+ .new-site .idea-topline span:last-child { display:none; }
+ .new-site .idea-copy { margin-top:17px; }
+ .new-site .idea-eyebrow { font-size:8px; }
+ .new-site .idea-copy h1 { max-width:570px; margin:12px auto 0; font-size:clamp(38px,10.2vw,70px); line-height:1.02; }
+ .new-site .idea-copy h1 em { display:block; }
+ .new-site .idea-art { width:min(92vw,40svh); }
+ .new-site .idea-specimen { bottom:1%; font-size:6px; }
+ .new-site .idea-specimen span:last-child { display:none; }
+ .new-site .idea-support { margin-bottom:21px; }
+ .new-site .idea-description { max-width:345px; font-size:13px; line-height:1.5; }
+ .new-site .idea-actions { margin-top:17px; gap:18px; flex-wrap:wrap; }
+ .new-site .idea-primary { padding:12px 14px; font-size:11px; gap:12px; }
+ .new-site .idea-explore { font-size:10px; }
+ .new-site .idea-footer { padding-top:16px; }
+ .new-site .idea-chapters { width:100%; justify-content:space-between; gap:12px; }
+ .new-site .idea-chapters > span { flex-direction:column; gap:5px; align-items:start; font-size:9px; }
+ .new-site .idea-scroll { display:none; }
+}
+@media (max-height:740px) and (min-width:761px) {
+ .new-site .idea-stage { padding-top:123px; padding-bottom:22px; }
+ .new-site .idea-copy { margin-top:16px; }
+ .new-site .idea-eyebrow { display:none; }
+ .new-site .idea-copy h1 { font-size:clamp(38px,4.5vw,60px); margin-top:0; }
+ .new-site .idea-art { width:min(55vw,55svh); }
+ .new-site .idea-description { max-width:650px; font-size:13px; }
+ .new-site .idea-actions { margin-top:12px; }
+ .new-site .idea-support { margin-bottom:18px; }
+ .new-site .idea-primary { padding:11px 16px; }
+ .new-site .idea-footer { padding-top:15px; }
+}
+@media (max-height:620px) and (max-width:760px) {
+ .new-site .idea-copy { margin-top:12px; }
+ .new-site .idea-eyebrow { display:none; }
+ .new-site .idea-copy h1 { margin-top:0; font-size:38px; }
+ .new-site .idea-art { width:min(85vw,37svh); top:54%; }
+ .new-site .idea-description { font-size:12px; }
+ .new-site .idea-specimen { top:4%; bottom:auto; }
+ .new-site .idea-support { margin-bottom:15px; }
+ .new-site .idea-actions { margin-top:12px; gap:10px; flex-wrap:nowrap; }
+ .new-site .idea-primary { padding:10px 9px; font-size:9px; gap:6px; }
+ .new-site .idea-primary svg { width:14px; height:14px; }
+ .new-site .idea-explore { font-size:9px; gap:6px; }
+ .new-site .idea-footer { padding-top:12px; }
+}
+@media (max-height:480px) and (max-width:760px) {
+ .new-site .idea-topline { display:none; }
+ .new-site .idea-copy { margin-top:12px; }
+ .new-site .idea-copy h1 { font-size:24px; }
+ .new-site .idea-copy h1 em { display:inline; }
+ .new-site .idea-art { width:min(50vw,30svh); top:53%; }
+ .new-site .idea-description { position:absolute; width:1px; height:1px; margin:-1px; overflow:hidden; clip-path:inset(50%); }
+ .new-site .idea-specimen { font-size:5px; }
+}
+.new-site .idea-hero.is-reduced-motion { height:100svh; }
+.new-site .idea-hero.is-reduced-motion .idea-stage { position:relative; }
+.new-site .idea-hero.is-reduced-motion .idea-poster { transition:none; }
+@media (prefers-reduced-motion:reduce) { .new-site .idea-hero { height:100svh; } .new-site .idea-stage { position:relative; } .new-site .idea-poster { transition:none; } }
