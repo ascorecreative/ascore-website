@@ -1,6 +1,7 @@
 import { createSqliteStore } from './sqlite-store.mjs'
 import { createMariaDbStore } from './mariadb-store.mjs'
 import { initializeMariaDbSchema,verifyMariaDbSchema } from './mariadb-schema.mjs'
+import { verifyDatabaseIdentity } from './database-preflight.mjs'
 
 export const uniqueConflict=error=>error.code==='ER_DUP_ENTRY'||String(error.code).includes('CONSTRAINT')||[19,2067,1555].includes(error.errcode)
 export async function createPersistence({env=process.env,dbPath,poolFactory,store}={}){
@@ -11,8 +12,13 @@ export async function createPersistence({env=process.env,dbPath,poolFactory,stor
  if(kind!=='mariadb')throw Error('Choose a supported Ascore database adapter.')
  const database=await createMariaDbStore({env,poolFactory})
  try{
-  if(env.ASCORE_ALLOW_SCHEMA_SETUP==='1')await initializeMariaDbSchema(database,env)
-  else await verifyMariaDbSchema(database)
+  const identity=await verifyDatabaseIdentity(database,env)
+  const initialized=env.ASCORE_ALLOW_SCHEMA_SETUP==='1'?await initializeMariaDbSchema(database,env):null
+  const schema=await verifyMariaDbSchema(database)
+  const marker=await database.prepare('SELECT applied_at FROM ascore_schema_versions WHERE application=? AND version=?').get('ascore-platform',1)
+  const appliedAt=Number(marker?.applied_at)
+  if(!Number.isSafeInteger(appliedAt)||appliedAt<=0)throw Error('The Ascore schema initialization marker could not be verified.')
+  database.readiness=Object.freeze({...identity,schemaVersion:schema.version,schemaAppliedAt:appliedAt,initialization:initialized?.created?'created':'verified'})
   return database
  }catch(error){await database.close();throw error}
 }

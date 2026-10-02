@@ -166,7 +166,7 @@ export async function createPortalServer(options = {}) {
       if (await enquiries.publicHandle(request,response,path,responseJson)) return
       const session = await currentSession(request)
       const user = session.user
-      if (request.method === 'GET' && path === '/api/health') {if(!await db.health())fail(503,'Persistent storage is unavailable.');return responseJson(response,200,{status:'ok',mode:production?'production':'local',storage:db.kind,payments:'tracking-only'})}
+      if (request.method === 'GET' && path === '/api/health') {if(!await db.health())fail(503,'Persistent storage is unavailable.');return responseJson(response,200,{status:'ok',mode:production?'production':'local',storage:db.kind,payments:'tracking-only',...(db.readiness?{databaseVerified:true,schemaVersion:db.readiness.schemaVersion,schemaAppliedAt:db.readiness.schemaAppliedAt}:{})})}
       if (request.method === 'GET' && path === '/api/auth/session') return responseJson(response, 200, { user:publicUser(user), csrf:session.csrf || null })
       if (request.method === 'POST' && path === '/api/auth/login') {
         const body = await readJson(request), identifier = text(body.identifier, 'username or email', 254).toLowerCase()
@@ -305,5 +305,5 @@ export async function createPortalServer(options = {}) {
   })
   server.requestTimeout = 15000
   server.headersTimeout = 10000
-  return { server, close:async () => { if(server.listening)await new Promise((resolve,reject) => server.close(error => error ? reject(error) : resolve())); await db.close() } }
+  return { server, databaseReadiness:db.readiness, close:async () => { if(server.listening)await new Promise((resolve,reject) => server.close(error => error ? reject(error) : resolve())); await db.close() } }
 }
