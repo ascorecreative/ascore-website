@@ -2,11 +2,12 @@ import test from 'node:test'
 import assert from 'node:assert/strict'
 import { createHash } from 'node:crypto'
 import { createPortalServer } from './app.mjs'
+import { createSqliteStore } from './sqlite-store.mjs'
 
 test('real sessions, reserved admins, client isolation, CSRF and tracking balances', async t => {
   const setupToken = 'test-only-isolated-memory-grant'
   const env = { ASCORE_ALLOW_ADMIN_SETUP:'1', ASCORE_ADMIN_SETUP_GRANTS:JSON.stringify({aswinfrn:{tokenHash:createHash('sha256').update(setupToken).digest('hex'),expiresAt:new Date(Date.now()+60000).toISOString()}}) }
-  const portal = createPortalServer({dbPath:':memory:',env})
+  const portal = await createPortalServer({dbPath:':memory:',env})
   await new Promise(resolve=>portal.server.listen(0,'127.0.0.1',resolve))
   t.after(()=>portal.close())
   const base = `http://127.0.0.1:${portal.server.address().port}/api`
@@ -41,6 +42,10 @@ test('real sessions, reserved admins, client isolation, CSRF and tracking balanc
   assert.equal((await request(`/documents/${doc.id}/payment-records`,{amount:200,paidDate:'2026-10-01',reference:'Test only'},admin)).httpStatus,400)
   const payment=await request(`/documents/${doc.id}/payment-records`,{amount:57.82,paidDate:'2026-10-01',reference:'Test only'},admin)
   assert.equal(payment.balance,100); assert.equal(payment.status,'partial')
+  const competing=await Promise.all([1,2].map(i=>request(`/documents/${doc.id}/payment-records`,{amount:75,paidDate:'2026-10-01',reference:`Concurrent synthetic ${i}`},admin)))
+  assert.deepEqual(competing.map(row=>row.httpStatus).sort(),[201,400])
+  assert.equal(competing.find(row=>row.httpStatus===201).balance,25)
+
   assert.equal((await request('/documents',{clientId:a.user.id,kind:'bill',items:[{description:'Agency cost',amount:20}]},admin)).httpStatus,201)
   const mine=await request('/workspace',null,a),other=await request('/workspace',null,b)
   assert.equal(mine.projects.length,1); assert.equal(mine.milestones.length,1); assert.equal(mine.documents.length,1)
@@ -51,7 +56,8 @@ test('real sessions, reserved admins, client isolation, CSRF and tracking balanc
 })
 
 test('setup and production registration are disabled without explicit configuration', async t=>{
-  const portal=createPortalServer({dbPath:':memory:',env:{NODE_ENV:'production'},origin:'https://ascore.example'})
+  const store=createSqliteStore(':memory:')
+  const portal=await createPortalServer({store:{...store,kind:'mariadb'},env:{NODE_ENV:'production'},origin:'https://ascore.example'})
   await new Promise(resolve=>portal.server.listen(0,'127.0.0.1',resolve)); t.after(()=>portal.close())
   const response=await fetch(`http://127.0.0.1:${portal.server.address().port}/api/auth/admin-setup`,{method:'POST',headers:{Origin:'https://ascore.example','Content-Type':'application/json'},body:JSON.stringify({username:'sachindinesh',setupToken:'invalid'})})
   assert.equal(response.status,403)

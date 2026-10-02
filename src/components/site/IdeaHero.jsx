@@ -1,4 +1,4 @@
-import { lazy, Suspense, useEffect, useRef, useState } from 'react'
+import { lazy, Suspense, useCallback, useEffect, useRef, useState } from 'react'
 import { ArrowDown, ArrowUpRight, Monitor, PenTool, Box, Workflow, BriefcaseBusiness } from 'lucide-react'
 import ErrorBoundary from '../ui/ErrorBoundary'
 import OriginalVideoHero from './OriginalVideoHero'
@@ -13,9 +13,36 @@ function ServiceIcon({index}) {const Icon=serviceIcons[index];return <span class
 const serviceContexts=['DESIGN & ENGINEERING','IDENTITY & DIRECTION','SPACE & INTERACTION','CAMPAIGNS & WORKFLOWS','UAE BUSINESS SUPPORT']
 const particles=Array.from({length:30},(_,i)=>{const angle=i*2.399963;return{x:Math.cos(angle)*(370+i%5*38),y:Math.sin(angle)*(235+i%4*27),radius:1.2+i%3*.7}})
 
-export default function IdeaHero({ reducedMotion }) {
+export default function IdeaHero({ reducedMotion, onOpenService }) {
   const section = useRef(null)
   const stage = useRef(null)
+  const labels=useRef([]),labelSizes=useRef([])
+  const trackLabels=useCallback((anchors,size,p)=>{
+    if(!section.current)return
+    section.current.dataset.linkedLabels='true'
+    section.current.style.setProperty('--label-reveal',Math.max(0,Math.min(1,(p-.16)*8)))
+    const compact=size.width<760,margin=compact?20:24,pad=compact?48:82
+    const clamp=(value,low,high)=>Math.min(Math.max(value,low),Math.max(low,high))
+    const items=anchors.slice(0,5).map((anchor,index)=>{
+      const [w,h]=labelSizes.current[index]||[compact?Math.min(255,size.width*.64):185,compact?145:125]
+      const right=anchor.x>=size.width/2
+      return {anchor,index,w,h,right,x:clamp(anchor.x+(right?pad:-pad-w),margin,size.width-w-margin),y:clamp(compact?anchor.y+pad:anchor.y-h/2,compact?(size.height<500?88:135):130,size.height-h-(compact?95:75))}
+    })
+    if(!compact){
+      // Pack each side in both directions, preserving the anchor order without bottom-edge collisions.
+      for(const right of [false,true]){
+        const column=items.filter(item=>item.right===right).sort((a,b)=>a.y-b.y)
+        for(let i=1;i<column.length;i++)column[i].y=Math.max(column[i].y,column[i-1].y+column[i-1].h+14)
+        for(let i=column.length-1;i>=0;i--)column[i].y=Math.min(column[i].y,i===column.length-1?size.height-column[i].h-75:column[i+1].y-column[i].h-14)
+      }
+    }
+    for(const {anchor,index,x,y} of items){
+      const element=labels.current[index];if(!element)continue
+      element.style.transform=`translate3d(${x.toFixed(2)}px,${y.toFixed(2)}px,0)`
+      element.style.setProperty('--tile-x',anchor.x.toFixed(2));element.style.setProperty('--tile-y',anchor.y.toFixed(2))
+    }
+  },[])
+  useEffect(()=>{const observer=new ResizeObserver(entries=>{for(const entry of entries){const index=labels.current.indexOf(entry.target);if(index>=0&&entry.contentRect.width>0){const r=entry.target.getBoundingClientRect();labelSizes.current[index]=[r.width,r.height]}}});labels.current.forEach(el=>el&&observer.observe(el));return()=>observer.disconnect()},[])
   const [progress, setProgress] = useState(0)
   const [videoProgress, setVideoProgress] = useState(0)
   const [enhanced, setEnhanced] = useState(false)
@@ -62,10 +89,10 @@ export default function IdeaHero({ reducedMotion }) {
         <div className="idea-orbit idea-orbit-outer" /><div className="idea-orbit idea-orbit-inner" />
         <div className="idea-axis"><span>Y</span><span>X</span></div>
         <img className="idea-poster" src="/hero/sculpted-center-poster.webp" alt="" width="1200" height="1200" fetchPriority="high" />
-        {enhanced && <ErrorBoundary fallback={null}><Suspense fallback={null}><Sculpture progress={progress} visible={visible&&videoProgress<.1} /></Suspense></ErrorBoundary>}
+        {enhanced && <ErrorBoundary fallback={null}><Suspense fallback={null}><Sculpture progress={progress} visible={visible&&videoProgress<.1} onAnchors={trackLabels} /></Suspense></ErrorBoundary>}
         <div className="idea-specimen"><span>STUDY 001 / THE IDEA ENGINE</span><span>Strategy ↗ Design ↗ Technology</span></div>
       </div>
-      <div className="idea-service-labels" aria-hidden="true">{services.map(([number,title,text],index)=><div key={number} className={`idea-service-label label-${index}${Math.min(4,Math.floor(Math.max(0,progress-.15)*7))===index?' is-active':''}`}><ServiceIcon index={index}/><span>{number} / {serviceContexts[index]}</span><h2>{title}</h2><p>{text}</p></div>)}</div>
+      <div className="idea-service-labels" inert={!(progress>.2&&progress<.79)?true:undefined} aria-hidden={!(progress>.2&&progress<.79)?true:undefined}>{services.map(([number,title,text],index)=><div key={number} ref={el=>{labels.current[index]=el}} className={`idea-service-label label-${index}${Math.min(4,Math.floor(Math.max(0,progress-.15)*7))===index?' is-active':''}`}><ServiceIcon index={index}/><span>{number} / {serviceContexts[index]}</span><h2><button className="hero-service-trigger" type="button" aria-haspopup="dialog" onClick={event=>onOpenService(index,event.currentTarget)}>{title}</button></h2><p>{text}</p></div>)}</div>
       <div className="idea-copy">
         <p className="idea-eyebrow"><span /> A different perspective.</p>
         <h1>Ideas with <em>dimension.</em></h1>

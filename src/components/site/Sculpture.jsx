@@ -22,7 +22,7 @@ function FitCamera() {
   return null
 }
 
-function CloudEngine({progress,visible,onReady}) {
+function CloudEngine({progress,visible,onReady,onAnchors}) {
   const gltf=useLoader(GLTFLoader,'/hero/ascore-unified-sculpted.glb')
   const scene=useMemo(()=>clone(gltf.scene),[gltf.scene])
   const mixer=useMemo(()=>new THREE.AnimationMixer(scene),[scene])
@@ -36,6 +36,8 @@ function CloudEngine({progress,visible,onReady}) {
   },[scene])
   const blades=useMemo(()=>{const result=[];scene.traverse(node=>{if(/^Aperture_blade_0[1-7]$/.test(node.name)||/^Aperture blade 0[1-7]$/.test(node.name))result.push({node,baked:node.position.clone(),center:node.worldToLocal(new THREE.Box3().setFromObject(node).getCenter(new THREE.Vector3())),offset:new THREE.Vector3()})});return result.sort((a,b)=>a.node.name.localeCompare(b.node.name))},[scene])
   const point=useMemo(()=>new THREE.Vector3(),[])
+  const projected=useMemo(()=>new THREE.Vector3(),[])
+  const anchors=useMemo(()=>Array.from({length:7},()=>({x:0,y:0})),[])
   useEffect(()=>{
     reflectionKey.current=renderScene.getObjectByName('ascore-reflection-key')
     actions.forEach(action=>{action.setLoop(THREE.LoopOnce,1);action.clampWhenFinished=true;action.play()})
@@ -64,24 +66,30 @@ function CloudEngine({progress,visible,onReady}) {
     wrapper.current.scale.setScalar(modelScale*initial)
     wrapper.current.updateWorldMatrix(true,true)
     const spread=THREE.MathUtils.smoothstep(opening,.18,.9)
-    const positions=compact?[[-.72,.12],[.22,.5],[.62,-.15],[-.68,-.22],[.73,-.62],[-.24,.65],[.73,.35]]:[[-.73,.35],[.28,.52],[.56,-.08],[-.67,-.42],[.16,-.53],[-.14,.68],[.75,-.55]]
+    const radius=Math.min(size.width,size.height)*(compact?.30:.32)
+    // A slow, purely scroll-driven orbit: no independent animation clock.
+    const orbit=p*Math.PI*.8
     blades.forEach(({node,baked,center:localCenter,offset},index)=>{
       baked.copy(node.position)
-      const center=node.localToWorld(point.copy(localCenter)).project(camera)
-      const [x,y]=positions[index]
-      point.set(x,y,center.z).unproject(camera)
+      const depth=node.localToWorld(point.copy(localCenter)).project(camera).z
+      const angle=-Math.PI/2+index*Math.PI*2/7+orbit
+      point.set(Math.cos(angle)*radius*2/size.width,-Math.sin(angle)*radius*2/size.height,depth).unproject(camera)
       node.parent.worldToLocal(point)
       const meshCenter=offset.copy(localCenter)
       meshCenter.applyQuaternion(node.quaternion).multiply(node.scale)
       point.sub(meshCenter)
       node.position.lerp(point,spread)
+      node.localToWorld(projected.copy(localCenter)).project(camera)
+      anchors[index].x=(projected.x+1)*size.width/2
+      anchors[index].y=(1-projected.y)*size.height/2
     })
+    onAnchors?.(anchors,size,p)
     if(Math.abs(p-progress)>.0002)invalidate()
   })
   return <group ref={wrapper} scale={modelScale}><primitive object={scene} dispose={null}/></group>
 }
 
-export default function Sculpture({progress,visible}) {
+export default function Sculpture({progress,visible,onAnchors}) {
   const [failed,setFailed]=useState(false),[ready,setReady]=useState(false)
   const onReady=useMemo(()=>()=>setReady(true),[])
   useEffect(()=>{
@@ -90,5 +98,5 @@ export default function Sculpture({progress,visible}) {
     return()=>poster?.classList.remove('has-webgl')
   },[ready,failed])
   if(failed)return null
-  return <div className="idea-canvas" aria-hidden="true"><Canvas orthographic frameloop="demand" dpr={[1,1.35]} camera={{position:[0,9,3],zoom:100,near:.1,far:50}} gl={{alpha:true,antialias:true,powerPreference:'low-power'}} fallback={null} onCreated={({gl})=>{gl.toneMappingExposure=.9;gl.domElement.addEventListener('webglcontextlost',()=>setFailed(true),{once:true})}}><FitCamera/><StudioLight/><Suspense fallback={null}><CloudEngine progress={progress} visible={visible} onReady={onReady}/></Suspense></Canvas></div>
+  return <div className="idea-canvas" aria-hidden="true"><Canvas orthographic frameloop="demand" dpr={[1,1.35]} camera={{position:[0,9,3],zoom:100,near:.1,far:50}} gl={{alpha:true,antialias:true,powerPreference:'low-power'}} fallback={null} onCreated={({gl})=>{gl.toneMappingExposure=.9;gl.domElement.addEventListener('webglcontextlost',()=>setFailed(true),{once:true})}}><FitCamera/><StudioLight/><Suspense fallback={null}><CloudEngine progress={progress} visible={visible} onReady={onReady} onAnchors={onAnchors}/></Suspense></Canvas></div>
 }

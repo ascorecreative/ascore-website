@@ -1,3 +1,4 @@
+import MobileVideoBadgeMask from './MobileVideoBadgeMask'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { Pause, Play } from 'lucide-react'
 import '../../styles/original-video-hero.css'
@@ -49,9 +50,10 @@ export default function OriginalVideoHero({ progress=1, near=false, visible=true
  const loaded=()=>{setReady(true);sampleTime.current=-1000;sampleTheme();play()}
  const toggle=()=>{if(playing){setPaused(true);video.current?.pause()}else{setRequested(true);setPaused(false);video.current?.play().then(()=>setBlocked(false)).catch(error=>{if(error.name!=='AbortError')setBlocked(true)})}}
  const controlVisible=(standalone||active&&progress>.225)&&(standalone||playing||paused||blocked)
- return <section ref={wrapper} className={`original-video-hero${standalone?' is-standalone':''}`} data-theme={theme} style={{'--video-progress':progress}} aria-label="Original Ascore video hero" aria-hidden={!active&&!standalone?true:undefined} inert={!active&&!standalone?true:undefined}>
+ return <section ref={wrapper} className={`original-video-hero${standalone?' is-standalone':''}${mobile?' is-mobile-format':''}`} data-theme={theme} style={{'--video-progress':progress}} aria-label="Original Ascore video hero" aria-hidden={!active&&!standalone?true:undefined} inert={!active&&!standalone?true:undefined}>
   {(near||standalone)&&<picture><img className="original-video-poster" src={poster} alt="" width={mobile?720:1280} height={mobile?1280:720} loading="lazy"/></picture>}
   {source&&<video ref={video} className={ready?'is-ready':''} src={source} poster={poster} muted loop playsInline preload={active?'auto':'metadata'} aria-label="Ascore Creative original video hero" onLoadedData={loaded} onCanPlay={loaded} onTimeUpdate={sampleTheme} onPlay={()=>setPlaying(true)} onPause={()=>setPlaying(false)}/>}
-  {controlVisible&&<button className="original-video-control" type="button" onClick={toggle}>{playing?<Pause size={15}/>:<Play size={15}/>}<span>{playing?'Pause video':'Play video'}</span></button>}
+  {mobile&&(near||standalone)&&<MobileVideoBadgeMask active={active} playing={playing}/>}
+  {controlVisible&&<button className={`original-video-control${playing?' is-keyboard-only':''}`} type="button" onClick={toggle}>{playing?<Pause size={15}/>:<Play size={15}/>}<span>{playing?'Pause video':'Play video'}</span></button>}
  </section>
 }

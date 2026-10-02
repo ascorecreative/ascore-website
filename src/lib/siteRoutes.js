@@ -8,7 +8,7 @@ export const servicePages=[
 ]
 export const publicRoutes=[
  {id:'home',path:'/',label:'Home',title:'Ascore Creative | Creative & Digital Agency in the UAE',description:'Ascore Creative is an Ajman-based creative and digital agency serving Dubai, the UAE and global projects through brand, web, app, 3D and automation services.'},
- {id:'work',path:'/work/',label:'Work',title:'Selected Work & Digital Studies | Ascore Creative',description:'Explore selected websites presented by Ascore Creative. Artwork is illustrative and clearly labeled; project links open the existing websites.'},
+ {id:'work',path:'/work/',label:'Work',title:'Selected Website Work | Ascore Creative',description:'Explore selected websites with real desktop and mobile previews. Visit Med Park, Med7, Wellness Shoppee, Rewind Apparel and JABS Smart Lighting.'},
  {id:'services',path:'/services/',label:'Services',title:'Creative & Digital Agency Services UAE | Ascore Creative',description:'Explore branding, web and app development, ecommerce, immersive 3D, growth, AI automation and UAE business support from Ascore Creative.'},
  ...servicePages.map(service=>({...service,label:service.name,service:true})),
  {id:'about',path:'/about/',label:'About',title:'About Ascore Creative | Ajman-Based UAE Creative Agency',description:'Ascore Creative brings strategy, design and engineering together. Meet the approach of an Ajman-based studio serving Dubai, the UAE and global projects.'},

@@ -45,3 +45,10 @@
 .new-site .idea-particles circle {opacity:calc(.08 + var(--idea-spread) * .82);transform:translate(calc(var(--idea-spread) * var(--dot-x)),calc(var(--idea-spread) * var(--dot-y)))}
 @keyframes service-icon-float {0%,100%{transform:translateY(0) rotate(-5deg)}50%{transform:translateY(-5px) rotate(6deg)}}
 @media(prefers-reduced-motion:reduce){.new-site .idea-service-icon-motion{animation:none!important}.new-site .idea-particles{display:none}}
+
+/* Positions are projected from the actual 3D tile centers on the same render clock. */
+.new-site .idea-hero[data-linked-labels] .idea-service-labels {transform:none;opacity:var(--label-reveal,0)}
+.new-site .idea-hero[data-linked-labels] .idea-service-label {left:0;top:0;bottom:auto;width:185px;will-change:transform}
+@media(max-width:1100px){.new-site .idea-hero[data-linked-labels] .idea-service-label{width:165px}}
+@media(max-width:760px){.new-site .idea-hero[data-linked-labels] .idea-service-label{width:min(255px,64%);will-change:auto}}
+@media(max-height:500px) and (min-width:600px){.new-site .idea-hero[data-linked-labels] .idea-service-label{width:135px}}

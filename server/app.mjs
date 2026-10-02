@@ -1,10 +1,9 @@
 import { createServer } from 'node:http'
-import { DatabaseSync } from 'node:sqlite'
 import { randomBytes, randomUUID, scrypt, timingSafeEqual, createHash } from 'node:crypto'
 import { promisify } from 'node:util'
-import { mkdirSync, chmodSync } from 'node:fs'
-import { dirname } from 'node:path'
 import { createZohoSync } from './zoho-sync.mjs'
+import { createEnquiries } from './enquiries.mjs'
+import { createPersistence,uniqueConflict } from './persistence.mjs'
 
 const derive = promisify(scrypt)
 const cost = { N: 131072, r: 8, p: 1, maxmem: 192 * 1024 * 1024 }
@@ -51,16 +50,13 @@ const readJson = async request => {
   try { const parsed = JSON.parse(body); if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) throw Error(); return parsed } catch { fail(400, 'Invalid request body.') }
 }
 
-export function createPortalServer(options = {}) {
+export async function createPortalServer(options = {}) {
   const env = options.env || process.env
   const production = env.NODE_ENV === 'production'
   const origin = options.origin || env.ASCORE_ORIGIN || 'http://127.0.0.1:5173'
   if (production && !origin.startsWith('https://')) throw Error('Production requires an explicit HTTPS ASCORE_ORIGIN.')
-  const dbPath = options.dbPath || env.ASCORE_DB_PATH || 'server/data/portal.sqlite'
-  if (dbPath !== ':memory:') mkdirSync(dirname(dbPath), { recursive: true, mode: 0o700 })
-  const db = new DatabaseSync(dbPath)
-  if (dbPath !== ':memory:') chmodSync(dbPath, 0o600)
-  db.exec(`PRAGMA foreign_keys = ON; PRAGMA journal_mode = WAL;
+  const db = await createPersistence({env,dbPath:options.dbPath,poolFactory:options.poolFactory,store:options.store})
+  if(db.kind==='sqlite')await db.exec(`
     CREATE TABLE IF NOT EXISTS users (
       id TEXT PRIMARY KEY, username TEXT NOT NULL UNIQUE COLLATE NOCASE, email TEXT UNIQUE COLLATE NOCASE,
       name TEXT NOT NULL, company TEXT NOT NULL, role TEXT NOT NULL CHECK(role IN ('client','admin')),
@@ -106,55 +102,58 @@ export function createPortalServer(options = {}) {
     }
     if (attempts.size > 10000) fail(503, 'Sign-in is busy. Try again later.')
   }
-  const audit = (actor, action, target) => db.prepare('INSERT INTO audit (at,actor_id,action,target_id) VALUES (?,?,?,?)').run(Date.now(), actor, action, target)
+  const audit = async (actor, action, target) => (await db.prepare('INSERT INTO audit (at,actor_id,action,target_id) VALUES (?,?,?,?)').run(Date.now(), actor, action, target))
   const setCookie = (response, value, maxAge = 8 * 3600) => response.setHeader('Set-Cookie', `${cookieName}=${value}; Path=/; HttpOnly; SameSite=Strict; Max-Age=${maxAge}${production ? '; Secure' : ''}`)
-  function startSession(response, user, previous) {
-    if (previous) db.prepare('DELETE FROM sessions WHERE token_hash=?').run(digest(previous))
-    db.prepare('DELETE FROM sessions WHERE expires < ?').run(Date.now())
-    const token = randomBytes(32).toString('hex'), csrf = randomBytes(24).toString('hex')
-    db.prepare('INSERT INTO sessions VALUES (?,?,?,?)').run(digest(token), user.id, csrf, Date.now() + 8 * 3600000)
-    setCookie(response, token)
-    return { user: publicUser(user), csrf }
+  async function startSession(response,user,previous){
+    const token=randomBytes(32).toString('hex'),csrf=randomBytes(24).toString('hex')
+    await db.transaction(async()=>{
+      if(previous)await db.prepare('DELETE FROM sessions WHERE token_hash=?').run(digest(previous))
+      await db.prepare('DELETE FROM sessions WHERE expires<?').run(Date.now())
+      await db.prepare('INSERT INTO sessions VALUES (?,?,?,?)').run(digest(token),user.id,csrf,Date.now()+8*3600000)
+    })
+    setCookie(response,token)
+    return {user:publicUser(user),csrf}
   }
-  function currentSession(request) {
+  async function currentSession(request) {
     const token = (request.headers.cookie || '').split(';').map(item => item.trim()).find(item => item.startsWith(`${cookieName}=`))?.slice(cookieName.length + 1)
     if (!token || !/^[a-f0-9]{64}$/.test(token)) return { token: null, user: null, csrf: null }
-    const session = db.prepare('SELECT * FROM sessions WHERE token_hash=? AND expires>?').get(digest(token), Date.now())
-    return { token, user: session ? db.prepare('SELECT * FROM users WHERE id=?').get(session.user_id) : null, csrf: session?.csrf }
+    const session = (await db.prepare('SELECT * FROM sessions WHERE token_hash=? AND expires>?').get(digest(token), Date.now()))
+    return { token, user: session ? (await db.prepare('SELECT * FROM users WHERE id=?').get(session.user_id)) : null, csrf: session?.csrf }
   }
-  const client = id => {
-    if (!id || typeof id !== 'string' || !db.prepare("SELECT id FROM users WHERE id=? AND role='client'").get(id)) fail(400, 'Select an existing client account.')
+  const client = async id => {
+    if (!id || typeof id !== 'string' || !(await db.prepare("SELECT id FROM users WHERE id=? AND role='client'").get(id))) fail(400, 'Select an existing client account.')
     return id
   }
-  const project = id => {
-    const row = typeof id === 'string' && db.prepare('SELECT * FROM projects WHERE id=?').get(id)
+  const project = async id => {
+    const row = typeof id === 'string' && (await db.prepare('SELECT * FROM projects WHERE id=?').get(id))
     if (!row) fail(404, 'Project not found.')
     return row
   }
-  const documentView = row => {
-    const paidMinor = Number(db.prepare('SELECT COALESCE(SUM(amount_minor),0) AS total FROM payment_records WHERE document_id=?').get(row.id).total)
+  const documentView = async row => {
+    const paidMinor = Number((await db.prepare('SELECT COALESCE(SUM(amount_minor),0) AS total FROM payment_records WHERE document_id=?').get(row.id)).total)
     const data = JSON.parse(row.data)
     return { ...data, id: row.id, clientId: row.client_id, projectId: row.project_id, kind: row.kind, currency: row.currency,
       amount: row.amount_minor / 100, amountPaid: paidMinor / 100, balance: (row.amount_minor - paidMinor) / 100,
       status: row.kind === 'quotation' ? 'draft' : paidMinor >= row.amount_minor ? 'paid' : data.dueDate && data.dueDate < new Date().toISOString().slice(0, 10) ? 'overdue' : paidMinor ? 'partial' : 'pending',
       invoiceNumber: `ASC-${new Date(data.createdAt).getFullYear()}-${{ quotation:'Q', invoice:'I', bill:'B' }[row.kind]}-${String(row.sequence).padStart(4, '0')}` }
   }
-  function workspace(user) {
+  async function workspace(user) {
     const admin = user.role === 'admin'
-    const projects = admin ? db.prepare('SELECT * FROM projects').all() : db.prepare('SELECT * FROM projects WHERE client_id=?').all(user.id)
-    const milestones = admin ? db.prepare('SELECT * FROM milestones').all() : db.prepare('SELECT m.* FROM milestones m JOIN projects p ON p.id=m.project_id WHERE p.client_id=?').all(user.id)
-    const docs = admin ? db.prepare('SELECT * FROM documents').all() : db.prepare("SELECT * FROM documents WHERE client_id=? AND kind!='bill'").all(user.id)
+    const projects = admin ? (await db.prepare('SELECT * FROM projects').all()) : (await db.prepare('SELECT * FROM projects WHERE client_id=?').all(user.id))
+    const milestones = admin ? (await db.prepare('SELECT * FROM milestones').all()) : (await db.prepare('SELECT m.* FROM milestones m JOIN projects p ON p.id=m.project_id WHERE p.client_id=?').all(user.id))
+    const docs = admin ? (await db.prepare('SELECT * FROM documents').all()) : (await db.prepare("SELECT * FROM documents WHERE client_id=? AND kind!='bill'").all(user.id))
     return {
       projects: projects.map(row => ({ ...JSON.parse(row.data), id: row.id, clientId: row.client_id })),
       milestones: milestones.map(row => ({ ...JSON.parse(row.data), id: row.id, projectId: row.project_id })),
-      documents: docs.map(row => ({...documentView(row),zoho:JSON.parse(db.prepare('SELECT data FROM zoho_snapshots WHERE local_id=?').get(row.id)?.data || 'null')})),
-      leads: admin ? db.prepare('SELECT * FROM leads').all().map(row => ({ ...JSON.parse(row.data), id: row.id })) : [],
-      clients: admin ? db.prepare("SELECT id,username,email,name,company,role FROM users WHERE role='client'").all() : [],
-      integrations: admin ? integration.status() : null
+      documents: await Promise.all(docs.map(async row => ({...await documentView(row),zoho:JSON.parse((await db.prepare('SELECT data FROM zoho_snapshots WHERE local_id=?').get(row.id))?.data || 'null')}))),
+      leads: admin ? (await db.prepare('SELECT * FROM leads').all()).map(row => ({ ...JSON.parse(row.data), id: row.id })) : [],
+      clients: admin ? (await db.prepare("SELECT id,username,email,name,company,role FROM users WHERE role='client'").all()) : [],
+      integrations: admin ? await integration.status() : null
     }
   }
   const responseJson = (response, status, data) => { response.writeHead(status, { 'Content-Type': 'application/json; charset=utf-8' }); response.end(JSON.stringify(data)) }
-  const integration = createZohoSync({db,env,readJson,audit,fetcher:options.zohoFetch || fetch})
+  const integration = await createZohoSync({db,env,readJson,audit,fetcher:options.zohoFetch || fetch})
+  const enquiries = await createEnquiries({db,env,readJson,fetcher:options.zohoFetch||fetch,adapters:options.enquiryAdapters,now:options.now||Date.now})
   const server = createServer(async (request, response) => {
     response.setHeader('Cache-Control', 'no-store')
     response.setHeader('X-Content-Type-Options', 'nosniff')
@@ -164,18 +163,19 @@ export function createPortalServer(options = {}) {
     try {
       if (!path.startsWith('/api/')) fail(404, 'Not found.')
       if (mutation && request.headers.origin !== origin) fail(403, 'Request origin is not allowed.')
-      const session = currentSession(request)
+      if (await enquiries.publicHandle(request,response,path,responseJson)) return
+      const session = await currentSession(request)
       const user = session.user
-      if (request.method === 'GET' && path === '/api/health') return responseJson(response, 200, { status:'ok', mode: production ? 'production' : 'local', payments:'tracking-only' })
+      if (request.method === 'GET' && path === '/api/health') {if(!await db.health())fail(503,'Persistent storage is unavailable.');return responseJson(response,200,{status:'ok',mode:production?'production':'local',storage:db.kind,payments:'tracking-only'})}
       if (request.method === 'GET' && path === '/api/auth/session') return responseJson(response, 200, { user:publicUser(user), csrf:session.csrf || null })
       if (request.method === 'POST' && path === '/api/auth/login') {
         const body = await readJson(request), identifier = text(body.identifier, 'username or email', 254).toLowerCase()
         rateLimit(request, identifier)
         if (typeof body.password !== 'string' || body.password.length > 512) fail(400, 'Enter your password.')
-        const account = db.prepare('SELECT * FROM users WHERE username=? OR email=?').get(identifier, identifier)
+        const account = (await db.prepare('SELECT * FROM users WHERE username=? OR email=?').get(identifier, identifier))
         if (!await checkPassword(body.password, account?.password_hash)) fail(401, 'Username/email or password is incorrect.')
-        audit(account.id, 'login', account.id)
-        return responseJson(response, 200, startSession(response, account, session.token))
+        await audit(account.id, 'login', account.id)
+        return responseJson(response, 200, await startSession(response, account, session.token))
       }
       if (request.method === 'POST' && ['/api/auth/register','/api/auth/admin-setup'].includes(path)) {
         const body = await readJson(request), name = username(body.username)
@@ -188,43 +188,42 @@ export function createPortalServer(options = {}) {
           try { grants = JSON.parse(env.ASCORE_ADMIN_SETUP_GRANTS || '{}') } catch { fail(503, 'Administrator setup is not configured.') }
           const grant = grants[name]
           tokenHash = typeof body.setupToken === 'string' ? digest(body.setupToken) : ''
-          if (env.ASCORE_ALLOW_ADMIN_SETUP !== '1' || !adminNames.has(name) || !grant || !safeEqual(tokenHash, grant.tokenHash) || !Number.isFinite(Date.parse(grant.expiresAt)) || Date.parse(grant.expiresAt) < Date.now() || db.prepare('SELECT token_hash FROM used_setup_tokens WHERE token_hash=?').get(tokenHash)) fail(403, 'Administrator setup requires a valid, approved activation grant.')
+          if (env.ASCORE_ALLOW_ADMIN_SETUP !== '1' || !adminNames.has(name) || !grant || !safeEqual(tokenHash, grant.tokenHash) || !Number.isFinite(Date.parse(grant.expiresAt)) || Date.parse(grant.expiresAt) < Date.now() || (await db.prepare('SELECT token_hash FROM used_setup_tokens WHERE token_hash=?').get(tokenHash))) fail(403, 'Administrator setup requires a valid, approved activation grant.')
         } else if (adminNames.has(name)) fail(400, 'This username is reserved for agency setup.')
         if (production && !setup && env.ASCORE_ALLOW_REGISTRATION !== '1') fail(503, 'Client registration is not enabled yet.')
         const accountEmail = email(body.email, !setup)
         const pass = password(body.password)
         const displayName = text(body.name, 'name', 100)
         const company = text(body.company || '', 'company', 160, false)
-        if (db.prepare('SELECT id FROM users WHERE username=? OR (email IS NOT NULL AND email=?)').get(name, accountEmail)) fail(409, 'That username or email is unavailable.')
+        if ((await db.prepare('SELECT id FROM users WHERE username=? OR (email IS NOT NULL AND email=?)').get(name, accountEmail))) fail(409, 'That username or email is unavailable.')
         const passwordHash = await hashPassword(pass)
         const id = randomUUID()
         // One transaction consumes the grant and creates the account. Never seed real administrators.
-        db.exec('BEGIN IMMEDIATE')
-        try {
-          db.prepare('INSERT INTO users VALUES (?,?,?,?,?,?,?,?)').run(id, name, accountEmail, displayName, company, setup ? 'admin' : 'client', passwordHash, Date.now())
-          if (setup) db.prepare('INSERT INTO used_setup_tokens VALUES (?,?)').run(tokenHash, Date.now())
-          audit(id, setup ? 'admin_setup' : 'client_registration', id)
-          db.exec('COMMIT')
-        } catch (error) { db.exec('ROLLBACK'); if ((String(error.code).includes('CONSTRAINT') || error.errcode === 19 || error.errcode === 2067 || error.errcode === 1555)) fail(409, 'Account setup is unavailable or has already been used.'); throw error }
-        return responseJson(response, 201, startSession(response, db.prepare('SELECT * FROM users WHERE id=?').get(id), session.token))
+        try {await db.transaction(async()=>{
+          ;(await db.prepare('INSERT INTO users VALUES (?,?,?,?,?,?,?,?)').run(id, name, accountEmail, displayName, company, setup ? 'admin' : 'client', passwordHash, Date.now()))
+          if (setup) (await db.prepare('INSERT INTO used_setup_tokens VALUES (?,?)').run(tokenHash, Date.now()))
+          await audit(id, setup ? 'admin_setup' : 'client_registration', id)
+        })} catch (error) { if (uniqueConflict(error)) fail(409, 'Account setup is unavailable or has already been used.'); throw error }
+        return responseJson(response, 201, await startSession(response, (await db.prepare('SELECT * FROM users WHERE id=?').get(id)), session.token))
       }
       if (!user) fail(401, 'Sign in to continue.')
       if (mutation && !safeEqual(request.headers['x-csrf-token'], session.csrf)) fail(403, 'Session verification failed. Refresh and try again.')
       if (request.method === 'POST' && path === '/api/auth/logout') {
-        db.prepare('DELETE FROM sessions WHERE token_hash=?').run(digest(session.token)); setCookie(response, '', 0)
+        ;(await db.prepare('DELETE FROM sessions WHERE token_hash=?').run(digest(session.token))); setCookie(response, '', 0)
         return responseJson(response, 200, { ok:true })
       }
-      if (request.method === 'GET' && path === '/api/workspace') return responseJson(response, 200, workspace(user))
+      if (request.method === 'GET' && path === '/api/workspace') return responseJson(response, 200, await workspace(user))
       if (user.role !== 'admin') fail(403, 'Agency access is required.')
+      if (await enquiries.adminHandle(request,response,path,responseJson)) return
       if (await integration.handle(request,response,path,user,responseJson)) return
       if (request.method === 'POST' && path === '/api/projects') {
-        const body = await readJson(request), clientId = client(body.clientId), id = randomUUID()
+        const body = await readJson(request), clientId = await client(body.clientId), id = randomUUID()
         const data = { title:text(body.title,'project title'), description:text(body.description || '', 'description', 2000,false), status:'active', currentStage:'Discovery', progressPercentage:0, targetLaunchDate:date(body.targetLaunchDate,'target date'), createdAt:new Date().toISOString() }
-        db.prepare('INSERT INTO projects VALUES (?,?,?)').run(id,clientId,JSON.stringify(data)); audit(user.id,'create_project',id)
+        ;(await db.prepare('INSERT INTO projects VALUES (?,?,?)').run(id,clientId,JSON.stringify(data))); await audit(user.id,'create_project',id)
         return responseJson(response,201,{...data,id,clientId})
       }
       if (request.method === 'PATCH' && /^\/api\/projects\/[^/]+$/.test(path)) {
-        const id = path.split('/').at(-1), row = project(id), body = await readJson(request), data = JSON.parse(row.data)
+        const id = path.split('/').at(-1), row = await project(id), body = await readJson(request), data = JSON.parse(row.data)
         if (body.title !== undefined) data.title = text(body.title,'project title')
         if (body.description !== undefined) data.description = text(body.description,'description',2000,false)
         if (body.status !== undefined) data.status = choice(body.status,['active','in_review','completed','on_hold'],'project status')
@@ -232,45 +231,45 @@ export function createPortalServer(options = {}) {
         if (body.progressPercentage !== undefined) data.progressPercentage = number(body.progressPercentage,'progress',100)
         if (body.targetLaunchDate !== undefined) data.targetLaunchDate = date(body.targetLaunchDate,'target date')
         data.updatedAt = new Date().toISOString()
-        db.prepare('UPDATE projects SET data=? WHERE id=?').run(JSON.stringify(data),id); audit(user.id,'update_project',id)
+        ;(await db.prepare('UPDATE projects SET data=? WHERE id=?').run(JSON.stringify(data),id)); await audit(user.id,'update_project',id)
         return responseJson(response,200,{...data,id,clientId:row.client_id})
       }
       if (request.method === 'POST' && path === '/api/milestones') {
-        const body = await readJson(request), row = project(body.projectId), id = randomUUID()
+        const body = await readJson(request), row = await project(body.projectId), id = randomUUID()
         const data = { title:text(body.title,'milestone title'), description:text(body.description || '', 'description',2000,false), dueDate:date(body.dueDate,'due date'), status:'pending', createdAt:new Date().toISOString() }
-        db.prepare('INSERT INTO milestones VALUES (?,?,?)').run(id,row.id,JSON.stringify(data)); audit(user.id,'create_milestone',id)
+        ;(await db.prepare('INSERT INTO milestones VALUES (?,?,?)').run(id,row.id,JSON.stringify(data))); await audit(user.id,'create_milestone',id)
         return responseJson(response,201,{...data,id,projectId:row.id})
       }
       if (request.method === 'PATCH' && /^\/api\/milestones\/[^/]+$/.test(path)) {
-        const id = path.split('/').at(-1), row = db.prepare('SELECT * FROM milestones WHERE id=?').get(id)
+        const id = path.split('/').at(-1), row = (await db.prepare('SELECT * FROM milestones WHERE id=?').get(id))
         if (!row) fail(404,'Milestone not found.')
         const body = await readJson(request), data = JSON.parse(row.data)
         data.status = choice(body.status,['pending','in_progress','completed'],'milestone status')
-        db.prepare('UPDATE milestones SET data=? WHERE id=?').run(JSON.stringify(data),id); audit(user.id,'update_milestone',id)
+        ;(await db.prepare('UPDATE milestones SET data=? WHERE id=?').run(JSON.stringify(data),id)); await audit(user.id,'update_milestone',id)
         return responseJson(response,200,{...data,id,projectId:row.project_id})
       }
       if (request.method === 'POST' && path === '/api/leads') {
         const body = await readJson(request), id = randomUUID()
         const data = { name:text(body.name,'lead name',100), email:email(body.email), company:text(body.company || '', 'company',160,false), phone:text(body.phone || '', 'phone',40,false), notes:text(body.notes || '', 'notes',4000,false), status:'new', createdAt:new Date().toISOString() }
-        db.prepare('INSERT INTO leads VALUES (?,?)').run(id,JSON.stringify(data)); audit(user.id,'create_lead',id)
+        ;(await db.prepare('INSERT INTO leads VALUES (?,?)').run(id,JSON.stringify(data))); await audit(user.id,'create_lead',id)
         return responseJson(response,201,{...data,id})
       }
       if (request.method === 'PATCH' && /^\/api\/leads\/[^/]+$/.test(path)) {
-        const id = path.split('/').at(-1), row = db.prepare('SELECT * FROM leads WHERE id=?').get(id)
+        const id = path.split('/').at(-1), row = (await db.prepare('SELECT * FROM leads WHERE id=?').get(id))
         if (!row) fail(404,'Lead not found.')
         const body = await readJson(request), data = JSON.parse(row.data)
         if (body.status !== undefined) data.status = choice(body.status,['new','contacted','qualified','proposal','won','lost'],'lead status')
         if (body.notes !== undefined) data.notes = text(body.notes,'notes',4000,false)
         data.updatedAt = new Date().toISOString()
-        db.prepare('UPDATE leads SET data=? WHERE id=?').run(JSON.stringify(data),id); audit(user.id,'update_lead',id)
+        ;(await db.prepare('UPDATE leads SET data=? WHERE id=?').run(JSON.stringify(data),id)); await audit(user.id,'update_lead',id)
         return responseJson(response,200,{...data,id})
       }
       if (request.method === 'POST' && path === '/api/documents') {
-        const body = await readJson(request), clientId = client(body.clientId), id = randomUUID()
+        const body = await readJson(request), clientId = await client(body.clientId), id = randomUUID()
         const kind = choice(body.kind,['quotation','invoice','bill'],'document type')
         const currency = choice(body.currency || 'AED',['AED','USD','EUR','GBP'],'currency')
         let projectId = null
-        if (body.projectId) { const row = project(body.projectId); if (row.client_id !== clientId) fail(400,'Project and client do not match.'); projectId = row.id }
+        if (body.projectId) { const row = await project(body.projectId); if (row.client_id !== clientId) fail(400,'Project and client do not match.'); projectId = row.id }
         if (!Array.isArray(body.items) || !body.items.length || body.items.length > 50) fail(400,'Add 1–50 document line items.')
         const items = body.items.map(item => ({description:text(item.description,'line description',300),amount:Math.round(number(item.amount,'line amount')*100)/100}))
         const taxRate = number(body.taxRate ?? 0,'tax rate',100)
@@ -278,19 +277,23 @@ export function createPortalServer(options = {}) {
         const taxMinor = Math.round(subtotalMinor*taxRate/100), amountMinor = subtotalMinor+taxMinor
         if (amountMinor <= 0 || amountMinor > 10000000000) fail(400,'Document total must be greater than zero and within the supported range.')
         const data = { title:text(body.title || '', 'document title',200,false), items, taxRate, taxAmount:taxMinor/100, subtotal:subtotalMinor/100, issueDate:date(body.issueDate || new Date().toISOString().slice(0,10),'issue date',true), dueDate:date(body.dueDate,'due date'), createdAt:new Date().toISOString() }
-        db.prepare('INSERT INTO documents (id,client_id,project_id,kind,currency,amount_minor,data) VALUES (?,?,?,?,?,?,?)').run(id,clientId,projectId,kind,currency,amountMinor,JSON.stringify(data)); audit(user.id,'create_document',id)
-        return responseJson(response,201,documentView(db.prepare('SELECT * FROM documents WHERE id=?').get(id)))
+        ;(await db.prepare('INSERT INTO documents (id,client_id,project_id,kind,currency,amount_minor,data) VALUES (?,?,?,?,?,?,?)').run(id,clientId,projectId,kind,currency,amountMinor,JSON.stringify(data))); await audit(user.id,'create_document',id)
+        return responseJson(response,201,await documentView((await db.prepare('SELECT * FROM documents WHERE id=?').get(id))))
       }
-      if (request.method === 'POST' && /^\/api\/documents\/[^/]+\/payment-records$/.test(path)) {
-        const id = path.split('/')[3], row = db.prepare('SELECT * FROM documents WHERE id=?').get(id)
-        if (!row) fail(404,'Document not found.')
-        if (row.kind === 'quotation') fail(400,'Quotations cannot have payment records.')
-        const body = await readJson(request), amountMinor = Math.round(number(body.amount,'recorded amount')*100)
-        if (!amountMinor || amountMinor > Math.round(documentView(row).balance*100)) fail(400,'Recorded amount must be positive and no more than the balance.')
-        const paidDate = date(body.paidDate,'payment date',true), reference = text(body.reference,'payment reference',200)
-        const recordId = randomUUID()
-        db.prepare('INSERT INTO payment_records VALUES (?,?,?,?,?,?)').run(recordId,id,amountMinor,paidDate,reference,user.id); audit(user.id,'record_offline_payment',id)
-        return responseJson(response,201,documentView(row))
+      if (request.method==='POST'&&/^\/api\/documents\/[^/]+\/payment-records$/.test(path)){
+        const id=path.split('/')[3],body=await readJson(request)
+        const updated=await db.transaction(async()=>{
+          const row=await db.prepare(db.lock('SELECT * FROM documents WHERE id=?')).get(id)
+          if(!row)fail(404,'Document not found.')
+          if(row.kind==='quotation')fail(400,'Quotations cannot have payment records.')
+          const amountMinor=Math.round(number(body.amount,'recorded amount')*100),current=await documentView(row)
+          if(!amountMinor||amountMinor>Math.round(current.balance*100))fail(400,'Recorded amount must be positive and no more than the balance.')
+          const paidDate=date(body.paidDate,'payment date',true),reference=text(body.reference,'payment reference',200)
+          await db.prepare('INSERT INTO payment_records VALUES (?,?,?,?,?,?)').run(randomUUID(),id,amountMinor,paidDate,reference,user.id)
+          await audit(user.id,'record_offline_payment',id)
+          return documentView(row)
+        })
+        return responseJson(response,201,updated)
       }
       fail(404,'Not found.')
     } catch (error) {
@@ -302,5 +305,5 @@ export function createPortalServer(options = {}) {
   })
   server.requestTimeout = 15000
   server.headersTimeout = 10000
-  return { server, close:async () => { await new Promise((resolve,reject) => server.close(error => error ? reject(error) : resolve())); db.close() } }
+  return { server, close:async () => { if(server.listening)await new Promise((resolve,reject) => server.close(error => error ? reject(error) : resolve())); await db.close() } }
 }

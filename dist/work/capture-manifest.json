@@ -1,0 +1,173 @@
+{
+  "captured_date_utc": "2026-10-02",
+  "capture_source": "Live public websites in Chromium cloud browser",
+  "method": "Real rendered homepage screenshots. Desktop viewport 1440x920 CSS pixels at 90% browser zoom. Mobile-layout viewport 400x662 CSS pixels at 125% zoom in a narrow desktop browser window; no mobile user-agent emulation. No generated or reconstructed website imagery.",
+  "processing": "JPEG captures converted to optimized WebP. Med Park and Rewind desktop captures have only blank screenshot padding removed to match the observed 1440x920 viewport. No website content was retouched.",
+  "projects": [
+    {
+      "id": "medpark",
+      "label": "Med Park Online",
+      "url": "https://medparkonline.com/",
+      "page_title": "Med Park - Online Pharmacy Delivery in Dubai, Ajman, UAE | Order Now \u2013 MEDPARK",
+      "identity_match": true,
+      "files": {
+        "desktop": {
+          "path": "images/medpark-desktop.webp",
+          "width": 1440,
+          "height": 920,
+          "bytes": 132838,
+          "sha256": "9189c1286fbae7897b45d1ef07884d0e8f77e392b9afe486bc791af7ae69afe4",
+          "viewport_css": {
+            "width": 1440,
+            "height": 920
+          },
+          "captured_at_utc": "2026-10-02T05:51:33.327656+00:00"
+        },
+        "mobile": {
+          "path": "images/medpark-mobile.webp",
+          "width": 388,
+          "height": 643,
+          "bytes": 44674,
+          "sha256": "e0e3af44a720c1f127528e288d4dfabe483f3838c69cbbda2bfea213dbedf5ac",
+          "viewport_css": {
+            "width": 400,
+            "height": 662
+          },
+          "captured_at_utc": "2026-10-02T05:47:30.764763+00:00"
+        }
+      }
+    },
+    {
+      "id": "med7",
+      "label": "Med7 Online Pharmacy",
+      "url": "https://www.med7online.com/",
+      "page_title": "Med7 Online - Online Pharmacy Delivery in Dubai, UAE | Order Now",
+      "identity_match": true,
+      "files": {
+        "desktop": {
+          "path": "images/med7-desktop.webp",
+          "width": 1440,
+          "height": 920,
+          "bytes": 139812,
+          "sha256": "c3ea6c9836232264fe970c5482fe805b9788e20a8bbd9dbf51efc92fdcbce883",
+          "viewport_css": {
+            "width": 1440,
+            "height": 920
+          },
+          "captured_at_utc": "2026-10-02T05:49:14.719722+00:00"
+        },
+        "mobile": {
+          "path": "images/med7-mobile.webp",
+          "width": 388,
+          "height": 643,
+          "bytes": 44960,
+          "sha256": "3814aee60f953f0a9501ae54a073785f70af3e2bdc092fbca62c542294a30fad",
+          "viewport_css": {
+            "width": 400,
+            "height": 662
+          },
+          "captured_at_utc": "2026-10-02T05:46:37.311249+00:00"
+        }
+      }
+    },
+    {
+      "id": "wellness",
+      "label": "Wellness Shoppee",
+      "url": "https://wellnessshoppee.com/",
+      "page_title": "Wellness Shoppee Online Pharmacy, UAE | Wellness at your Fingertip",
+      "identity_match": true,
+      "files": {
+        "desktop": {
+          "path": "images/wellness-desktop.webp",
+          "width": 1440,
+          "height": 920,
+          "bytes": 186706,
+          "sha256": "03c5c4ae6be4b51055f548d3c4d9ffbc824033f47ba7896f73e7d78076aad026",
+          "viewport_css": {
+            "width": 1440,
+            "height": 920
+          },
+          "captured_at_utc": "2026-10-02T05:49:48.556684+00:00"
+        },
+        "mobile": {
+          "path": "images/wellness-mobile.webp",
+          "width": 388,
+          "height": 643,
+          "bytes": 48510,
+          "sha256": "1af7d2596ef5dcf93dbaa86d27417fe1c2c2f2840fd3623e25f5991523951143",
+          "viewport_css": {
+            "width": 400,
+            "height": 662
+          },
+          "captured_at_utc": "2026-10-02T05:47:00.747913+00:00"
+        }
+      }
+    },
+    {
+      "id": "rewind",
+      "label": "Rewind Apparel UAE",
+      "url": "https://rewindapparel.ae/",
+      "page_title": "Rewind Apparel \u2013 Men's Clothing Brand in Dubai, UAE",
+      "identity_match": true,
+      "files": {
+        "desktop": {
+          "path": "images/rewind-desktop.webp",
+          "width": 1440,
+          "height": 920,
+          "bytes": 156662,
+          "sha256": "04c637b17d14669f506510b1d7ebb5a4899fcbdee2b07ff9fc0657511bc0ae5a",
+          "viewport_css": {
+            "width": 1440,
+            "height": 920
+          },
+          "captured_at_utc": "2026-10-02T05:51:18.815247+00:00"
+        },
+        "mobile": {
+          "path": "images/rewind-mobile.webp",
+          "width": 388,
+          "height": 643,
+          "bytes": 32870,
+          "sha256": "d3a2c764a833efb2d5043e2e99267acfef529403b089d34077ebd50d5132081b",
+          "viewport_css": {
+            "width": 400,
+            "height": 662
+          },
+          "captured_at_utc": "2026-10-02T05:47:11.448215+00:00"
+        }
+      }
+    },
+    {
+      "id": "jabs",
+      "label": "JABS Smart Lighting",
+      "url": "https://jabs-smartlighting.com/",
+      "page_title": "Home - JABS Smart Lighting | Smart Lighting & Automation Solutions UAE",
+      "identity_match": true,
+      "files": {
+        "desktop": {
+          "path": "images/jabs-desktop.webp",
+          "width": 1440,
+          "height": 920,
+          "bytes": 124180,
+          "sha256": "b9859faabc60ac5ad7870017e18b34d3cfdf3a13072498cb23570cf8112ffcb6",
+          "viewport_css": {
+            "width": 1440,
+            "height": 920
+          },
+          "captured_at_utc": "2026-10-02T05:50:16.141469+00:00"
+        },
+        "mobile": {
+          "path": "images/jabs-mobile.webp",
+          "width": 388,
+          "height": 643,
+          "bytes": 58606,
+          "sha256": "d0d89f42ecc538bf7f8a00a84f595ee54124d96c3ec692b7036c9e4e09513d4e",
+          "viewport_css": {
+            "width": 400,
+            "height": 662
+          },
+          "captured_at_utc": "2026-10-02T05:47:19.948456+00:00"
+        }
+      }
+    }
+  ]
+}
