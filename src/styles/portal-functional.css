@@ -89,3 +89,8 @@
 .workspace-sync-preview pre{padding:20px;background:#111513;color:#ebece6;border-radius:12px;overflow:auto;max-height:400px;font-size:13px}.workspace-panel button:disabled{opacity:.45;cursor:not-allowed}.workspace-panel label{min-width:0}
 
 @media(max-width:850px){.workspace-sidebar nav{scrollbar-width:none}.workspace-sidebar nav::-webkit-scrollbar{display:none}}
+
+.portal-auth-fields{border:0;padding:0;margin:0;min-width:0;display:grid;gap:17px}
+.portal-auth-fields:disabled{opacity:.55}
+.functional-auth .portal-notice a{text-decoration:underline;text-underline-offset:3px}
+.functional-auth button:disabled{cursor:default}

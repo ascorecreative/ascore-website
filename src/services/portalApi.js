@@ -5,8 +5,9 @@ export async function portalRequest(path, { method = 'GET', body } = {}) {
     ...(body ? { body:JSON.stringify(body) } : {})
   })
   let data
-  try { data = await response.json() } catch { throw Error('The portal server is unavailable. Start the local API and try again.') }
+  try { data = await response.json() } catch { throw Object.assign(Error('The portal server is unavailable. Please contact info@ascore.ae for assistance.'),{unavailable:true}) }
   if (!response.ok) { const error = new Error(data.error || 'The request could not be completed.'); error.status=response.status; throw error }
+  if(path==='/auth/session'&&(!data||!Object.hasOwn(data,'user')||!(data.user===null||typeof data.user==='object')))throw Object.assign(Error('The portal server is unavailable. Please contact info@ascore.ae for assistance.'),{unavailable:true})
   if ('csrf' in data) csrf = data.csrf
   return data
 }
