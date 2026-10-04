@@ -2,6 +2,7 @@ import { StrictMode } from 'react'
 import { createRoot, hydrateRoot } from 'react-dom/client'
 import './styles/index.css'
 import App from './App.jsx'
+import './styles/mobile-refinements.css'
 import { isPrivatePath } from './lib/siteRoutes'
 const root=document.getElementById('root')
 const app=<StrictMode><App/></StrictMode>

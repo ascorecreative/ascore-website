@@ -1,0 +1,476 @@
+{
+  "routes": [
+    {
+      "path": "/",
+      "status": 200
+    },
+    {
+      "path": "/courses/",
+      "status": 200
+    },
+    {
+      "path": "/courses/meta-ads/",
+      "status": 200
+    },
+    {
+      "path": "/courses/practical-ai/",
+      "status": 200
+    },
+    {
+      "path": "/courses/checkout/",
+      "status": 200
+    },
+    {
+      "path": "/portal/",
+      "status": 200
+    },
+    {
+      "path": "/contact/",
+      "status": 200
+    },
+    {
+      "path": "/api/health",
+      "status": 200
+    }
+  ],
+  "responsive": [
+    {
+      "width": 320,
+      "path": "/courses/",
+      "client": 320,
+      "scroll": 320,
+      "images": true
+    },
+    {
+      "width": 320,
+      "path": "/courses/meta-ads/",
+      "client": 320,
+      "scroll": 320,
+      "images": true
+    },
+    {
+      "width": 320,
+      "path": "/courses/practical-ai/",
+      "client": 320,
+      "scroll": 320,
+      "images": true
+    },
+    {
+      "width": 320,
+      "path": "/courses/checkout/",
+      "client": 320,
+      "scroll": 320,
+      "images": true
+    },
+    {
+      "width": 390,
+      "path": "/courses/",
+      "client": 390,
+      "scroll": 390,
+      "images": true
+    },
+    {
+      "width": 390,
+      "path": "/courses/meta-ads/",
+      "client": 390,
+      "scroll": 390,
+      "images": true
+    },
+    {
+      "width": 390,
+      "path": "/courses/practical-ai/",
+      "client": 390,
+      "scroll": 390,
+      "images": true
+    },
+    {
+      "width": 390,
+      "path": "/courses/checkout/",
+      "client": 390,
+      "scroll": 390,
+      "images": true
+    },
+    {
+      "width": 430,
+      "path": "/courses/",
+      "client": 430,
+      "scroll": 430,
+      "images": true
+    },
+    {
+      "width": 430,
+      "path": "/courses/meta-ads/",
+      "client": 430,
+      "scroll": 430,
+      "images": true
+    },
+    {
+      "width": 430,
+      "path": "/courses/practical-ai/",
+      "client": 430,
+      "scroll": 430,
+      "images": true
+    },
+    {
+      "width": 430,
+      "path": "/courses/checkout/",
+      "client": 430,
+      "scroll": 430,
+      "images": true
+    },
+    {
+      "width": 768,
+      "path": "/courses/",
+      "client": 768,
+      "scroll": 768,
+      "images": true
+    },
+    {
+      "width": 768,
+      "path": "/courses/meta-ads/",
+      "client": 768,
+      "scroll": 768,
+      "images": true
+    },
+    {
+      "width": 768,
+      "path": "/courses/practical-ai/",
+      "client": 768,
+      "scroll": 768,
+      "images": true
+    },
+    {
+      "width": 768,
+      "path": "/courses/checkout/",
+      "client": 768,
+      "scroll": 768,
+      "images": true
+    },
+    {
+      "width": 1024,
+      "path": "/courses/",
+      "client": 1024,
+      "scroll": 1024,
+      "images": true
+    },
+    {
+      "width": 1024,
+      "path": "/courses/meta-ads/",
+      "client": 1024,
+      "scroll": 1024,
+      "images": true
+    },
+    {
+      "width": 1024,
+      "path": "/courses/practical-ai/",
+      "client": 1024,
+      "scroll": 1024,
+      "images": true
+    },
+    {
+      "width": 1024,
+      "path": "/courses/checkout/",
+      "client": 1024,
+      "scroll": 1024,
+      "images": true
+    },
+    {
+      "width": 1025,
+      "path": "/courses/",
+      "client": 1025,
+      "scroll": 1025,
+      "images": true
+    },
+    {
+      "width": 1025,
+      "path": "/courses/meta-ads/",
+      "client": 1025,
+      "scroll": 1025,
+      "images": true
+    },
+    {
+      "width": 1025,
+      "path": "/courses/practical-ai/",
+      "client": 1025,
+      "scroll": 1025,
+      "images": true
+    },
+    {
+      "width": 1025,
+      "path": "/courses/checkout/",
+      "client": 1025,
+      "scroll": 1025,
+      "images": true
+    },
+    {
+      "width": 1280,
+      "path": "/courses/",
+      "client": 1280,
+      "scroll": 1280,
+      "images": true
+    },
+    {
+      "width": 1280,
+      "path": "/courses/meta-ads/",
+      "client": 1280,
+      "scroll": 1280,
+      "images": true
+    },
+    {
+      "width": 1280,
+      "path": "/courses/practical-ai/",
+      "client": 1280,
+      "scroll": 1280,
+      "images": true
+    },
+    {
+      "width": 1280,
+      "path": "/courses/checkout/",
+      "client": 1280,
+      "scroll": 1280,
+      "images": true
+    },
+    {
+      "width": 1440,
+      "path": "/courses/",
+      "client": 1440,
+      "scroll": 1440,
+      "images": true
+    },
+    {
+      "width": 1440,
+      "path": "/courses/meta-ads/",
+      "client": 1440,
+      "scroll": 1440,
+      "images": true
+    },
+    {
+      "width": 1440,
+      "path": "/courses/practical-ai/",
+      "client": 1440,
+      "scroll": 1440,
+      "images": true
+    },
+    {
+      "width": 1440,
+      "path": "/courses/checkout/",
+      "client": 1440,
+      "scroll": 1440,
+      "images": true
+    }
+  ],
+  "cart": [
+    "Duplicate adds, AED 50/100 totals, persistence, removal, Escape/focus, invalid/valid email, review invalidation, disabled payment passed"
+  ],
+  "mobile": [
+    {
+      "width": 320,
+      "layout": {
+        "scroll": 320,
+        "width": 320,
+        "sticky": "sticky"
+      },
+      "transforms": [
+        "matrix(1, 0, 0, 1, -229.917, 0)",
+        "matrix(1, 0, 0, 1, -934.862, 0)",
+        "matrix(1, 0, 0, 1, -229.917, 0)"
+      ]
+    },
+    {
+      "width": 390,
+      "layout": {
+        "scroll": 390,
+        "width": 390,
+        "sticky": "sticky"
+      },
+      "transforms": [
+        "matrix(1, 0, 0, 1, -278.107, 0)",
+        "matrix(1, 0, 0, 1, -1121.34, 0)",
+        "matrix(1, 0, 0, 1, -278.107, 0)"
+      ]
+    },
+    {
+      "width": 430,
+      "layout": {
+        "scroll": 430,
+        "width": 430,
+        "sticky": "sticky"
+      },
+      "transforms": [
+        "matrix(1, 0, 0, 1, -305.37, 0)",
+        "matrix(1, 0, 0, 1, -1227.62, 0)",
+        "matrix(1, 0, 0, 1, -305.37, 0)"
+      ]
+    },
+    {
+      "width": 768,
+      "layout": {
+        "scroll": 768,
+        "width": 768,
+        "sticky": "sticky"
+      },
+      "transforms": [
+        "matrix(1, 0, 0, 1, -316.968, 0)",
+        "matrix(1, 0, 0, 1, -1273.53, 0)",
+        "matrix(1, 0, 0, 1, -316.968, 0)"
+      ]
+    },
+    {
+      "width": 1024,
+      "layout": {
+        "scroll": 1024,
+        "width": 1024,
+        "sticky": "sticky"
+      },
+      "transforms": [
+        "matrix(1, 0, 0, 1, -316.947, 0)",
+        "matrix(1, 0, 0, 1, -1273.51, 0)",
+        "matrix(1, 0, 0, 1, -316.947, 0)"
+      ]
+    }
+  ],
+  "desktop": [
+    {
+      "width": 1025,
+      "geometry": {
+        ".reference-header": {
+          "width": 1025,
+          "height": 70,
+          "fontSize": "16px",
+          "padding": "0px 35.26px",
+          "position": "fixed"
+        },
+        ".idea-topline": {
+          "width": 943,
+          "height": 15,
+          "fontSize": "10px",
+          "padding": "0px",
+          "position": "relative"
+        },
+        ".service-stack-card": {
+          "width": 943,
+          "height": 547,
+          "fontSize": "16px",
+          "padding": "55px",
+          "position": "sticky"
+        },
+        ".radial-stage": {
+          "width": 1025,
+          "height": 900,
+          "fontSize": "16px",
+          "padding": "100px 41px 25px",
+          "position": "sticky"
+        },
+        ".contact-big": {
+          "width": 943,
+          "height": 205.5,
+          "fontSize": "106.6px",
+          "padding": "0px",
+          "position": "relative"
+        },
+        ".site-footer": {
+          "width": 1025,
+          "height": 606,
+          "fontSize": "16px",
+          "padding": "80px 41px 100px",
+          "position": "relative"
+        }
+      }
+    },
+    {
+      "width": 1280,
+      "geometry": {
+        ".reference-header": {
+          "width": 1280,
+          "height": 70,
+          "fontSize": "16px",
+          "padding": "0px 44.032px",
+          "position": "fixed"
+        },
+        ".idea-topline": {
+          "width": 1177.625,
+          "height": 15,
+          "fontSize": "10px",
+          "padding": "0px",
+          "position": "relative"
+        },
+        ".service-stack-card": {
+          "width": 1177.625,
+          "height": 547,
+          "fontSize": "16px",
+          "padding": "55px",
+          "position": "sticky"
+        },
+        ".radial-stage": {
+          "width": 1280,
+          "height": 900,
+          "fontSize": "16px",
+          "padding": "100px 51.2px 25px",
+          "position": "sticky"
+        },
+        ".contact-big": {
+          "width": 1177.625,
+          "height": 257.9375,
+          "fontSize": "133.12px",
+          "padding": "0px",
+          "position": "relative"
+        },
+        ".site-footer": {
+          "width": 1280,
+          "height": 606,
+          "fontSize": "16px",
+          "padding": "80px 51.2px 100px",
+          "position": "relative"
+        }
+      }
+    },
+    {
+      "width": 1440,
+      "geometry": {
+        ".reference-header": {
+          "width": 1440,
+          "height": 70,
+          "fontSize": "16px",
+          "padding": "0px 49.536px",
+          "position": "fixed"
+        },
+        ".idea-topline": {
+          "width": 1324.8125,
+          "height": 15,
+          "fontSize": "10px",
+          "padding": "0px",
+          "position": "relative"
+        },
+        ".service-stack-card": {
+          "width": 1324.8125,
+          "height": 547,
+          "fontSize": "16px",
+          "padding": "55px",
+          "position": "sticky"
+        },
+        ".radial-stage": {
+          "width": 1440,
+          "height": 900,
+          "fontSize": "16px",
+          "padding": "100px 57.6px 25px",
+          "position": "sticky"
+        },
+        ".contact-big": {
+          "width": 1324.8125,
+          "height": 289.53125,
+          "fontSize": "149.76px",
+          "padding": "0px",
+          "position": "relative"
+        },
+        ".site-footer": {
+          "width": 1440,
+          "height": 618.0625,
+          "fontSize": "16px",
+          "padding": "80px 57.6px 100px",
+          "position": "relative"
+        }
+      }
+    }
+  ],
+  "errors": []
+}

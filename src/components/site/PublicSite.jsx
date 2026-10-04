@@ -5,6 +5,7 @@ import OriginalVideoHero from './OriginalVideoHero'
 import ServiceDetailsDialog from './ServiceDetailsDialog'
 import AfterVideoWhatsApp from './AfterVideoWhatsApp'
 import ContactEnquiryForm from './ContactEnquiryForm'
+import AscoreDigitalProducts from './products/AscoreDigitalProducts'
 import { selectedWork, services } from '../../lib/siteContent'
 import { publicRoutes, servicePages } from '../../lib/siteRoutes'
 import '../../styles/site.css'
@@ -25,7 +26,23 @@ function useSectionProgress(ref,reduced,callback){
 function BrandArtwork({header=false}) {return <span className="brand-logo" aria-hidden="true"><img className="brand-colour" src="/ascore-logo-official.png" width="783" height="330" alt="" loading={header?undefined:'lazy'}/><span className={`brand-wordmark-art ${header?'header-wordmark':'footer-wordmark'}`} style={{maskImage:"url('/ascore-logo-official.png')",WebkitMaskImage:"url('/ascore-logo-official.png')"}}/></span>}
 function SiteHeader(){
  const [open,setOpen]=useState(false),[dark,setDark]=useState(true);const button=useRef(null),nav=useRef(null)
- useEffect(()=>{const key=e=>{if(e.key==='Escape'&&open){setOpen(false);button.current?.focus()}if(open&&e.key==='Tab'){const items=[button.current,...nav.current.querySelectorAll('a')];const first=items[0],last=items.at(-1);if(e.shiftKey&&document.activeElement===first){e.preventDefault();last.focus()}else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first.focus()}}};window.addEventListener('keydown',key);document.body.classList.toggle('site-menu-open',open);return()=>{window.removeEventListener('keydown',key);document.body.classList.remove('site-menu-open')}},[open])
+ useEffect(()=>{
+  if(!open)return
+  const compact=window.matchMedia('(max-width:1024px)')
+  const reset=()=>{if(!compact.matches)setOpen(false)}
+  const key=event=>{
+   if(event.key==='Escape'){event.preventDefault();setOpen(false);button.current?.focus()}
+   if(event.key==='Tab'){
+    const items=[button.current,...nav.current.querySelectorAll('a')].filter(Boolean)
+    const index=items.indexOf(document.activeElement)
+    event.preventDefault()
+    items[(index+(event.shiftKey?-1:1)+items.length)%items.length]?.focus()
+   }
+  }
+  reset();document.body.classList.add('site-menu-open')
+  window.addEventListener('keydown',key);compact.addEventListener('change',reset)
+  return()=>{window.removeEventListener('keydown',key);compact.removeEventListener('change',reset);document.body.classList.remove('site-menu-open')}
+ },[open])
  useEffect(()=>{let frame=0;const sync=()=>{frame=0;const section=document.elementsFromPoint(window.innerWidth/2,35).find(element=>!element.closest('.site-header')&&element.closest('[data-theme]'))?.closest('[data-theme]');if(section)setDark(section.dataset.theme==='dark')};const schedule=()=>{if(!frame)frame=requestAnimationFrame(sync)};const observer=new MutationObserver(schedule);observer.observe(document.querySelector('main'),{attributes:true,attributeFilter:['data-theme'],subtree:true});sync();window.addEventListener('scroll',schedule,{passive:true});window.addEventListener('resize',schedule);return()=>{observer.disconnect();window.removeEventListener('scroll',schedule);window.removeEventListener('resize',schedule);cancelAnimationFrame(frame)}},[])
  return <header className={`site-header reference-header${dark?' is-dark':' is-light'}${open?' menu-is-open':''}`}><span className="header-blur" aria-hidden="true" style={{backdropFilter:'blur(18px)',WebkitBackdropFilter:'blur(18px)'}}/><a className="brand-lockup" href="/" aria-label="Ascore Creative home"><BrandArtwork header/></a><nav ref={nav} className={`site-nav${open?' is-open':''}`} id="main-navigation" aria-label="Main navigation">{[['Home','/'],['Work','/work/'],['Services','/services/'],['About','/about/'],['Contact','/contact/'],['Client portal','/portal/']].map(([label,url])=><a key={url} href={url} onClick={()=>setOpen(false)}>{label}</a>)}</nav><a className="header-cta" href="/contact/">Get in touch <ArrowUpRight size={16}/></a><button ref={button} className="menu-toggle" type="button" aria-expanded={open} aria-controls="main-navigation" aria-label={open?'Close menu':'Open menu'} onClick={()=>setOpen(!open)}>{open?<X/>:<Menu/>}</button></header>
 }
@@ -60,5 +77,5 @@ export default function PublicSite({page=publicRoutes[0]}){
  const [selectedService,setSelectedService]=useState(null)
  const openService=useCallback((index,opener)=>setSelectedService({page:servicePages[index],opener}),[])
  const closeService=useCallback(()=>setSelectedService(null),[])
- return <div className={`new-site${reduced?' motion-reduced':''}${home?'':' inner-page'}`}><a className="skip-link" href="#main-content">Skip to content</a><SiteHeader/><main id="main-content">{home?<><IdeaHero reducedMotion={reduced} onOpenService={openService}/>{reduced&&<OriginalVideoHero reducedMotion standalone/>}<Manifesto reduced={reduced}/><Statement reduced={reduced}/><PracticeBand/><Services onOpen={openService}/><Work radial reduced={reduced}/><Process/><Contact/></>:page?<><PageHeading page={page}/>{page.service?<ServiceDetail page={page}/>:page.id==='services'?<><Services onOpen={openService}/><Contact/></>:page.id==='work'?<><Work reduced={reduced}/><Contact/></>:page.id==='about'?<><section className="service-detail section-pad" data-theme="light"><p className="detail-intro">Ascore Creative is an Ajman-based creative and digital studio serving Dubai, the wider UAE and global projects. We bring strategy, design and engineering into one connected practice.</p><div className="detail-grid"><h2>Ideas, given form.</h2><p>From brand identities and digital products to immersive experiences and operational workflows, we shape the agreed scope around the people who will use it.</p></div></section><Process/><PracticeBand/><Contact/></>:<Contact/>}</>:<section className="public-page-heading section-pad" data-theme="light"><h1>That page has moved out of frame.</h1><p className="page-lead">Explore our studio, services and selected work.</p><a className="text-link" href="/">Return home ↗</a></section>}</main><Footer/>{home&&<AfterVideoWhatsApp/>}{selectedService&&<ServiceDetailsDialog selection={selectedService} onClose={closeService}/>}</div>
+ return <div className={`new-site${reduced?' motion-reduced':''}${home?'':' inner-page'}`}><a className="skip-link" href="#main-content">Skip to content</a><SiteHeader/><main id="main-content">{home?<><IdeaHero reducedMotion={reduced} onOpenService={openService}/>{reduced&&<OriginalVideoHero reducedMotion standalone/>}<AscoreDigitalProducts/><Manifesto reduced={reduced}/><Statement reduced={reduced}/><PracticeBand/><Services onOpen={openService}/><Work radial reduced={reduced}/><Process/><Contact/></>:page?<><PageHeading page={page}/>{page.service?<ServiceDetail page={page}/>:page.id==='services'?<><Services onOpen={openService}/><Contact/></>:page.id==='work'?<><Work reduced={reduced}/><Contact/></>:page.id==='about'?<><section className="service-detail section-pad" data-theme="light"><p className="detail-intro">Ascore Creative is an Ajman-based creative and digital studio serving Dubai, the wider UAE and global projects. We bring strategy, design and engineering into one connected practice.</p><div className="detail-grid"><h2>Ideas, given form.</h2><p>From brand identities and digital products to immersive experiences and operational workflows, we shape the agreed scope around the people who will use it.</p></div></section><Process/><PracticeBand/><Contact/></>:<Contact/>}</>:<section className="public-page-heading section-pad" data-theme="light"><h1>That page has moved out of frame.</h1><p className="page-lead">Explore our studio, services and selected work.</p><a className="text-link" href="/">Return home ↗</a></section>}</main><Footer/>{home&&<AfterVideoWhatsApp/>}{selectedService&&<ServiceDetailsDialog selection={selectedService} onClose={closeService}/>}</div>
 }

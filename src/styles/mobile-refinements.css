@@ -1,0 +1,124 @@
+/* Mobile-only layer. Keep the approved desktop layout and motion untouched. */
+@media (max-width:1024px) {
+ html:has(body.site-menu-open),body.site-menu-open:has(.new-site) {overflow:hidden !important;overscroll-behavior:none}
+ .new-site .reference-header .site-nav {flex-direction:column;align-items:stretch;padding-bottom:max(24px,env(safe-area-inset-bottom))}
+ .new-site .reference-header .brand-lockup {min-height:44px}
+ .new-site .section-meta {font-size:12px;line-height:1.5;gap:18px;align-items:start}
+ .new-site .section-meta span:last-child {text-align:right}
+ .new-site .text-link,.new-site .contact-ways a,.new-site .service-footer a,.new-site .footer-bottom nav a,.new-site .breadcrumbs a {display:inline-flex;align-items:center;min-height:44px;font-size:14px;line-height:1.5}
+ .new-site .text-link svg,.new-site .contact-ways svg,.new-site .service-footer svg {flex-shrink:0}
+ .new-site .stacked-services {padding-inline:24px}
+ .new-site .stacked-services .services-intro {margin:42px 0 32px}
+ .new-site .services-intro p,.new-site .process-main>p,.new-site .process-steps p {font-size:16px;line-height:1.6}
+ .new-site .service-stack {display:grid;gap:18px}
+ .new-site .service-stack-card {position:relative;top:auto;min-height:0;margin:0;padding:28px;border-radius:20px}
+ .new-site .service-stack-card .service-number {font-size:12px;letter-spacing:.06em}
+ .new-site .service-stack-card h3 {font-size:clamp(32px,5.6vw,48px);line-height:1.08;max-width:100%;margin:30px 0 18px;position:relative;z-index:1}
+ .new-site .service-stack-card p {font-size:16px;line-height:1.6;max-width:100%;position:relative;z-index:1}
+ .new-site .service-stack-card a {margin-top:20px;padding-top:8px;padding-right:36px}
+ .new-site .service-card-glyph {right:22px;bottom:25px;opacity:.5}
+ .new-site .service-card-glyph svg {width:32px;height:32px}
+ /* All five projects stay in normal reading and tab order on touch-sized screens. */
+ .new-site .radial-work {height:auto;padding:60px 24px 76px}
+ .new-site .radial-stage {position:relative;top:auto;height:auto;padding:0;overflow:visible}
+ .new-site .radial-work .work-heading {display:block;margin:0 0 36px}
+ .new-site .radial-work .work-heading h2 {font-size:clamp(38px,6vw,58px);line-height:1.05}
+ .new-site .radial-work .work-heading p {font-size:16px;line-height:1.6;max-width:520px;margin-top:24px}
+ .new-site .radial-wheel {position:relative;left:auto;top:auto;transform:none;will-change:auto;width:auto;height:auto;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:32px 24px;margin:0}
+ .new-site .radial-wheel .work-card {position:relative;left:auto;bottom:auto;transform:none;width:100%;min-width:0;transform-origin:center}
+ .new-site .radial-wheel .work-image {aspect-ratio:1.12}
+ .new-site .radial-wheel .work-card h3 {font-size:24px;line-height:1.25}
+ .new-site .radial-wheel .work-card-meta {font-size:12px;line-height:1.5}
+ .new-site .radial-links {display:none}
+ .new-site .enquiry-intro {font-size:16px;line-height:1.5}
+ .new-site .enquiry-fields label {font-size:14px}
+ .new-site .enquiry-consent {font-size:14px;line-height:1.6;min-height:44px;align-items:flex-start}
+ .new-site .enquiry-submit {font-size:14px;min-height:48px}
+ .new-site .contact-ways {gap:14px;flex-wrap:wrap}
+ .new-site .service-footer {gap:8px 24px}
+ .new-site .footer-bottom {gap:22px;font-size:12px;line-height:1.5}
+ .new-site .footer-bottom nav {gap:4px 20px}
+ .new-site .public-page-heading h1 {font-size:clamp(40px,8.5vw,78px);overflow-wrap:break-word}
+ .new-site .original-video-control.is-keyboard-only:not(:focus-visible) {width:auto;height:auto;min-height:44px;padding:10px 14px;border:1px solid #ffffff60;overflow:visible;clip-path:none;white-space:normal;pointer-events:auto}
+ .new-site .original-video-control {bottom:max(20px,env(safe-area-inset-bottom));font-size:14px;min-height:44px}
+ .service-dialog {max-height:calc(100dvh - 32px)}
+ .service-dialog .eyebrow {font-size:12px;padding-right:24px}
+ .service-dialog .dialog-scope {font-size:14px}
+ /* Only public sign-in presentation changes. No auth/session/API logic changes. */
+ .portal-entry .portal-entry-content {grid-template-columns:1fr;padding:40px 24px 64px;gap:32px}
+ .portal-entry .portal-entry-copy h1 {font-size:clamp(40px,8vw,60px)}
+ .portal-entry .portal-entry-description {font-size:16px;line-height:1.6}
+ .portal-entry .portal-entry-note {margin-top:20px;font-size:12px}
+ .portal-entry .functional-auth {max-width:620px;width:100%}
+ .portal-entry .functional-auth label {font-size:14px}
+ .portal-entry .functional-auth input {font-size:16px;min-height:48px}
+ .portal-entry .functional-auth small,.portal-entry .functional-auth .portal-recovery-note {font-size:13px}
+ .portal-entry .functional-auth .portal-auth-links {flex-wrap:wrap;gap:6px 18px}
+ .portal-entry .functional-auth .portal-auth-links button {font-size:14px !important;min-height:44px;text-align:left}
+ .portal-entry .portal-entry-back {min-height:44px;font-size:14px}
+ .portal-entry .portal-entry-footer {font-size:12px;line-height:1.5;flex-wrap:wrap;gap:14px}
+}
+@media (max-width:600px) {
+ .new-site .section-pad {padding:64px 22px}
+ .new-site .section-meta {flex-wrap:wrap;gap:8px 18px}
+ .new-site .section-meta span:last-child {text-align:left}
+ .new-site .manifesto-grid {margin-top:36px}
+ .new-site .manifesto h2 {font-size:clamp(36px,10vw,56px);line-height:1.12}
+ .new-site .manifesto aside p {font-size:16px}
+ .new-site .statement {padding-top:20px}
+ .new-site .statement h2 {font-size:clamp(40px,10.8vw,62px);line-height:1.02;margin:32px 0}
+ .new-site .statement>p,.new-site .statement-note {font-size:12px;line-height:1.5;letter-spacing:.06em}
+ .new-site .stacked-services {padding-inline:16px}
+ .new-site .stacked-services .section-meta,.new-site .stacked-services .services-intro {padding-inline:6px}
+ .new-site .service-stack-card {padding:24px}
+ .new-site .service-stack-card h3 {font-size:clamp(32px,9.3vw,44px)}
+ .new-site .radial-work {padding:60px 22px 64px}
+ .new-site .radial-wheel {grid-template-columns:minmax(0,1fr);gap:36px}
+ .new-site .process-main h2 {font-size:clamp(38px,10.6vw,58px)}
+ .new-site .process-steps {gap:24px}
+ .new-site .process-steps>div {padding-top:24px}
+ .new-site .process-steps>div>span {font-size:12px}
+ .new-site .contact-big {font-size:clamp(40px,11.5vw,66px);line-height:1.06}
+ .new-site .contact-big svg {width:32px;height:32px;flex-shrink:0}
+ .new-site .contact-ways {display:grid;grid-template-columns:1fr}
+ .new-site .enquiry-submit {width:100%}
+ .new-site .enquiry-fields {gap:22px}
+ .new-site .site-footer {padding:50px 22px 104px}
+ .new-site .service-footer {grid-template-columns:1fr;margin-bottom:36px}
+ .new-site .public-page-heading {padding-top:104px;padding-bottom:44px}
+ .new-site .breadcrumbs {gap:8px;margin-bottom:24px;font-size:13px;align-items:center}
+ .new-site .page-lead {font-size:20px}
+ .new-site .service-detail {padding-top:22px}
+ .portal-entry .portal-entry-content {padding:30px 22px 48px}
+}
+
+/* Keep the mobile card choreography: the first preview flattened these sections.
+   Short screens use a swipeable project rail so card content stays reachable. */
+@media (max-width:1024px) {
+ .new-site .radial-wheel {display:flex;gap:20px;overflow-x:auto;scroll-snap-type:x mandatory;overscroll-behavior-x:contain;padding:8px 0 20px;scrollbar-width:thin;scrollbar-color:#68adaf #ffffff18}
+ .new-site .radial-wheel .work-card {flex:0 0 min(82vw,360px);scroll-snap-align:center}
+ .new-site .radial-wheel .work-image {aspect-ratio:1.12}
+ .new-site .radial-links {position:relative;left:auto;right:auto;bottom:auto;display:flex;flex-wrap:wrap;gap:4px 18px;font-size:12px;line-height:1.5;margin-top:16px;background:transparent}
+ .new-site .radial-links a {display:inline-flex;align-items:center;min-height:44px;gap:6px}
+}
+@media (max-width:1024px) and (min-height:660px) {
+ .new-site:not(.motion-reduced) .service-stack {display:block;padding-bottom:24px}
+ .new-site:not(.motion-reduced) .service-stack-card {position:sticky;top:calc(84px + var(--card) * 10px);min-height:360px;margin:0 0 24px;box-shadow:0 -8px 24px #0003}
+ .new-site:not(.motion-reduced) .service-stack-card a {margin-top:auto;padding-top:28px}
+}
+@media (max-width:1024px) and (min-height:740px) {
+ /* Reuse the existing reversible section scroll clock, with phone-sized geometry. */
+ .new-site .radial-work {height:360svh;padding:0;--mobile-card-width:min(76vw,340px);--mobile-card-step:calc(var(--mobile-card-width) + 28px)}
+ .new-site .radial-stage {position:sticky;top:0;height:100svh;padding:94px 22px 24px;overflow:hidden}
+ .new-site .radial-work .work-heading {margin:0;position:relative;z-index:2}
+ .new-site .radial-work .work-heading h2 {font-size:clamp(36px,8.6vw,54px)}
+ .new-site .radial-work .work-heading p {font-size:14px;line-height:1.5;max-width:420px;margin-top:16px}
+ .new-site .radial-wheel {position:absolute;left:50%;top:clamp(286px,38svh,360px);width:max-content;height:auto;margin:0;padding:0;gap:28px;overflow:visible;scroll-snap-type:none;transform:translateX(calc(var(--mobile-card-width) * -.5 - var(--deck) * 4 * var(--mobile-card-step)));will-change:transform}
+ .new-site .radial-wheel .work-card {flex:0 0 var(--mobile-card-width);width:var(--mobile-card-width);transform:rotate(calc((var(--slot) - var(--deck) * 4) * 3deg));transform-origin:50% 100%}
+ .new-site .radial-wheel .work-image {aspect-ratio:1.15}
+ .new-site .radial-wheel .work-card h3 {font-size:22px}
+ .new-site .radial-links {position:absolute;left:22px;right:22px;bottom:max(18px,env(safe-area-inset-bottom));margin:0;gap:0 16px;background:#090b0ae8}
+}
+@media (max-width:1024px) and (prefers-reduced-motion:reduce) {
+ .new-site .service-stack-card {position:relative;top:auto;min-height:0;margin-bottom:18px}
+}
