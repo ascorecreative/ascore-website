@@ -1,0 +1,1096 @@
+{
+  "layout": [
+    {
+      "engine": "chrome",
+      "width": 320,
+      "path": "/courses/",
+      "text": "AED 50",
+      "letterSpacing": "normal",
+      "numeric": "lining-nums tabular-nums",
+      "amount": {
+        "x": 75.96875,
+        "y": 443.96875,
+        "width": 40.046875,
+        "height": 36,
+        "top": 443.96875,
+        "right": 116.015625,
+        "bottom": 479.96875,
+        "left": 75.96875
+      },
+      "currency": {
+        "x": 41,
+        "y": 463.96875,
+        "width": 26.96875,
+        "height": 12,
+        "top": 463.96875,
+        "right": 67.96875,
+        "bottom": 475.96875,
+        "left": 41
+      },
+      "alignment": "baseline",
+      "overflow": false
+    },
+    {
+      "engine": "chrome",
+      "width": 320,
+      "path": "/courses/meta-ads/",
+      "text": "AED 50",
+      "letterSpacing": "normal",
+      "numeric": "lining-nums tabular-nums",
+      "amount": {
+        "x": 54.96875,
+        "y": 683.125,
+        "width": 46.71875,
+        "height": 42,
+        "top": 683.125,
+        "right": 101.6875,
+        "bottom": 725.125,
+        "left": 54.96875
+      },
+      "currency": {
+        "x": 20,
+        "y": 708.125,
+        "width": 26.96875,
+        "height": 12,
+        "top": 708.125,
+        "right": 46.96875,
+        "bottom": 720.125,
+        "left": 20
+      },
+      "alignment": "baseline",
+      "overflow": false
+    },
+    {
+      "engine": "chrome",
+      "width": 320,
+      "path": "/courses/practical-ai/",
+      "text": "AED 50",
+      "letterSpacing": "normal",
+      "numeric": "lining-nums tabular-nums",
+      "amount": {
+        "x": 54.96875,
+        "y": 748.390625,
+        "width": 46.71875,
+        "height": 42,
+        "top": 748.390625,
+        "right": 101.6875,
+        "bottom": 790.390625,
+        "left": 54.96875
+      },
+      "currency": {
+        "x": 20,
+        "y": 773.390625,
+        "width": 26.96875,
+        "height": 12,
+        "top": 773.390625,
+        "right": 46.96875,
+        "bottom": 785.390625,
+        "left": 20
+      },
+      "alignment": "baseline",
+      "overflow": false
+    },
+    {
+      "engine": "chrome",
+      "width": 375,
+      "path": "/courses/",
+      "text": "AED 50",
+      "letterSpacing": "normal",
+      "numeric": "lining-nums tabular-nums",
+      "amount": {
+        "x": 79.96875,
+        "y": 444.421875,
+        "width": 40.046875,
+        "height": 36,
+        "top": 444.421875,
+        "right": 120.015625,
+        "bottom": 480.421875,
+        "left": 79.96875
+      },
+      "currency": {
+        "x": 45,
+        "y": 464.421875,
+        "width": 26.96875,
+        "height": 12,
+        "top": 464.421875,
+        "right": 71.96875,
+        "bottom": 476.421875,
+        "left": 45
+      },
+      "alignment": "baseline",
+      "overflow": false
+    },
+    {
+      "engine": "chrome",
+      "width": 375,
+      "path": "/courses/meta-ads/",
+      "text": "AED 50",
+      "letterSpacing": "normal",
+      "numeric": "lining-nums tabular-nums",
+      "amount": {
+        "x": 54.96875,
+        "y": 687.859375,
+        "width": 46.71875,
+        "height": 42,
+        "top": 687.859375,
+        "right": 101.6875,
+        "bottom": 729.859375,
+        "left": 54.96875
+      },
+      "currency": {
+        "x": 20,
+        "y": 712.859375,
+        "width": 26.96875,
+        "height": 12,
+        "top": 712.859375,
+        "right": 46.96875,
+        "bottom": 724.859375,
+        "left": 20
+      },
+      "alignment": "baseline",
+      "overflow": false
+    },
+    {
+      "engine": "chrome",
+      "width": 375,
+      "path": "/courses/practical-ai/",
+      "text": "AED 50",
+      "letterSpacing": "normal",
+      "numeric": "lining-nums tabular-nums",
+      "amount": {
+        "x": 54.96875,
+        "y": 753.125,
+        "width": 46.71875,
+        "height": 42,
+        "top": 753.125,
+        "right": 101.6875,
+        "bottom": 795.125,
+        "left": 54.96875
+      },
+      "currency": {
+        "x": 20,
+        "y": 778.125,
+        "width": 26.96875,
+        "height": 12,
+        "top": 778.125,
+        "right": 46.96875,
+        "bottom": 790.125,
+        "left": 20
+      },
+      "alignment": "baseline",
+      "overflow": false
+    },
+    {
+      "engine": "chrome",
+      "width": 390,
+      "path": "/courses/",
+      "text": "AED 50",
+      "letterSpacing": "normal",
+      "numeric": "lining-nums tabular-nums",
+      "amount": {
+        "x": 79.96875,
+        "y": 444.3125,
+        "width": 40.046875,
+        "height": 36,
+        "top": 444.3125,
+        "right": 120.015625,
+        "bottom": 480.3125,
+        "left": 79.96875
+      },
+      "currency": {
+        "x": 45,
+        "y": 464.3125,
+        "width": 26.96875,
+        "height": 12,
+        "top": 464.3125,
+        "right": 71.96875,
+        "bottom": 476.3125,
+        "left": 45
+      },
+      "alignment": "baseline",
+      "overflow": false
+    },
+    {
+      "engine": "chrome",
+      "width": 390,
+      "path": "/courses/meta-ads/",
+      "text": "AED 50",
+      "letterSpacing": "normal",
+      "numeric": "lining-nums tabular-nums",
+      "amount": {
+        "x": 54.96875,
+        "y": 698.96875,
+        "width": 46.71875,
+        "height": 42,
+        "top": 698.96875,
+        "right": 101.6875,
+        "bottom": 740.96875,
+        "left": 54.96875
+      },
+      "currency": {
+        "x": 20,
+        "y": 723.96875,
+        "width": 26.96875,
+        "height": 12,
+        "top": 723.96875,
+        "right": 46.96875,
+        "bottom": 735.96875,
+        "left": 20
+      },
+      "alignment": "baseline",
+      "overflow": false
+    },
+    {
+      "engine": "chrome",
+      "width": 390,
+      "path": "/courses/practical-ai/",
+      "text": "AED 50",
+      "letterSpacing": "normal",
+      "numeric": "lining-nums tabular-nums",
+      "amount": {
+        "x": 54.96875,
+        "y": 737.046875,
+        "width": 46.71875,
+        "height": 42,
+        "top": 737.046875,
+        "right": 101.6875,
+        "bottom": 779.046875,
+        "left": 54.96875
+      },
+      "currency": {
+        "x": 20,
+        "y": 762.046875,
+        "width": 26.96875,
+        "height": 12,
+        "top": 762.046875,
+        "right": 46.96875,
+        "bottom": 774.046875,
+        "left": 20
+      },
+      "alignment": "baseline",
+      "overflow": false
+    },
+    {
+      "engine": "chrome",
+      "width": 430,
+      "path": "/courses/",
+      "text": "AED 50",
+      "letterSpacing": "normal",
+      "numeric": "lining-nums tabular-nums",
+      "amount": {
+        "x": 79.96875,
+        "y": 444.109375,
+        "width": 40.046875,
+        "height": 36,
+        "top": 444.109375,
+        "right": 120.015625,
+        "bottom": 480.109375,
+        "left": 79.96875
+      },
+      "currency": {
+        "x": 45,
+        "y": 464.109375,
+        "width": 26.96875,
+        "height": 12,
+        "top": 464.109375,
+        "right": 71.96875,
+        "bottom": 476.109375,
+        "left": 45
+      },
+      "alignment": "baseline",
+      "overflow": false
+    },
+    {
+      "engine": "chrome",
+      "width": 430,
+      "path": "/courses/meta-ads/",
+      "text": "AED 50",
+      "letterSpacing": "normal",
+      "numeric": "lining-nums tabular-nums",
+      "amount": {
+        "x": 54.96875,
+        "y": 728.59375,
+        "width": 46.71875,
+        "height": 42,
+        "top": 728.59375,
+        "right": 101.6875,
+        "bottom": 770.59375,
+        "left": 54.96875
+      },
+      "currency": {
+        "x": 20,
+        "y": 753.59375,
+        "width": 26.96875,
+        "height": 12,
+        "top": 753.59375,
+        "right": 46.96875,
+        "bottom": 765.59375,
+        "left": 20
+      },
+      "alignment": "baseline",
+      "overflow": false
+    },
+    {
+      "engine": "chrome",
+      "width": 430,
+      "path": "/courses/practical-ai/",
+      "text": "AED 50",
+      "letterSpacing": "normal",
+      "numeric": "lining-nums tabular-nums",
+      "amount": {
+        "x": 54.96875,
+        "y": 766.671875,
+        "width": 46.71875,
+        "height": 42,
+        "top": 766.671875,
+        "right": 101.6875,
+        "bottom": 808.671875,
+        "left": 54.96875
+      },
+      "currency": {
+        "x": 20,
+        "y": 791.671875,
+        "width": 26.96875,
+        "height": 12,
+        "top": 791.671875,
+        "right": 46.96875,
+        "bottom": 803.671875,
+        "left": 20
+      },
+      "alignment": "baseline",
+      "overflow": false
+    },
+    {
+      "engine": "chrome",
+      "width": 768,
+      "path": "/courses/",
+      "text": "AED 50",
+      "letterSpacing": "normal",
+      "numeric": "lining-nums tabular-nums",
+      "amount": {
+        "x": 95.96875,
+        "y": 444.078125,
+        "width": 40.046875,
+        "height": 36,
+        "top": 444.078125,
+        "right": 136.015625,
+        "bottom": 480.078125,
+        "left": 95.96875
+      },
+      "currency": {
+        "x": 61,
+        "y": 464.078125,
+        "width": 26.96875,
+        "height": 12,
+        "top": 464.078125,
+        "right": 87.96875,
+        "bottom": 476.078125,
+        "left": 61
+      },
+      "alignment": "baseline",
+      "overflow": false
+    },
+    {
+      "engine": "chrome",
+      "width": 768,
+      "path": "/courses/meta-ads/",
+      "text": "AED 50",
+      "letterSpacing": "normal",
+      "numeric": "lining-nums tabular-nums",
+      "amount": {
+        "x": 438.96875,
+        "y": 426.1875,
+        "width": 46.71875,
+        "height": 42,
+        "top": 426.1875,
+        "right": 485.6875,
+        "bottom": 468.1875,
+        "left": 438.96875
+      },
+      "currency": {
+        "x": 404,
+        "y": 451.1875,
+        "width": 26.96875,
+        "height": 12,
+        "top": 451.1875,
+        "right": 430.96875,
+        "bottom": 463.1875,
+        "left": 404
+      },
+      "alignment": "baseline",
+      "overflow": false
+    },
+    {
+      "engine": "chrome",
+      "width": 768,
+      "path": "/courses/practical-ai/",
+      "text": "AED 50",
+      "letterSpacing": "normal",
+      "numeric": "lining-nums tabular-nums",
+      "amount": {
+        "x": 438.96875,
+        "y": 493.6875,
+        "width": 46.71875,
+        "height": 42,
+        "top": 493.6875,
+        "right": 485.6875,
+        "bottom": 535.6875,
+        "left": 438.96875
+      },
+      "currency": {
+        "x": 404,
+        "y": 518.6875,
+        "width": 26.96875,
+        "height": 12,
+        "top": 518.6875,
+        "right": 430.96875,
+        "bottom": 530.6875,
+        "left": 404
+      },
+      "alignment": "baseline",
+      "overflow": false
+    },
+    {
+      "engine": "chrome",
+      "width": 1440,
+      "path": "/courses/",
+      "text": "AED 50",
+      "letterSpacing": "normal",
+      "numeric": "lining-nums tabular-nums",
+      "amount": {
+        "x": 227.96875,
+        "y": 443.578125,
+        "width": 40.046875,
+        "height": 36,
+        "top": 443.578125,
+        "right": 268.015625,
+        "bottom": 479.578125,
+        "left": 227.96875
+      },
+      "currency": {
+        "x": 193,
+        "y": 463.578125,
+        "width": 26.96875,
+        "height": 12,
+        "top": 463.578125,
+        "right": 219.96875,
+        "bottom": 475.578125,
+        "left": 193
+      },
+      "alignment": "baseline",
+      "overflow": false
+    },
+    {
+      "engine": "chrome",
+      "width": 1440,
+      "path": "/courses/meta-ads/",
+      "text": "AED 50",
+      "letterSpacing": "normal",
+      "numeric": "lining-nums tabular-nums",
+      "amount": {
+        "x": 782.96875,
+        "y": 416.90625,
+        "width": 46.71875,
+        "height": 42,
+        "top": 416.90625,
+        "right": 829.6875,
+        "bottom": 458.90625,
+        "left": 782.96875
+      },
+      "currency": {
+        "x": 748,
+        "y": 441.90625,
+        "width": 26.96875,
+        "height": 12,
+        "top": 441.90625,
+        "right": 774.96875,
+        "bottom": 453.90625,
+        "left": 748
+      },
+      "alignment": "baseline",
+      "overflow": false
+    },
+    {
+      "engine": "chrome",
+      "width": 1440,
+      "path": "/courses/practical-ai/",
+      "text": "AED 50",
+      "letterSpacing": "normal",
+      "numeric": "lining-nums tabular-nums",
+      "amount": {
+        "x": 782.96875,
+        "y": 416.90625,
+        "width": 46.71875,
+        "height": 42,
+        "top": 416.90625,
+        "right": 829.6875,
+        "bottom": 458.90625,
+        "left": 782.96875
+      },
+      "currency": {
+        "x": 748,
+        "y": 441.90625,
+        "width": 26.96875,
+        "height": 12,
+        "top": 441.90625,
+        "right": 774.96875,
+        "bottom": 453.90625,
+        "left": 748
+      },
+      "alignment": "baseline",
+      "overflow": false
+    },
+    {
+      "engine": "webkit",
+      "width": 320,
+      "path": "/courses/",
+      "text": "AED 50",
+      "letterSpacing": "normal",
+      "numeric": "lining-nums tabular-nums",
+      "amount": {
+        "x": 75.96875,
+        "y": 443.96875,
+        "width": 40.046875,
+        "height": 36,
+        "top": 443.96875,
+        "right": 116.015625,
+        "bottom": 479.96875,
+        "left": 75.96875
+      },
+      "currency": {
+        "x": 41,
+        "y": 464.28125,
+        "width": 26.96875,
+        "height": 12,
+        "top": 464.28125,
+        "right": 67.96875,
+        "bottom": 476.28125,
+        "left": 41
+      },
+      "alignment": "baseline",
+      "overflow": false
+    },
+    {
+      "engine": "webkit",
+      "width": 320,
+      "path": "/courses/meta-ads/",
+      "text": "AED 50",
+      "letterSpacing": "normal",
+      "numeric": "lining-nums tabular-nums",
+      "amount": {
+        "x": 54.96875,
+        "y": 683.125,
+        "width": 46.71875,
+        "height": 42,
+        "top": 683.125,
+        "right": 101.6875,
+        "bottom": 725.125,
+        "left": 54.96875
+      },
+      "currency": {
+        "x": 20,
+        "y": 708.515625,
+        "width": 26.96875,
+        "height": 12,
+        "top": 708.515625,
+        "right": 46.96875,
+        "bottom": 720.515625,
+        "left": 20
+      },
+      "alignment": "baseline",
+      "overflow": false
+    },
+    {
+      "engine": "webkit",
+      "width": 320,
+      "path": "/courses/practical-ai/",
+      "text": "AED 50",
+      "letterSpacing": "normal",
+      "numeric": "lining-nums tabular-nums",
+      "amount": {
+        "x": 54.96875,
+        "y": 748.390625,
+        "width": 46.71875,
+        "height": 42,
+        "top": 748.390625,
+        "right": 101.6875,
+        "bottom": 790.390625,
+        "left": 54.96875
+      },
+      "currency": {
+        "x": 20,
+        "y": 773.78125,
+        "width": 26.96875,
+        "height": 12,
+        "top": 773.78125,
+        "right": 46.96875,
+        "bottom": 785.78125,
+        "left": 20
+      },
+      "alignment": "baseline",
+      "overflow": false
+    },
+    {
+      "engine": "webkit",
+      "width": 375,
+      "path": "/courses/",
+      "text": "AED 50",
+      "letterSpacing": "normal",
+      "numeric": "lining-nums tabular-nums",
+      "amount": {
+        "x": 79.96875,
+        "y": 443.421875,
+        "width": 40.046875,
+        "height": 36,
+        "top": 443.421875,
+        "right": 120.015625,
+        "bottom": 479.421875,
+        "left": 79.96875
+      },
+      "currency": {
+        "x": 45,
+        "y": 463.734375,
+        "width": 26.96875,
+        "height": 12,
+        "top": 463.734375,
+        "right": 71.96875,
+        "bottom": 475.734375,
+        "left": 45
+      },
+      "alignment": "baseline",
+      "overflow": false
+    },
+    {
+      "engine": "webkit",
+      "width": 375,
+      "path": "/courses/meta-ads/",
+      "text": "AED 50",
+      "letterSpacing": "normal",
+      "numeric": "lining-nums tabular-nums",
+      "amount": {
+        "x": 54.96875,
+        "y": 687.859375,
+        "width": 46.71875,
+        "height": 42,
+        "top": 687.859375,
+        "right": 101.6875,
+        "bottom": 729.859375,
+        "left": 54.96875
+      },
+      "currency": {
+        "x": 20,
+        "y": 713.25,
+        "width": 26.96875,
+        "height": 12,
+        "top": 713.25,
+        "right": 46.96875,
+        "bottom": 725.25,
+        "left": 20
+      },
+      "alignment": "baseline",
+      "overflow": false
+    },
+    {
+      "engine": "webkit",
+      "width": 375,
+      "path": "/courses/practical-ai/",
+      "text": "AED 50",
+      "letterSpacing": "normal",
+      "numeric": "lining-nums tabular-nums",
+      "amount": {
+        "x": 54.96875,
+        "y": 753.125,
+        "width": 46.71875,
+        "height": 42,
+        "top": 753.125,
+        "right": 101.6875,
+        "bottom": 795.125,
+        "left": 54.96875
+      },
+      "currency": {
+        "x": 20,
+        "y": 778.515625,
+        "width": 26.96875,
+        "height": 12,
+        "top": 778.515625,
+        "right": 46.96875,
+        "bottom": 790.515625,
+        "left": 20
+      },
+      "alignment": "baseline",
+      "overflow": false
+    },
+    {
+      "engine": "webkit",
+      "width": 390,
+      "path": "/courses/",
+      "text": "AED 50",
+      "letterSpacing": "normal",
+      "numeric": "lining-nums tabular-nums",
+      "amount": {
+        "x": 79.96875,
+        "y": 443.3125,
+        "width": 40.046875,
+        "height": 36,
+        "top": 443.3125,
+        "right": 120.015625,
+        "bottom": 479.3125,
+        "left": 79.96875
+      },
+      "currency": {
+        "x": 45,
+        "y": 463.625,
+        "width": 26.96875,
+        "height": 12,
+        "top": 463.625,
+        "right": 71.96875,
+        "bottom": 475.625,
+        "left": 45
+      },
+      "alignment": "baseline",
+      "overflow": false
+    },
+    {
+      "engine": "webkit",
+      "width": 390,
+      "path": "/courses/meta-ads/",
+      "text": "AED 50",
+      "letterSpacing": "normal",
+      "numeric": "lining-nums tabular-nums",
+      "amount": {
+        "x": 54.96875,
+        "y": 698.96875,
+        "width": 46.71875,
+        "height": 42,
+        "top": 698.96875,
+        "right": 101.6875,
+        "bottom": 740.96875,
+        "left": 54.96875
+      },
+      "currency": {
+        "x": 20,
+        "y": 724.359375,
+        "width": 26.96875,
+        "height": 12,
+        "top": 724.359375,
+        "right": 46.96875,
+        "bottom": 736.359375,
+        "left": 20
+      },
+      "alignment": "baseline",
+      "overflow": false
+    },
+    {
+      "engine": "webkit",
+      "width": 390,
+      "path": "/courses/practical-ai/",
+      "text": "AED 50",
+      "letterSpacing": "normal",
+      "numeric": "lining-nums tabular-nums",
+      "amount": {
+        "x": 54.96875,
+        "y": 737.046875,
+        "width": 46.71875,
+        "height": 42,
+        "top": 737.046875,
+        "right": 101.6875,
+        "bottom": 779.046875,
+        "left": 54.96875
+      },
+      "currency": {
+        "x": 20,
+        "y": 762.4375,
+        "width": 26.96875,
+        "height": 12,
+        "top": 762.4375,
+        "right": 46.96875,
+        "bottom": 774.4375,
+        "left": 20
+      },
+      "alignment": "baseline",
+      "overflow": false
+    },
+    {
+      "engine": "webkit",
+      "width": 430,
+      "path": "/courses/",
+      "text": "AED 50",
+      "letterSpacing": "normal",
+      "numeric": "lining-nums tabular-nums",
+      "amount": {
+        "x": 79.96875,
+        "y": 443.109375,
+        "width": 40.046875,
+        "height": 36,
+        "top": 443.109375,
+        "right": 120.015625,
+        "bottom": 479.109375,
+        "left": 79.96875
+      },
+      "currency": {
+        "x": 45,
+        "y": 463.421875,
+        "width": 26.96875,
+        "height": 12,
+        "top": 463.421875,
+        "right": 71.96875,
+        "bottom": 475.421875,
+        "left": 45
+      },
+      "alignment": "baseline",
+      "overflow": false
+    },
+    {
+      "engine": "webkit",
+      "width": 430,
+      "path": "/courses/meta-ads/",
+      "text": "AED 50",
+      "letterSpacing": "normal",
+      "numeric": "lining-nums tabular-nums",
+      "amount": {
+        "x": 54.96875,
+        "y": 728.59375,
+        "width": 46.71875,
+        "height": 42,
+        "top": 728.59375,
+        "right": 101.6875,
+        "bottom": 770.59375,
+        "left": 54.96875
+      },
+      "currency": {
+        "x": 20,
+        "y": 753.984375,
+        "width": 26.96875,
+        "height": 12,
+        "top": 753.984375,
+        "right": 46.96875,
+        "bottom": 765.984375,
+        "left": 20
+      },
+      "alignment": "baseline",
+      "overflow": false
+    },
+    {
+      "engine": "webkit",
+      "width": 430,
+      "path": "/courses/practical-ai/",
+      "text": "AED 50",
+      "letterSpacing": "normal",
+      "numeric": "lining-nums tabular-nums",
+      "amount": {
+        "x": 54.96875,
+        "y": 766.671875,
+        "width": 46.71875,
+        "height": 42,
+        "top": 766.671875,
+        "right": 101.6875,
+        "bottom": 808.671875,
+        "left": 54.96875
+      },
+      "currency": {
+        "x": 20,
+        "y": 792.0625,
+        "width": 26.96875,
+        "height": 12,
+        "top": 792.0625,
+        "right": 46.96875,
+        "bottom": 804.0625,
+        "left": 20
+      },
+      "alignment": "baseline",
+      "overflow": false
+    },
+    {
+      "engine": "webkit",
+      "width": 768,
+      "path": "/courses/",
+      "text": "AED 50",
+      "letterSpacing": "normal",
+      "numeric": "lining-nums tabular-nums",
+      "amount": {
+        "x": 95.96875,
+        "y": 443.078125,
+        "width": 40.046875,
+        "height": 36,
+        "top": 443.078125,
+        "right": 136.015625,
+        "bottom": 479.078125,
+        "left": 95.96875
+      },
+      "currency": {
+        "x": 61,
+        "y": 463.390625,
+        "width": 26.96875,
+        "height": 12,
+        "top": 463.390625,
+        "right": 87.96875,
+        "bottom": 475.390625,
+        "left": 61
+      },
+      "alignment": "baseline",
+      "overflow": false
+    },
+    {
+      "engine": "webkit",
+      "width": 768,
+      "path": "/courses/meta-ads/",
+      "text": "AED 50",
+      "letterSpacing": "normal",
+      "numeric": "lining-nums tabular-nums",
+      "amount": {
+        "x": 438.96875,
+        "y": 426.1875,
+        "width": 46.71875,
+        "height": 42,
+        "top": 426.1875,
+        "right": 485.6875,
+        "bottom": 468.1875,
+        "left": 438.96875
+      },
+      "currency": {
+        "x": 404,
+        "y": 451.578125,
+        "width": 26.96875,
+        "height": 12,
+        "top": 451.578125,
+        "right": 430.96875,
+        "bottom": 463.578125,
+        "left": 404
+      },
+      "alignment": "baseline",
+      "overflow": false
+    },
+    {
+      "engine": "webkit",
+      "width": 768,
+      "path": "/courses/practical-ai/",
+      "text": "AED 50",
+      "letterSpacing": "normal",
+      "numeric": "lining-nums tabular-nums",
+      "amount": {
+        "x": 438.96875,
+        "y": 493.6875,
+        "width": 46.71875,
+        "height": 42,
+        "top": 493.6875,
+        "right": 485.6875,
+        "bottom": 535.6875,
+        "left": 438.96875
+      },
+      "currency": {
+        "x": 404,
+        "y": 519.078125,
+        "width": 26.96875,
+        "height": 12,
+        "top": 519.078125,
+        "right": 430.96875,
+        "bottom": 531.078125,
+        "left": 404
+      },
+      "alignment": "baseline",
+      "overflow": false
+    },
+    {
+      "engine": "webkit",
+      "width": 1440,
+      "path": "/courses/",
+      "text": "AED 50",
+      "letterSpacing": "normal",
+      "numeric": "lining-nums tabular-nums",
+      "amount": {
+        "x": 227.96875,
+        "y": 443.578125,
+        "width": 40.046875,
+        "height": 36,
+        "top": 443.578125,
+        "right": 268.015625,
+        "bottom": 479.578125,
+        "left": 227.96875
+      },
+      "currency": {
+        "x": 193,
+        "y": 463.890625,
+        "width": 26.96875,
+        "height": 12,
+        "top": 463.890625,
+        "right": 219.96875,
+        "bottom": 475.890625,
+        "left": 193
+      },
+      "alignment": "baseline",
+      "overflow": false
+    },
+    {
+      "engine": "webkit",
+      "width": 1440,
+      "path": "/courses/meta-ads/",
+      "text": "AED 50",
+      "letterSpacing": "normal",
+      "numeric": "lining-nums tabular-nums",
+      "amount": {
+        "x": 782.96875,
+        "y": 416.90625,
+        "width": 46.71875,
+        "height": 42,
+        "top": 416.90625,
+        "right": 829.6875,
+        "bottom": 458.90625,
+        "left": 782.96875
+      },
+      "currency": {
+        "x": 748,
+        "y": 442.296875,
+        "width": 26.96875,
+        "height": 12,
+        "top": 442.296875,
+        "right": 774.96875,
+        "bottom": 454.296875,
+        "left": 748
+      },
+      "alignment": "baseline",
+      "overflow": false
+    },
+    {
+      "engine": "webkit",
+      "width": 1440,
+      "path": "/courses/practical-ai/",
+      "text": "AED 50",
+      "letterSpacing": "normal",
+      "numeric": "lining-nums tabular-nums",
+      "amount": {
+        "x": 782.96875,
+        "y": 416.90625,
+        "width": 46.71875,
+        "height": 42,
+        "top": 416.90625,
+        "right": 829.6875,
+        "bottom": 458.90625,
+        "left": 782.96875
+      },
+      "currency": {
+        "x": 748,
+        "y": 442.296875,
+        "width": 26.96875,
+        "height": 12,
+        "top": 442.296875,
+        "right": 774.96875,
+        "bottom": 454.296875,
+        "left": 748
+      },
+      "alignment": "baseline",
+      "overflow": false
+    }
+  ],
+  "flows": [
+    {
+      "engine": "chrome",
+      "checks": "repeated adds; stable scroll/button geometry; optional cart; held notification focus; focus/inert/Escape; interrupted drawer transitions; both/100/50/empty; email invalidation; persistence; reduced motion; disabled payment"
+    },
+    {
+      "engine": "webkit",
+      "checks": "repeated adds; stable scroll/button geometry; optional cart; held notification focus; focus/inert/Escape; interrupted drawer transitions; both/100/50/empty; email invalidation; persistence; reduced motion; disabled payment"
+    }
+  ],
+  "errors": [],
+  "mutatingRequests": []
+}

@@ -12,3 +12,39 @@
 @media(min-width:720px){:root{--gutter:32px;--space:80px}.desktop-link{display:block}.brand img{width:160px}.site-header{height:94px}.hero{grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:40px;padding-block:52px;align-items:center}.hero h1{font-size:clamp(42px,4.7vw,60px)}.hero-art{aspect-ratio:1.08;min-height:0}.hero-art img{padding:12px}.hero-note{gap:8px 14px}.buttons{grid-template-columns:minmax(0,1fr)}.course-index{grid-template-columns:repeat(4,minmax(0,1fr));gap:24px;padding-block:28px}.index-item{gap:12px}.index-item strong{font-size:30px;min-width:auto}.index-item svg{flex-basis:28px}.courses-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.course-image{aspect-ratio:1.35}.course-body h3{min-height:2.4em}.course-body{padding:28px}.section-head{grid-template-columns:1fr 1fr;gap:40px;align-items:end;margin-bottom:32px}.section-head h2,.editorial h2,.peek h2,.faq h2{font-size:38px}.editorial{grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:40px;padding:36px}.peek{grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:40px;align-items:start}.lesson-card{padding:28px}.bundle{grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:32px;padding:36px}.bundle .button{width:auto;min-width:235px}.faq{grid-template-columns:minmax(0,.8fr) minmax(0,1.2fr);gap:40px}.footer{grid-template-columns:140px minmax(0,1fr) auto;gap:28px;align-items:center;padding-block:30px}.sticky-buy{display:none}.toast{bottom:24px}.product-hero{grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:40px;align-items:start;padding-bottom:52px}.product-art{aspect-ratio:1/1.12}.product-info h1{font-size:36px}.product-detail{grid-template-columns:minmax(0,1.25fr) minmax(0,.85fr);gap:40px;padding-block:48px 72px}.product-detail h2{font-size:30px}.checkout-grid{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,.95fr);gap:28px;align-items:start;padding-bottom:80px}.checkout-heading{font-size:42px}.checkout-box h2{font-size:22px}.drawer-panel{padding-inline:28px}}
 @media(min-width:1000px){.hero{gap:64px;padding-block:60px}.hero h1{font-size:62px}.hero-art{aspect-ratio:1.12}.buttons{grid-template-columns:max-content max-content}.section-head{gap:64px}.section-head h2,.editorial h2,.peek h2,.faq h2{font-size:42px}.course-image{height:340px;aspect-ratio:auto}.course-body h3{font-size:28px}.course-body{padding:32px}.editorial{padding:44px;gap:64px}.peek,.faq{gap:64px}.lesson-card{padding:32px}.bundle{padding:40px}.product-hero{gap:56px}.product-info h1{font-size:44px}.product-detail{gap:56px}.checkout-grid{gap:32px}.checkout-box{padding:32px}}
 @media(prefers-reduced-motion:reduce){*,*:before,*:after{scroll-behavior:auto!important;transition:none!important;animation:none!important}}
+
+/* Prices share a clear baseline, with evenly spaced lining figures. */
+.price{display:inline-flex;align-items:baseline;gap:8px;font-size:inherit;line-height:1;letter-spacing:normal}
+.price-currency{font-size:12px;font-weight:600;line-height:1;letter-spacing:.045em}
+.price-amount{font-size:36px;font-weight:700;line-height:1;letter-spacing:normal;font-variant-numeric:lining-nums tabular-nums}
+.product-info .price{font-size:inherit;margin-bottom:20px}
+.product-info .price-amount{font-size:42px}
+.sticky-text strong,.cart-total{font-variant-numeric:lining-nums tabular-nums;letter-spacing:normal}
+.course-bottom{gap:16px;min-height:72px}
+.course-bottom .add-button{flex:0 1 174px;padding-inline:16px}
+
+/* Brief interaction feedback keeps the reader on the product page. */
+html{scrollbar-gutter:stable}
+.add-button{position:relative;isolation:isolate;transition:background .18s,box-shadow .2s,transform .18s}
+.add-label,.add-result{display:inline-flex;align-items:center;justify-content:center;gap:8px;transition:opacity .15s,transform .18s}
+.add-label svg,.add-result svg{width:18px;height:18px;flex:none}
+.add-result{position:absolute;inset:0;opacity:0;transform:translateY(4px)}
+.add-button.is-added .add-label{opacity:0;transform:translateY(-4px)}
+.add-button.is-added .add-result{opacity:1;transform:none}
+.add-button.is-added{box-shadow:0 0 0 3px #007f8520}
+@media(hover:hover){.add-button:hover{transform:translateY(-2px);box-shadow:0 5px 12px #007f851c}}
+.add-button:active{transform:scale(.98)}
+.drawer{pointer-events:none;transition:visibility 0s linear .28s}
+.drawer.open{pointer-events:auto;transition-delay:0s}
+.drawer-backdrop{transition:opacity .26s ease}
+.drawer-panel{transition:transform .28s cubic-bezier(.22,.61,.36,1)}
+.toast{display:flex;align-items:center;gap:14px;width:max-content;max-width:calc(100% - 32px);padding:10px 12px 10px 18px;box-shadow:0 8px 24px #16263f24;text-align:left;visibility:hidden;bottom:calc(96px + env(safe-area-inset-bottom));transition:opacity .18s,transform .2s,visibility 0s linear .2s}
+.toast.show{visibility:visible;pointer-events:auto;transition-delay:0s}
+.toast p{font-size:13px;line-height:1.5;min-width:0}
+.toast-action{min-height:44px;padding:8px 12px;border:1px solid #ffffff70;border-radius:8px;background:transparent;color:white;font-size:13px;font-weight:600;white-space:nowrap}
+.toast-dismiss{width:44px;min-height:44px;flex:none;border:0;background:transparent;color:#d6e8ee;font-size:22px;line-height:1}
+.toast button:focus-visible{outline-color:white}
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap;border:0}
+@media(max-width:359px){.course-body{padding:20px}.course-bottom{gap:12px}.course-bottom .add-button{padding-inline:12px}.add-label{gap:6px}.toast{gap:8px;padding-left:12px}.toast-action{padding-inline:9px}}
+@media(min-width:720px){.toast{bottom:24px}}
+@media(prefers-reduced-motion:reduce){.add-button,.add-label,.add-result,.drawer-panel,.toast{transform:none}.drawer:not(.open) .drawer-panel{transform:translateX(100%)}}
