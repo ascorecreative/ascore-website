@@ -1,3 +1,4 @@
+import {courseTables} from './course-schema.mjs'
 // Only application-owned tables in a separately approved dedicated database.
 const suffix='ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci'
 export const mariaDbSchema=[
@@ -21,8 +22,9 @@ export const mariaDbSchema=[
 export async function initializeMariaDbSchema(store,env=process.env){
  if(env.ASCORE_ALLOW_SCHEMA_SETUP!=='1')throw Error('Initial schema setup requires approval for the dedicated Ascore database.')
  const tables=await store.prepare('SELECT TABLE_NAME AS name FROM information_schema.tables WHERE table_schema=DATABASE()').all()
- const names=new Set(tables.map(row=>row.name)),allowed=new Set(mariaDbSchema.map(table=>table.name))
+ const names=new Set(tables.map(row=>row.name)),allowed=new Set([...mariaDbSchema.map(table=>table.name),...courseTables])
  if([...names].some(name=>!allowed.has(name))||(names.size&&!names.has('ascore_schema_versions')))throw Error('This database is not empty or verified as Ascore-owned; no schema changes were made.')
+ if(courseTables.some(name=>names.has(name)))await verifyCourseOwnership(store)
  if(names.has('ascore_schema_versions')){
   const record=await store.prepare('SELECT application,version FROM ascore_schema_versions WHERE application=? AND version=?').get('ascore-platform',1)
   if(record){await verifyMariaDbSchema(store);return {version:1,created:false}}
@@ -41,9 +43,16 @@ export async function initializeMariaDbSchema(store,env=process.env){
 
 export async function verifyMariaDbSchema(store){
  const names=new Set((await store.prepare('SELECT TABLE_NAME AS name FROM information_schema.tables WHERE table_schema=DATABASE()').all()).map(row=>row.name))
- if([...names].some(name=>!mariaDbSchema.some(table=>table.name===name)))throw Error('Production requires the dedicated Ascore-owned database.')
+ if(courseTables.some(name=>names.has(name)))await verifyCourseOwnership(store)
+ if([...names].some(name=>!mariaDbSchema.some(table=>table.name===name)&&!courseTables.includes(name)))throw Error('Production requires the dedicated Ascore-owned database.')
  if(mariaDbSchema.some(table=>!names.has(table.name)))throw Error('Approved Ascore schema initialization is required before production startup.')
  const version=await store.prepare('SELECT application,version FROM ascore_schema_versions WHERE application=? AND version=?').get('ascore-platform',1)
  if(!version)throw Error('Ascore schema ownership/version could not be verified.')
  return {version:1}
+}
+
+async function verifyCourseOwnership(store){
+ const initializing=await store.prepare('SELECT application,version FROM ascore_schema_versions WHERE application=? AND version=?').get('ascore-courses',0)
+ const complete=await store.prepare('SELECT application,version FROM ascore_schema_versions WHERE application=? AND version=?').get('ascore-courses',1)
+ if(!initializing&&!complete)throw Error('Existing course tables have no verified ownership marker.')
 }

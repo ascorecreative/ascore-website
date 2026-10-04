@@ -18,3 +18,11 @@ export const authService = {
   setupAdmin:data => portalRequest('/auth/admin-setup',{method:'POST',body:data}),
   logout:async () => { await portalRequest('/auth/logout',{method:'POST'}); csrf=null }
 }
+
+export async function portalUpload(path,file) {
+  const response=await fetch(`/api${path}`,{method:'PUT',credentials:'same-origin',headers:{'Content-Type':'application/pdf',...(csrf?{'X-CSRF-Token':csrf}:{})},body:file})
+  let data
+  try{data=await response.json()}catch{throw Error('The private upload could not be confirmed. Please try again.')}
+  if(!response.ok)throw Error(data.error||'The private upload could not be completed.')
+  return data
+}

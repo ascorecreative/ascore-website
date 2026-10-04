@@ -4,6 +4,7 @@ import { useAuth } from '../../context/AuthContext'
 import { portalRequest } from '../../services/portalApi'
 import '../../styles/portal-functional.css'
 import ZohoConnections from './ZohoConnections'
+import CourseOrders from './CourseOrders'
 
 const empty={projects:[],milestones:[],documents:[],leads:[],clients:[],integrations:null}
 const money=(amount,currency='AED')=>new Intl.NumberFormat('en-AE',{style:'currency',currency}).format(amount)
@@ -41,7 +42,7 @@ function DocumentSheet({document:invoice,client,onClose,opener}) {
 export default function PortalLayout() {
   const {user,isAdmin,logout}=useAuth()
   const [data,setData]=useState(empty)
-  const [tab,setTab]=useState('overview')
+  const [tab,setTab]=useState(()=>isAdmin&&new URLSearchParams(window.location.search).get('view')==='courses'?'courses':'overview')
   const [error,setError]=useState('')
   const [notice,setNotice]=useState('')
   const [busy,setBusy]=useState(false)
@@ -65,14 +66,14 @@ export default function PortalLayout() {
     if(await mutate(typeof path==='function'?path(values):path,transform(values),method))form.reset()
   }
   const selectedProject=data.projects.find(p=>p.id===projectId)||data.projects[0]
-  const nav=[['overview','Overview'],['projects',isAdmin?'Projects & updates':'My projects'],['documents','Quotations & finances'],...(isAdmin?[['leads','Leads'],['clients','Clients'],['connections','Connections']]:[])]
+  const nav=[['overview','Overview'],['projects',isAdmin?'Projects & updates':'My projects'],['documents','Quotations & finances'],...(isAdmin?[['leads','Leads'],['clients','Clients'],['connections','Connections'],['courses','Course orders']]:[])]
   const groups=data.documents.filter(d=>d.kind==='invoice').reduce((all,d)=>{const item=all[d.currency]||(all[d.currency]={amount:0,paid:0,balance:0});item.amount+=d.amount;item.paid+=d.amountPaid;item.balance+=d.balance;return all},{})
   const leave=async()=>{try{await logout();window.location.hash='login'}catch(err){setError(err.message)}}
   const clientOptions=<><option value="">Select client</option>{data.clients.map(c=><option key={c.id} value={c.id}>{c.name} · {c.company||c.username}</option>)}</>
 
   return <div className="portal-workspace">
     <aside className="workspace-sidebar"><a href="/" aria-label="Ascore Creative home"><img src="/logo-white.png" alt="Ascore"/></a><div className="workspace-identity"><span>{isAdmin?'AGENCY WORKSPACE':'CLIENT WORKSPACE'}</span><strong>{user.name}</strong><small>@{user.username}</small></div><nav aria-label="Portal navigation">{nav.map(([id,label])=><button type="button" key={id} className={tab===id?'active':''} aria-current={tab===id?'page':undefined} onClick={()=>{setTab(id);setNotice('');setError('')}}>{label}<ArrowUpRight size={15}/></button>)}</nav><a href="/" className="workspace-return"><ArrowLeft size={16}/>Back to website</a><button type="button" className="workspace-logout" onClick={leave}><LogOut size={16}/>Sign out</button></aside>
-    <main className="workspace-main"><header className="workspace-header"><div><p>{isAdmin?'THE STUDIO / OPERATIONS':'YOUR PROJECTS / IN FOCUS'}</p><h1>{nav.find(([id])=>id===tab)?.[1]}</h1></div><button type="button" onClick={refresh} aria-label="Refresh workspace"><RefreshCw size={18}/></button></header><p className="workspace-local">Local development · Financial tracking · Zoho connection pending</p>
+    <main className="workspace-main"><header className="workspace-header"><div><p>{isAdmin?'THE STUDIO / OPERATIONS':'YOUR PROJECTS / IN FOCUS'}</p><h1>{nav.find(([id])=>id===tab)?.[1]}</h1></div><button type="button" onClick={refresh} aria-label="Refresh workspace"><RefreshCw size={18}/></button></header>{tab!=='courses'&&<p className="workspace-local">Local development · Financial tracking · Zoho connection pending</p>}
     {error&&<p className="portal-form-error" role="alert">{error}</p>}{notice&&<p className="portal-notice" role="status">{notice}</p>}
     {!loaded&&!error&&<p>Loading workspace…</p>}
     {loaded&&tab==='overview'&&<><div className="workspace-counts"><div><span>Projects</span><strong>{data.projects.length}</strong></div><div><span>Financial documents</span><strong>{data.documents.length}</strong></div>{isAdmin&&<div><span>Active leads</span><strong>{data.leads.filter(l=>!['won','lost'].includes(l.status)).length}</strong></div>}</div><h2>Invoice balances</h2>{Object.keys(groups).length?<div className="workspace-balances">{Object.entries(groups).map(([currency,total])=><article key={currency}><span>{currency}</span><p>Invoiced <strong>{money(total.amount,currency)}</strong></p><p>Recorded paid <strong>{money(total.paid,currency)}</strong></p><p>Outstanding <strong>{money(total.balance,currency)}</strong></p></article>)}</div>:<div className="workspace-empty">Your financial records will appear here when the agency creates them.</div>}<h2>Current projects</h2><ProjectList projects={data.projects} milestones={data.milestones}/></>}
@@ -85,6 +86,7 @@ export default function PortalLayout() {
 
     {loaded&&tab==='clients'&&isAdmin&&<><p>Clients register through the website. Each account has its own projects and financial documents.</p><div className="workspace-table-wrap"><table className="workspace-table"><thead><tr><th>Client</th><th>Username</th><th>Company</th><th>Email</th></tr></thead><tbody>{data.clients.map(c=><tr key={c.id}><td>{c.name}</td><td>{c.username}</td><td>{c.company||'—'}</td><td>{c.email}</td></tr>)}</tbody></table>{!data.clients.length&&<p className="workspace-empty">No client accounts registered yet.</p>}</div></>}
 
+    {loaded&&tab==='courses'&&isAdmin&&<CourseOrders/>}
     {loaded&&tab==='connections'&&isAdmin&&<ZohoConnections data={data} onRefresh={refresh}/>}
     </main>{selectedDocument&&<DocumentSheet opener={documentOpener} document={selectedDocument} client={isAdmin?data.clients.find(c=>c.id===selectedDocument.clientId):user} onClose={()=>setSelectedDocument(null)}/>}
   </div>

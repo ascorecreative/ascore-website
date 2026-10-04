@@ -1,0 +1,62 @@
+{
+  "cases": [
+    {
+      "engine": "chrome",
+      "width": 320,
+      "checks": "invalid/valid server coupon; AED100->0; email validation; no layout overflow; duplicate submit sends once; private links match both real PDF hashes; changed email/cart invalidates review/coupon"
+    },
+    {
+      "engine": "chrome",
+      "width": 390,
+      "checks": "invalid/valid server coupon; AED100->0; email validation; no layout overflow; duplicate submit sends once; private links match both real PDF hashes; changed email/cart invalidates review/coupon"
+    },
+    {
+      "engine": "chrome",
+      "width": 768,
+      "checks": "invalid/valid server coupon; AED100->0; email validation; no layout overflow; duplicate submit sends once; private links match both real PDF hashes; changed email/cart invalidates review/coupon"
+    },
+    {
+      "engine": "chrome",
+      "width": 1440,
+      "checks": "invalid/valid server coupon; AED100->0; email validation; no layout overflow; duplicate submit sends once; private links match both real PDF hashes; changed email/cart invalidates review/coupon"
+    },
+    {
+      "engine": "webkit",
+      "width": 320,
+      "checks": "invalid/valid server coupon; AED100->0; email validation; no layout overflow; duplicate submit sends once; private links match both real PDF hashes; changed email/cart invalidates review/coupon"
+    },
+    {
+      "engine": "webkit",
+      "width": 390,
+      "checks": "invalid/valid server coupon; AED100->0; email validation; no layout overflow; duplicate submit sends once; private links match both real PDF hashes; changed email/cart invalidates review/coupon"
+    },
+    {
+      "engine": "webkit",
+      "width": 768,
+      "checks": "invalid/valid server coupon; AED100->0; email validation; no layout overflow; duplicate submit sends once; private links match both real PDF hashes; changed email/cart invalidates review/coupon"
+    },
+    {
+      "engine": "webkit",
+      "width": 1440,
+      "checks": "invalid/valid server coupon; AED100->0; email validation; no layout overflow; duplicate submit sends once; private links match both real PDF hashes; changed email/cart invalidates review/coupon"
+    }
+  ],
+  "errors": [],
+  "privateInstall": {
+    "adminCsrfRequired": true,
+    "bothVerified": true
+  },
+  "dashboard": {
+    "summary": {
+      "totalOrders": 8,
+      "freeOrders": 8,
+      "paidOrders": 0,
+      "paidRevenueMinor": 0,
+      "emailsAccepted": 8
+    },
+    "actualPersistentRows": 8,
+    "statusFilter": true,
+    "mobileOverflow": false,
+    "unauthenticatedBlocked": true
+  }
+}
