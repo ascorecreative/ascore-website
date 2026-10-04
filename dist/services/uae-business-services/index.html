@@ -2,19 +2,22 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <script>
-      // Some phone browser modes retain a wide layout viewport. Normalize that
-      // initial mismatch before the page paints; leave pinch zoom unrestricted.
+      // A phone can advertise a desktop viewport or settle its viewport after
+      // this head script. Set its CSS device width without restricting zoom.
       (() => {
-        if (!navigator.maxTouchPoints || Math.min(screen.width, screen.height) > 600) return;
+        const phone = Math.min(screen.width, screen.height) <= 600 &&
+          (navigator.maxTouchPoints > 0 || matchMedia('(pointer:coarse)').matches || /iPhone|iPod|Android.*Mobile/i.test(navigator.userAgent));
+        if (!phone) return;
         const viewport = document.querySelector('meta[name="viewport"]');
         const deviceWidth = () => screen.orientation?.type
           ? (screen.orientation.type.startsWith('landscape') ? Math.max(screen.width, screen.height) : Math.min(screen.width, screen.height))
           : (Math.abs(window.orientation || 0) === 90 ? Math.max(screen.width, screen.height) : Math.min(screen.width, screen.height));
-        if (innerWidth <= deviceWidth() * 1.25) return;
-        const sync = () => viewport.setAttribute('content', `width=${deviceWidth()}, initial-scale=1.0`);
+        const sync = () => viewport.setAttribute('content', `width=${deviceWidth()}, initial-scale=1.0, viewport-fit=cover`);
         sync();
+        document.addEventListener('DOMContentLoaded', sync, { once: true });
+        window.addEventListener('pageshow', sync);
         window.addEventListener('orientationchange', sync);
       })();
     </script>
@@ -25,9 +28,9 @@
     <meta property="og:image" content="https://ascore.ae/og-preview.jpg" />
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:image" content="https://ascore.ae/og-preview.jpg" />
-    <script type="module" crossorigin src="/assets/index-Y86Iczza.js"></script>
+    <script type="module" crossorigin src="/assets/index-mN-3gHi7.js"></script>
     <link rel="modulepreload" crossorigin href="/assets/jsx-runtime-n5LQ9ujS.js">
-    <link rel="stylesheet" crossorigin href="/assets/index-CiZ_rGxD.css">
+    <link rel="stylesheet" crossorigin href="/assets/index-CYV3bvcd.css">
   <meta name="description" content="Corporate tax, VAT and business support from Ascore Creative. Discuss record preparation, engagement scope and compliance coordination for your UAE business." />
 <meta name="robots" content="index,follow" />
 <meta property="og:title" content="UAE Tax, VAT &amp; Business Support | Ascore Creative" />

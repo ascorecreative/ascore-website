@@ -40,6 +40,7 @@ function SiteHeader(){
    }
   }
   reset();document.body.classList.add('site-menu-open')
+  if(compact.matches)nav.current?.querySelector('a')?.focus({preventScroll:true})
   window.addEventListener('keydown',key);compact.addEventListener('change',reset)
   return()=>{window.removeEventListener('keydown',key);compact.removeEventListener('change',reset);document.body.classList.remove('site-menu-open')}
  },[open])

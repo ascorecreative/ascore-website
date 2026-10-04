@@ -122,3 +122,16 @@
 @media (max-width:1024px) and (prefers-reduced-motion:reduce) {
  .new-site .service-stack-card {position:relative;top:auto;min-height:0;margin-bottom:18px}
 }
+
+/* Readable phone typography and space for notches in edge-to-edge browser modes. */
+@media (max-width:1024px) {
+ .new-site .reference-header {height:calc(70px + env(safe-area-inset-top));min-height:calc(70px + env(safe-area-inset-top));padding-top:env(safe-area-inset-top);padding-left:max(20px,env(safe-area-inset-left));padding-right:max(20px,env(safe-area-inset-right))}
+ .new-site .reference-header .site-nav {padding-top:calc(90px + env(safe-area-inset-top));padding-left:max(24px,env(safe-area-inset-left));padding-right:max(24px,env(safe-area-inset-right));padding-bottom:max(24px,env(safe-area-inset-bottom))}
+ .new-site .after-video-chat {bottom:max(20px,env(safe-area-inset-bottom));right:max(20px,env(safe-area-inset-right))}
+}
+@media (max-width:600px) {
+ .new-site .idea-stage {padding-top:calc(100px + env(safe-area-inset-top))}
+ .new-site .idea-copy h1 {letter-spacing:-.045em;word-spacing:.035em}
+ .new-site .manifesto h2 {font-size:clamp(32px,8.8vw,42px);line-height:1.15;letter-spacing:-.035em;word-spacing:.035em}
+ .new-site .statement h2 {font-size:clamp(38px,10vw,56px);line-height:1.08;letter-spacing:-.04em;word-spacing:.035em}
+}
