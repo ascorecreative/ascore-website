@@ -31,7 +31,7 @@ test('zero-value order persists once, emails the customer privately, and rejects
  orders.forEach(r=>assert.equal(r.status,202));const order=orders[0].data;assert.equal(order.totalMinor,0);assert.equal(order.paymentStatus,'free');assert.equal((await a.settled(order)).data.delivery,'accepted');assert.equal(a.messages.length,1)
  assert.equal(a.messages[0].to,body.email);assert.equal(a.messages[0].envelope.to[0],body.email);assert.match(a.messages[0].text,/FREE coupon applied/);assert.match(a.messages[0].text,/\/api\/courses\/download/);assert.ok(!a.messages[0].attachments)
  assert.equal((await a.post(body)).status,202);assert.equal(a.messages.length,1)
- assert.equal((await a.post({...body,email:'other@example.com'})).status,409);assert.equal((await a.post({...a.body(),email:'bad\r\nBcc: victim@example.com'})).status,400)
+ assert.equal((await a.post({...body,email:'other@example.com'})).status,409);assert.equal((await a.post({...a.body(),email:'bad\r\nBcc: victim@example.com'})).status,400);assert.equal((await a.post({...a.body(),email:'bad\u0000@example.com'})).status,400)
  assert.equal((await a.call('/api/courses/orders/'+order.id)).status,404)
 })
 test('downloads bind course and order, block tampering/expiry, avoid caching and do not consume HEAD',async t=>{

@@ -115,7 +115,7 @@ export async function createCourses({db,env={},readJson,origin,sendEmail,pdfRead
     if(!ready())fail(503,'Free course delivery is being prepared. Please try again later.')
     const body=await readJson(req);strictFields(body,['requestId','email','items','coupon']);const q=quote(body)
     if(!uuid(body.requestId))fail(400,'Refresh checkout and try again.')
-    if(typeof body.email!=='string'||body.email.length>254||! /^[^\s@<>\r\n]+@[^\s@<>\r\n]+\.[^\s@<>\r\n]+$/.test(body.email.trim()))fail(400,'Enter a valid email address.')
+    if(typeof body.email!=='string'||body.email.length>254||/[\u0000-\u001f\u007f]/.test(body.email)||! /^[^\s@<>\r\n]+@[^\s@<>\r\n]+\.[^\s@<>\r\n]+$/.test(body.email.trim()))fail(400,'Enter a valid email address.')
     const email=body.email.trim().toLowerCase(),id=body.requestId.toLowerCase(),fingerprint=hash(JSON.stringify({...q,email}))
     const save=()=>db.transaction(async()=>{
      await limit('ip:'+hash(req.socket.remoteAddress||'local'),100,3600000)
