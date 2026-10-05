@@ -1,0 +1,509 @@
+{
+  "cases": [
+    {
+      "engine": "chrome",
+      "mobile": false,
+      "frames": [
+        {
+          "progress": 0.25,
+          "linked": "true",
+          "labels": [
+            {
+              "position": "translate3d(909.52px, 193.45px, 0px)",
+              "icon": "service-icon-float"
+            },
+            {
+              "position": "translate3d(932.18px, 360.89px, 0px)",
+              "icon": "service-icon-float"
+            },
+            {
+              "position": "translate3d(839.24px, 511.83px, 0px)",
+              "icon": "service-icon-float"
+            },
+            {
+              "position": "translate3d(387.45px, 671.56px, 0px)",
+              "icon": "service-icon-float"
+            },
+            {
+              "position": "translate3d(315.83px, 520.63px, 0px)",
+              "icon": "service-icon-float"
+            }
+          ],
+          "overflow": false
+        },
+        {
+          "progress": 0.5,
+          "linked": "true",
+          "labels": [
+            {
+              "position": "translate3d(1075.37px, 282.66px, 0px)",
+              "icon": "service-icon-float"
+            },
+            {
+              "position": "translate3d(1043.29px, 537.13px, 0px)",
+              "icon": "service-icon-float"
+            },
+            {
+              "position": "translate3d(829.52px, 688.06px, 0px)",
+              "icon": "service-icon-float"
+            },
+            {
+              "position": "translate3d(246.02px, 573.54px, 0px)",
+              "icon": "service-icon-float"
+            },
+            {
+              "position": "translate3d(167.38px, 344.57px, 0px)",
+              "icon": "service-icon-float"
+            }
+          ],
+          "overflow": false
+        },
+        {
+          "progress": 0.75,
+          "linked": "true",
+          "labels": [
+            {
+              "position": "translate3d(943.47px, 336.7px, 0px)",
+              "icon": "service-icon-float"
+            },
+            {
+              "position": "translate3d(828.83px, 504.14px, 0px)",
+              "icon": "service-icon-float"
+            },
+            {
+              "position": "translate3d(326.55px, 369.69px, 0px)",
+              "icon": "service-icon-float"
+            },
+            {
+              "position": "translate3d(287.16px, 671.56px, 0px)",
+              "icon": "service-icon-float"
+            },
+            {
+              "position": "translate3d(354.38px, 520.63px, 0px)",
+              "icon": "service-icon-float"
+            }
+          ],
+          "overflow": false
+        },
+        {
+          "progress": 0.25,
+          "linked": "true",
+          "labels": [
+            {
+              "position": "translate3d(912.93px, 189.41px, 0px)",
+              "icon": "service-icon-float"
+            },
+            {
+              "position": "translate3d(939.75px, 356.85px, 0px)",
+              "icon": "service-icon-float"
+            },
+            {
+              "position": "translate3d(845.91px, 507.78px, 0px)",
+              "icon": "service-icon-float"
+            },
+            {
+              "position": "translate3d(387.61px, 671.56px, 0px)",
+              "icon": "service-icon-float"
+            },
+            {
+              "position": "translate3d(309.88px, 520.63px, 0px)",
+              "icon": "service-icon-float"
+            }
+          ],
+          "overflow": false
+        }
+      ],
+      "videoPlaying": true,
+      "courseRoutes": true,
+      "cartRestored": true,
+      "couponTotal": 0,
+      "deliveryDisabled": true,
+      "cached": [
+        {
+          "url": "http://127.0.0.1:4173/courses/styles.css?v=8a58fad1571a",
+          "transfer": 0
+        },
+        {
+          "url": "http://127.0.0.1:4173/courses/assets/course-hero.webp",
+          "transfer": 0
+        },
+        {
+          "url": "http://127.0.0.1:4173/courses/app.js?v=5ebf34bc0645",
+          "transfer": 0
+        },
+        {
+          "url": "http://127.0.0.1:4173/courses/assets/ascore-logo.webp",
+          "transfer": 0
+        },
+        {
+          "url": "http://127.0.0.1:4173/courses/assets/meta-book.webp",
+          "transfer": 0
+        },
+        {
+          "url": "http://127.0.0.1:4173/courses/assets/ai-book.webp",
+          "transfer": 0
+        }
+      ],
+      "navigation": true
+    },
+    {
+      "engine": "chrome",
+      "mobile": true,
+      "frames": [
+        {
+          "progress": 0.25050911110523394,
+          "linked": "true",
+          "labels": [
+            {
+              "position": "translate3d(120.41px, 383.05px, 0px)",
+              "icon": "service-icon-float"
+            }
+          ],
+          "overflow": false
+        },
+        {
+          "progress": 0.5001719076459231,
+          "linked": "true",
+          "labels": [
+            {
+              "position": "translate3d(120.41px, 586.47px, 0px)",
+              "icon": "service-icon-float"
+            }
+          ],
+          "overflow": false
+        },
+        {
+          "progress": 0.7506810187511571,
+          "linked": "true",
+          "labels": [
+            {
+              "position": "translate3d(20px, 504.91px, 0px)",
+              "icon": "service-icon-float"
+            }
+          ],
+          "overflow": false
+        },
+        {
+          "progress": 0.25050911110523394,
+          "linked": "true",
+          "labels": [
+            {
+              "position": "translate3d(120.41px, 381.79px, 0px)",
+              "icon": "service-icon-float"
+            }
+          ],
+          "overflow": false
+        }
+      ],
+      "videoPlaying": true,
+      "courseRoutes": true,
+      "cartRestored": true,
+      "couponTotal": 0,
+      "deliveryDisabled": true,
+      "cached": [
+        {
+          "url": "http://127.0.0.1:4173/courses/styles.css?v=8a58fad1571a",
+          "transfer": 0
+        },
+        {
+          "url": "http://127.0.0.1:4173/courses/app.js?v=5ebf34bc0645",
+          "transfer": 0
+        },
+        {
+          "url": "http://127.0.0.1:4173/courses/assets/course-hero.webp",
+          "transfer": 0
+        },
+        {
+          "url": "http://127.0.0.1:4173/courses/assets/ascore-logo.webp",
+          "transfer": 0
+        },
+        {
+          "url": "http://127.0.0.1:4173/courses/assets/meta-book.webp",
+          "transfer": 0
+        },
+        {
+          "url": "http://127.0.0.1:4173/courses/assets/ai-book.webp",
+          "transfer": 0
+        }
+      ],
+      "navigation": true
+    },
+    {
+      "engine": "chrome",
+      "reducedMotionHonored": true
+    },
+    {
+      "engine": "chrome",
+      "courseContentWithoutJS": true
+    },
+    {
+      "engine": "webkit",
+      "mobile": false,
+      "frames": [
+        {
+          "progress": 0.25,
+          "linked": "true",
+          "labels": [
+            {
+              "position": "translate3d(909.63px, 193.31px, 0px)",
+              "icon": "service-icon-float"
+            },
+            {
+              "position": "translate3d(932.43px, 360.74px, 0px)",
+              "icon": "service-icon-float"
+            },
+            {
+              "position": "translate3d(839.47px, 511.68px, 0px)",
+              "icon": "service-icon-float"
+            },
+            {
+              "position": "translate3d(387.46px, 671.56px, 0px)",
+              "icon": "service-icon-float"
+            },
+            {
+              "position": "translate3d(315.64px, 520.63px, 0px)",
+              "icon": "service-icon-float"
+            }
+          ],
+          "overflow": false
+        },
+        {
+          "progress": 0.5,
+          "linked": "true",
+          "labels": [
+            {
+              "position": "translate3d(1075.44px, 282.87px, 0px)",
+              "icon": "service-icon-float"
+            },
+            {
+              "position": "translate3d(1043.18px, 537.13px, 0px)",
+              "icon": "service-icon-float"
+            },
+            {
+              "position": "translate3d(829.3px, 688.06px, 0px)",
+              "icon": "service-icon-float"
+            },
+            {
+              "position": "translate3d(245.87px, 573.38px, 0px)",
+              "icon": "service-icon-float"
+            },
+            {
+              "position": "translate3d(167.41px, 344.35px, 0px)",
+              "icon": "service-icon-float"
+            }
+          ],
+          "overflow": false
+        },
+        {
+          "progress": 0.75,
+          "linked": "true",
+          "labels": [
+            {
+              "position": "translate3d(944.1px, 337.23px, 0px)",
+              "icon": "service-icon-float"
+            },
+            {
+              "position": "translate3d(829.36px, 504.66px, 0px)",
+              "icon": "service-icon-float"
+            },
+            {
+              "position": "translate3d(326.47px, 369.69px, 0px)",
+              "icon": "service-icon-float"
+            },
+            {
+              "position": "translate3d(286.65px, 671.56px, 0px)",
+              "icon": "service-icon-float"
+            },
+            {
+              "position": "translate3d(353.69px, 520.63px, 0px)",
+              "icon": "service-icon-float"
+            }
+          ],
+          "overflow": false
+        },
+        {
+          "progress": 0.25,
+          "linked": "true",
+          "labels": [
+            {
+              "position": "translate3d(912.91px, 189.42px, 0px)",
+              "icon": "service-icon-float"
+            },
+            {
+              "position": "translate3d(939.72px, 356.86px, 0px)",
+              "icon": "service-icon-float"
+            },
+            {
+              "position": "translate3d(845.89px, 507.8px, 0px)",
+              "icon": "service-icon-float"
+            },
+            {
+              "position": "translate3d(387.61px, 671.56px, 0px)",
+              "icon": "service-icon-float"
+            },
+            {
+              "position": "translate3d(309.91px, 520.63px, 0px)",
+              "icon": "service-icon-float"
+            }
+          ],
+          "overflow": false
+        }
+      ],
+      "videoPlaying": true,
+      "courseRoutes": true,
+      "cartRestored": true,
+      "couponTotal": 0,
+      "deliveryDisabled": true,
+      "cached": [
+        {
+          "url": "http://127.0.0.1:4173/courses/styles.css?v=8a58fad1571a",
+          "transfer": 0
+        },
+        {
+          "url": "http://127.0.0.1:4173/courses/app.js?v=5ebf34bc0645",
+          "transfer": 0
+        },
+        {
+          "url": "http://127.0.0.1:4173/courses/assets/course-hero.webp",
+          "transfer": 0
+        },
+        {
+          "url": "http://127.0.0.1:4173/courses/assets/ascore-logo.webp",
+          "transfer": 0
+        },
+        {
+          "url": "http://127.0.0.1:4173/courses/assets/meta-book.webp",
+          "transfer": 0
+        },
+        {
+          "url": "http://127.0.0.1:4173/courses/assets/ai-book.webp",
+          "transfer": 0
+        }
+      ],
+      "navigation": true
+    },
+    {
+      "engine": "webkit",
+      "mobile": true,
+      "frames": [
+        {
+          "progress": 0.2496627965406892,
+          "linked": "true",
+          "labels": [
+            {
+              "position": "translate3d(120.41px, 383.24px, 0px)",
+              "icon": "service-icon-float"
+            }
+          ],
+          "overflow": false
+        },
+        {
+          "progress": 0.5001719076459231,
+          "linked": "true",
+          "labels": [
+            {
+              "position": "translate3d(120.41px, 586.48px, 0px)",
+              "icon": "service-icon-float"
+            }
+          ],
+          "overflow": false
+        },
+        {
+          "progress": 0.7498347041866124,
+          "linked": "true",
+          "labels": [
+            {
+              "position": "translate3d(20px, 504.66px, 0px)",
+              "icon": "service-icon-float"
+            }
+          ],
+          "overflow": false
+        },
+        {
+          "progress": 0.2496627965406892,
+          "linked": "true",
+          "labels": [
+            {
+              "position": "translate3d(120.41px, 381.93px, 0px)",
+              "icon": "service-icon-float"
+            }
+          ],
+          "overflow": false
+        }
+      ],
+      "videoPlaying": true,
+      "courseRoutes": true,
+      "cartRestored": true,
+      "couponTotal": 0,
+      "deliveryDisabled": true,
+      "cached": [
+        {
+          "url": "http://127.0.0.1:4173/courses/styles.css?v=8a58fad1571a",
+          "transfer": 0
+        },
+        {
+          "url": "http://127.0.0.1:4173/courses/app.js?v=5ebf34bc0645",
+          "transfer": 0
+        },
+        {
+          "url": "http://127.0.0.1:4173/courses/assets/course-hero.webp",
+          "transfer": 0
+        },
+        {
+          "url": "http://127.0.0.1:4173/courses/assets/ascore-logo.webp",
+          "transfer": 0
+        },
+        {
+          "url": "http://127.0.0.1:4173/courses/assets/meta-book.webp",
+          "transfer": 0
+        },
+        {
+          "url": "http://127.0.0.1:4173/courses/assets/ai-book.webp",
+          "transfer": 0
+        }
+      ],
+      "navigation": true
+    },
+    {
+      "engine": "webkit",
+      "reducedMotionHonored": true
+    },
+    {
+      "engine": "webkit",
+      "courseContentWithoutJS": true
+    }
+  ],
+  "errors": [],
+  "desktopSections": [
+    {
+      "label": "before",
+      "deck": [
+        "matrix(0.986057, -0.16641, 0.16641, 0.986057, 0, 0)",
+        "matrix(0.309363, -0.950944, 0.950944, 0.309363, 0, 0)",
+        "matrix(0.986057, -0.16641, 0.16641, 0.986057, 0, 0)"
+      ],
+      "reading": [
+        "0.14597113100676046",
+        "0.502631098118034"
+      ],
+      "statementRotates": true,
+      "serviceCardsSticky": true,
+      "footerAnimating": true
+    },
+    {
+      "label": "after",
+      "deck": [
+        "matrix(0.986057, -0.16641, 0.16641, 0.986057, 0, 0)",
+        "matrix(0.309363, -0.950944, 0.950944, 0.309363, 0, 0)",
+        "matrix(0.986057, -0.16641, 0.16641, 0.986057, 0, 0)"
+      ],
+      "reading": [
+        "0.14597113100676046",
+        "0.502631098118034"
+      ],
+      "statementRotates": true,
+      "serviceCardsSticky": true,
+      "footerAnimating": true
+    }
+  ]
+}

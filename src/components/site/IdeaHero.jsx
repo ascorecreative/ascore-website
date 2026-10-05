@@ -51,6 +51,18 @@ export default function IdeaHero({ reducedMotion, onOpenService }) {
 
   useEffect(() => {
     if (reducedMotion) { setProgress(0); setVideoProgress(0); setEnhanced(false); return }
+    const enhancementAllowed = !window.matchMedia('(prefers-reduced-motion: reduce)').matches &&
+      new URLSearchParams(window.location.search).get('motion') !== 'reduce' &&
+      new URLSearchParams(window.location.search).get('webgl') !== 'off'
+    // Fetch the model alongside the lazy renderer, rather than after its download,
+    // parse and WebGL setup. The poster remains the first painted artwork.
+    let modelPreload
+    if (enhancementAllowed) {
+      modelPreload = document.createElement('link')
+      modelPreload.rel = 'preload'; modelPreload.as = 'fetch'
+      modelPreload.href = '/hero/ascore-unified-sculpted.glb'; modelPreload.crossOrigin = 'anonymous'
+      document.head.appendChild(modelPreload)
+    }
     let frame = 0
     const update = () => {
       frame = 0
@@ -67,7 +79,7 @@ export default function IdeaHero({ reducedMotion, onOpenService }) {
     const observer = new IntersectionObserver(([entry]) => setVisible(entry.isIntersecting&&entry.intersectionRect.height>1),{threshold:[0,.01]})
     observer.observe(section.current)
     const idle = window.setTimeout(() => {
-      if (new URLSearchParams(window.location.search).get('webgl') !== 'off') setEnhanced(true)
+      if (enhancementAllowed) setEnhanced(true)
     }, 180)
     update()
     window.addEventListener('scroll', schedule, { passive: true })
@@ -75,6 +87,7 @@ export default function IdeaHero({ reducedMotion, onOpenService }) {
     return () => {
       cancelAnimationFrame(frame)
       clearTimeout(idle)
+      modelPreload?.remove()
       observer.disconnect()
       window.removeEventListener('scroll', schedule)
       window.removeEventListener('resize', schedule)

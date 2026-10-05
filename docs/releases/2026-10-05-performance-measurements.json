@@ -1,0 +1,511 @@
+{
+  "conditions": {
+    "network": "3 Mbps down, 100 ms RTT, 1 Mbps up",
+    "cpuThrottle": 4,
+    "cache": "disabled",
+    "device": "Mac Chrome; mobile viewport emulated; not a physical-phone benchmark",
+    "note": "Comparable localhost before/after uses the existing Node static server. Live CDN already compressed text, so these gains do not directly predict live timings. Final model compression strengthened from 64,144 to 57,873 bytes after the after-sample."
+  },
+  "reports": [
+    {
+      "label": "live-before",
+      "viewport": "1440x900",
+      "path": "/",
+      "ttfbMs": 315.69999998807907,
+      "fcpMs": 1736,
+      "lcpMs": 1756,
+      "earlyTransferBytes": 617964,
+      "longTasks": [
+        {
+          "start": 4742.299999982119,
+          "duration": 72
+        },
+        {
+          "start": 4891.399999976158,
+          "duration": 115
+        },
+        {
+          "start": 5050.399999976158,
+          "duration": 111
+        }
+      ],
+      "modelAndRenderer": [
+        {
+          "url": "https://ascore.ae/assets/Sculpture-BGydpBdH.js",
+          "type": "script",
+          "start": 2078.199999988079,
+          "duration": 2655.4000000059605,
+          "encoded": 299035,
+          "transfer": 299335
+        }
+      ],
+      "animationAtInitialSample": {
+        "progress": "0",
+        "poster": "idea-poster",
+        "canvas": true
+      },
+      "animationScrollSamples": [
+        {
+          "progress": "0.25",
+          "poster": "idea-poster"
+        },
+        {
+          "progress": "0.5",
+          "poster": "idea-poster"
+        },
+        {
+          "progress": "0.8",
+          "poster": "idea-poster"
+        },
+        {
+          "progress": "0.95",
+          "poster": "idea-poster has-webgl"
+        }
+      ],
+      "errors": [
+        "Failed to load resource: the server responded with a status of 403 ()",
+        "Failed to load resource: the server responded with a status of 404 ()"
+      ]
+    },
+    {
+      "label": "live-before",
+      "viewport": "1440x900",
+      "path": "/courses/",
+      "ttfbMs": 510.80000001192093,
+      "fcpMs": 908,
+      "lcpMs": 1900,
+      "earlyTransferBytes": 250020,
+      "longTasks": [],
+      "modelAndRenderer": [],
+      "animationAtInitialSample": {
+        "canvas": false
+      },
+      "animationScrollSamples": [],
+      "errors": [
+        "Failed to load resource: the server responded with a status of 403 ()"
+      ]
+    },
+    {
+      "label": "live-before",
+      "viewport": "390x844",
+      "path": "/",
+      "ttfbMs": 320.2000000178814,
+      "fcpMs": 1372,
+      "lcpMs": 1372,
+      "earlyTransferBytes": 809376,
+      "longTasks": [
+        {
+          "start": 1348,
+          "duration": 53
+        },
+        {
+          "start": 3141.7000000178814,
+          "duration": 64
+        },
+        {
+          "start": 3275.0999999940395,
+          "duration": 83
+        },
+        {
+          "start": 3400.9000000059605,
+          "duration": 97
+        }
+      ],
+      "modelAndRenderer": [
+        {
+          "url": "https://ascore.ae/assets/Sculpture-BGydpBdH.js",
+          "type": "script",
+          "start": 1636.9000000059605,
+          "duration": 1497.4000000059605,
+          "encoded": 299035,
+          "transfer": 299335
+        },
+        {
+          "url": "https://ascore.ae/hero/ascore-unified-sculpted.glb",
+          "type": "fetch",
+          "start": 3388.5,
+          "duration": 978,
+          "encoded": 191112,
+          "transfer": 191412
+        }
+      ],
+      "animationAtInitialSample": {
+        "progress": "0",
+        "poster": "idea-poster has-webgl",
+        "canvas": true
+      },
+      "animationScrollSamples": [
+        {
+          "progress": "0.25050911110523394",
+          "poster": "idea-poster has-webgl"
+        },
+        {
+          "progress": "0.5001719076459231",
+          "poster": "idea-poster has-webgl"
+        },
+        {
+          "progress": "0.8006135780592949",
+          "poster": "idea-poster has-webgl"
+        },
+        {
+          "progress": "0.9504112559837085",
+          "poster": "idea-poster has-webgl"
+        }
+      ],
+      "errors": [
+        "Failed to load resource: the server responded with a status of 403 ()"
+      ]
+    },
+    {
+      "label": "live-before",
+      "viewport": "390x844",
+      "path": "/courses/",
+      "ttfbMs": 329,
+      "fcpMs": 1012,
+      "lcpMs": 1792,
+      "earlyTransferBytes": 250020,
+      "longTasks": [
+        {
+          "start": 868.0999999940395,
+          "duration": 53
+        }
+      ],
+      "modelAndRenderer": [],
+      "animationAtInitialSample": {
+        "canvas": false
+      },
+      "animationScrollSamples": [],
+      "errors": [
+        "Failed to load resource: the server responded with a status of 403 ()"
+      ]
+    },
+    {
+      "label": "local-before",
+      "viewport": "1440x900",
+      "path": "/",
+      "ttfbMs": 22.80000001192093,
+      "fcpMs": 3172,
+      "lcpMs": 3172,
+      "earlyTransferBytes": 1831290,
+      "longTasks": [
+        {
+          "start": 6399.200000017881,
+          "duration": 66
+        },
+        {
+          "start": 6533.4000000059605,
+          "duration": 87
+        },
+        {
+          "start": 6662.5999999940395,
+          "duration": 103
+        }
+      ],
+      "modelAndRenderer": [
+        {
+          "url": "http://127.0.0.1:4174/assets/Sculpture-BGydpBdH.js",
+          "type": "script",
+          "start": 3418.300000011921,
+          "duration": 2965.699999988079,
+          "encoded": 931074,
+          "transfer": 931374
+        },
+        {
+          "url": "http://127.0.0.1:4174/hero/ascore-unified-sculpted.glb",
+          "type": "fetch",
+          "start": 6649.0999999940395,
+          "duration": 611.7000000178814,
+          "encoded": 191112,
+          "transfer": 191412
+        }
+      ],
+      "animationAtInitialSample": {
+        "progress": "0",
+        "poster": "idea-poster has-webgl",
+        "canvas": true
+      },
+      "animationScrollSamples": [
+        {
+          "progress": "0.25",
+          "poster": "idea-poster has-webgl"
+        },
+        {
+          "progress": "0.5",
+          "poster": "idea-poster has-webgl"
+        },
+        {
+          "progress": "0.8",
+          "poster": "idea-poster has-webgl"
+        },
+        {
+          "progress": "0.95",
+          "poster": "idea-poster has-webgl"
+        }
+      ],
+      "errors": []
+    },
+    {
+      "label": "local-before",
+      "viewport": "1440x900",
+      "path": "/courses/",
+      "ttfbMs": 1.4000000059604645,
+      "fcpMs": 368,
+      "lcpMs": 1136,
+      "earlyTransferBytes": 288164,
+      "longTasks": [],
+      "modelAndRenderer": [],
+      "animationAtInitialSample": {
+        "canvas": false
+      },
+      "animationScrollSamples": [],
+      "errors": []
+    },
+    {
+      "label": "local-before",
+      "viewport": "390x844",
+      "path": "/",
+      "ttfbMs": 2.300000011920929,
+      "fcpMs": 1968,
+      "lcpMs": 1968,
+      "earlyTransferBytes": 1831290,
+      "longTasks": [
+        {
+          "start": 5131.5,
+          "duration": 65
+        },
+        {
+          "start": 5266.9000000059605,
+          "duration": 70
+        },
+        {
+          "start": 5378,
+          "duration": 93
+        }
+      ],
+      "modelAndRenderer": [
+        {
+          "url": "http://127.0.0.1:4174/assets/Sculpture-BGydpBdH.js",
+          "type": "script",
+          "start": 2211.5999999940395,
+          "duration": 2904.9000000059605,
+          "encoded": 931074,
+          "transfer": 931374
+        },
+        {
+          "url": "http://127.0.0.1:4174/hero/ascore-unified-sculpted.glb",
+          "type": "fetch",
+          "start": 5366.4000000059605,
+          "duration": 614.4000000059605,
+          "encoded": 191112,
+          "transfer": 191412
+        }
+      ],
+      "animationAtInitialSample": {
+        "progress": "0",
+        "poster": "idea-poster has-webgl",
+        "canvas": true
+      },
+      "animationScrollSamples": [
+        {
+          "progress": "0.25050911110523394",
+          "poster": "idea-poster has-webgl"
+        },
+        {
+          "progress": "0.5001719076459231",
+          "poster": "idea-poster has-webgl"
+        },
+        {
+          "progress": "0.8006135780592949",
+          "poster": "idea-poster has-webgl"
+        },
+        {
+          "progress": "0.9504112559837085",
+          "poster": "idea-poster has-webgl"
+        }
+      ],
+      "errors": []
+    },
+    {
+      "label": "local-before",
+      "viewport": "390x844",
+      "path": "/courses/",
+      "ttfbMs": 3.0999999940395355,
+      "fcpMs": 364,
+      "lcpMs": 1128,
+      "earlyTransferBytes": 288164,
+      "longTasks": [],
+      "modelAndRenderer": [],
+      "animationAtInitialSample": {
+        "canvas": false
+      },
+      "animationScrollSamples": [],
+      "errors": []
+    },
+    {
+      "label": "local-after",
+      "viewport": "1440x900",
+      "path": "/",
+      "ttfbMs": 88,
+      "fcpMs": 2212,
+      "lcpMs": 2212,
+      "earlyTransferBytes": 741348,
+      "longTasks": [
+        {
+          "start": 2166.9000000059605,
+          "duration": 55
+        },
+        {
+          "start": 3350.5999999940395,
+          "duration": 67
+        },
+        {
+          "start": 3540.4000000059605,
+          "duration": 89
+        },
+        {
+          "start": 3669.4000000059605,
+          "duration": 137
+        }
+      ],
+      "modelAndRenderer": [
+        {
+          "url": "http://127.0.0.1:4173/hero/ascore-unified-sculpted.glb",
+          "type": "link",
+          "start": 2280.199999988079,
+          "duration": 284.09999999403954,
+          "encoded": 64144,
+          "transfer": 64444
+        },
+        {
+          "url": "http://127.0.0.1:4173/assets/Sculpture-uoZflG1p.js",
+          "type": "script",
+          "start": 2467.7999999821186,
+          "duration": 876.7000000178814,
+          "encoded": 221459,
+          "transfer": 221759
+        }
+      ],
+      "animationAtInitialSample": {
+        "progress": "0",
+        "poster": "idea-poster has-webgl",
+        "canvas": true
+      },
+      "animationScrollSamples": [
+        {
+          "progress": "0.25",
+          "poster": "idea-poster has-webgl"
+        },
+        {
+          "progress": "0.5",
+          "poster": "idea-poster has-webgl"
+        },
+        {
+          "progress": "0.8",
+          "poster": "idea-poster has-webgl"
+        },
+        {
+          "progress": "0.95",
+          "poster": "idea-poster has-webgl"
+        }
+      ],
+      "errors": []
+    },
+    {
+      "label": "local-after",
+      "viewport": "1440x900",
+      "path": "/courses/",
+      "ttfbMs": 3.7000000178813934,
+      "fcpMs": 412,
+      "lcpMs": 840,
+      "earlyTransferBytes": 245469,
+      "longTasks": [],
+      "modelAndRenderer": [],
+      "animationAtInitialSample": {
+        "canvas": false
+      },
+      "animationScrollSamples": [],
+      "errors": []
+    },
+    {
+      "label": "local-after",
+      "viewport": "390x844",
+      "path": "/",
+      "ttfbMs": 2.800000011920929,
+      "fcpMs": 984,
+      "lcpMs": 984,
+      "earlyTransferBytes": 741348,
+      "longTasks": [
+        {
+          "start": 2580.4000000059605,
+          "duration": 69
+        },
+        {
+          "start": 2722.300000011921,
+          "duration": 88
+        },
+        {
+          "start": 2849.800000011921,
+          "duration": 95
+        }
+      ],
+      "modelAndRenderer": [
+        {
+          "url": "http://127.0.0.1:4173/hero/ascore-unified-sculpted.glb",
+          "type": "link",
+          "start": 1055.4000000059605,
+          "duration": 854.5999999940395,
+          "encoded": 64144,
+          "transfer": 64444
+        },
+        {
+          "url": "http://127.0.0.1:4173/assets/Sculpture-uoZflG1p.js",
+          "type": "script",
+          "start": 1243.800000011921,
+          "duration": 1330.5,
+          "encoded": 221459,
+          "transfer": 221759
+        }
+      ],
+      "animationAtInitialSample": {
+        "progress": "0",
+        "poster": "idea-poster has-webgl",
+        "canvas": true
+      },
+      "animationScrollSamples": [
+        {
+          "progress": "0.25050911110523394",
+          "poster": "idea-poster has-webgl"
+        },
+        {
+          "progress": "0.5001719076459231",
+          "poster": "idea-poster has-webgl"
+        },
+        {
+          "progress": "0.8006135780592949",
+          "poster": "idea-poster has-webgl"
+        },
+        {
+          "progress": "0.9504112559837085",
+          "poster": "idea-poster has-webgl"
+        }
+      ],
+      "errors": []
+    },
+    {
+      "label": "local-after",
+      "viewport": "390x844",
+      "path": "/courses/",
+      "ttfbMs": 5,
+      "fcpMs": 424,
+      "lcpMs": 808,
+      "earlyTransferBytes": 245469,
+      "longTasks": [],
+      "modelAndRenderer": [],
+      "animationAtInitialSample": {
+        "canvas": false
+      },
+      "animationScrollSamples": [],
+      "errors": []
+    }
+  ]
+}

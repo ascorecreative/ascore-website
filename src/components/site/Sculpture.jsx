@@ -30,6 +30,7 @@ function CloudEngine({progress,visible,onReady,onAnchors}) {
   const actions=useMemo(()=>gltf.animations.map(clip=>mixer.clipAction(clip)),[gltf.animations,mixer])
   const duration=useMemo(()=>Math.max(0,...gltf.animations.map(clip=>clip.duration)),[gltf.animations])
   const smoothed=useRef(progress),wrapper=useRef(),reflectionKey=useRef()
+  const firstFrame=useRef(false),readyFrame=useRef(0)
   const {invalidate,camera,size,scene:renderScene,gl}=useThree()
   const modelScale=useMemo(()=>{
     const size=new THREE.Box3().setFromObject(scene).getSize(new THREE.Vector3())
@@ -43,8 +44,8 @@ function CloudEngine({progress,visible,onReady,onAnchors}) {
     reflectionKey.current=renderScene.getObjectByName('ascore-reflection-key')
     actions.forEach(action=>{action.setLoop(THREE.LoopOnce,1);action.clampWhenFinished=true;action.play()})
     const initial=smoothed.current
-    mixer.setTime((initial<.45?initial/.45:1-(initial-.45)/.55)*duration);invalidate();onReady()
-    return()=>{actions.forEach(action=>action.stop())}
+    mixer.setTime((initial<.45?initial/.45:1-(initial-.45)/.55)*duration);invalidate()
+    return()=>{actions.forEach(action=>action.stop());cancelAnimationFrame(readyFrame.current);firstFrame.current=false}
   },[actions,mixer,scene,duration,invalidate,onReady,renderScene])
   useEffect(()=>{if(visible)invalidate()},[progress,visible,invalidate])
   useFrame((_,delta)=>{
@@ -85,6 +86,9 @@ function CloudEngine({progress,visible,onReady,onAnchors}) {
       anchors[index].y=(1-projected.y)*size.height/2
     })
     onAnchors?.(anchors,size,p)
+    // useFrame runs before WebGL draws. Fade the poster only after that frame
+    // has been painted, not while shaders and the first frame are still pending.
+    if(!firstFrame.current){firstFrame.current=true;readyFrame.current=requestAnimationFrame(onReady)}
     if(Math.abs(p-progress)>.0002)invalidate()
   })
   return <group ref={wrapper} scale={modelScale}><primitive object={scene} dispose={null}/></group>

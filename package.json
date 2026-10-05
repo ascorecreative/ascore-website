@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build && node scripts/prerender.mjs",
+    "build": "vite build && node scripts/prerender.mjs && node scripts/prerender-courses.mjs && node scripts/precompress.mjs",
     "lint": "oxlint src",
     "preview": "vite preview",
     "api": "node --env-file-if-exists=.env.server server/index.mjs",
