@@ -1,6 +1,6 @@
 # Private PDFs in the existing MariaDB: feasibility only
 
-This is a design assessment, not an implemented storage backend or migration. No PDF was installed or copied into Git/public/dist. The existing runtime uses the verified dedicated Hostinger localhost:3306 MariaDB/MySQL connection; no new service, database credential or paid subscription is proposed. Owner approval is required before implementation/setup of this alternative.
+This assessment preceded user approval. The user subsequently approved implementation and both uploads; the tested implementation is described in [private database PDF release](2026-10-07-private-database-pdfs.md). Production setup/upload has not been executed by the Mac agent. No PDF was installed or copied into Git/public/dist. The existing runtime uses the verified dedicated Hostinger localhost:3306 MariaDB/MySQL connection; no new service, database credential or paid subscription is proposed. Owner approval has been received; runtime setup still requires the authenticated owner action and temporary operator flag.
 
 Consumer-local approved files were reverified:
 

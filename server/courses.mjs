@@ -8,8 +8,8 @@ import {verifyDatabaseIdentity} from './database-preflight.mjs'
 import {verifyMariaDbSchema} from './mariadb-schema.mjs'
 
 export const courseCatalog=Object.freeze({
- meta:{name:'Mastering Facebook Ads: Meta Ads — Beginner to Expert',priceMinor:4999,regularPriceMinor:8900,pages:54,file:'Mastering Facebook Ads - Meta Ads - Beginner to Expert.pdf',sha256:'213035507992b62cd373a920a583dab76df300ca68db75d64c65868e480925b5'},
- ai:{name:'Practical AI Course',priceMinor:4999,regularPriceMinor:8900,file:'Ascore Practical AI Course.pdf',sha256:'e2a3116af5428c4893401d9fbb7b0293370563f89e2f329c2ce7485cc1a2f1e5'}
+ meta:{name:'Mastering Facebook Ads: Meta Ads — Beginner to Expert',priceMinor:4999,regularPriceMinor:8900,bytes:2710796,pages:54,file:'Mastering Facebook Ads - Meta Ads - Beginner to Expert.pdf',sha256:'213035507992b62cd373a920a583dab76df300ca68db75d64c65868e480925b5'},
+ ai:{name:'Practical AI Course',priceMinor:4999,regularPriceMinor:8900,bytes:6854862,pages:42,file:'Ascore Practical AI Course.pdf',sha256:'e2a3116af5428c4893401d9fbb7b0293370563f89e2f329c2ce7485cc1a2f1e5'}
 })
 const hash=s=>createHash('sha256').update(s).digest('hex')
 const fail=(status,message)=>{throw Object.assign(Error(message),{status})}
@@ -59,7 +59,7 @@ export function sender(env){
   return {reference:result.messageId}
  }
 }
-export async function createCourses({db,env={},readJson,origin,sendEmail,pdfReader=privateCoursePdf,now=Date.now,audit=async()=>{},workerInterval=60000,paidReady=()=>false,paymentReadiness=()=>null}){
+export async function createCourses({db,env={},readJson,origin,sendEmail,pdfReader=privateCoursePdf,now=Date.now,audit=async()=>{},workerInterval=60000,paidReady=()=>false,paymentReadiness=()=>null,pdfStorage=null}){
  const enabled=env.ASCORE_ENABLE_FREE_COURSES==='1',requirements={enabled,schemaReady:false,privatePdfsReady:false,senderConfigured:!!sendEmail||smtpConfigured(env)}
  try{if(enabled&&db.kind==='sqlite')await initializeCourseSchema(db);else await verifyCourseSchema(db);requirements.schemaReady=true}catch{}
  if(enabled){try{await Promise.all(Object.keys(courseCatalog).map(id=>pdfReader(env,id)));requirements.privatePdfsReady=true}catch{}}
@@ -195,6 +195,12 @@ export async function createCourses({db,env={},readJson,origin,sendEmail,pdfRead
     const length=req.headers['content-length'];if(length&&(!/^\d+$/.test(length)||Number(length)>8*1024*1024))fail(413,'PDF uploads must be no larger than 8 MB.')
     uploading=true;let temporary
     try{
+     if(pdfStorage?.mode==='mariadb'){
+      if(user.username!=='aswinfrn')fail(403,'Private database PDF installation requires the approved owner.')
+      const chunks=[];let size=0
+      for await(const chunk of req){size+=chunk.length;if(size>8*1024*1024)fail(413,'PDF uploads must be no larger than 8 MB.');chunks.push(chunk)}
+      const result=await pdfStorage.install(upload[1],Buffer.concat(chunks),user);await assetStatus();json(res,200,result);return true
+     }
      let root;try{root=await privateStorageRoot(env,{create:true})}catch{fail(503,'Private course storage is not ready. Configure an owner-only directory outside the public site.')}
      const chunks=[];let size=0
      for await(const chunk of req){size+=chunk.length;if(size>8*1024*1024)fail(413,'PDF uploads must be no larger than 8 MB.');chunks.push(chunk)}
@@ -205,8 +211,8 @@ export async function createCourses({db,env={},readJson,origin,sendEmail,pdfRead
      await rename(path,resolve(root,product.file));await audit(user.id,'install_private_course_pdf',upload[1]);await assetStatus();json(res,200,{id:upload[1],installed:true});return true
     }finally{uploading=false;if(temporary)await rm(temporary,{recursive:true,force:true})}
    }
-   const assets=await assetStatus(),storageConfigured=!!env.ASCORE_COURSE_PDF_DIR
-   if(!requirements.schemaReady){if(req.method!=='GET')fail(503,'Course database setup is not ready.');json(res,200,{ready:false,requirements,storageConfigured,assets,payments:paymentStatus(user),schemaSetup:schemaSetupState(user),orders:[],summary:null});return true}
+   const assets=await assetStatus(),storageConfigured=pdfStorage?.mode==='mariadb'?pdfStorage.ready():!!env.ASCORE_COURSE_PDF_DIR
+   if(!requirements.schemaReady){if(req.method!=='GET')fail(503,'Course database setup is not ready.');json(res,200,{ready:false,requirements,storageConfigured,pdfStorage:pdfStorage?.status(user),assets,payments:paymentStatus(user),schemaSetup:schemaSetupState(user),orders:[],summary:null});return true}
    if(path==='/api/courses/admin/orders'&&req.method==='GET'){
     const encoded=new URL(req.url,'http://local.invalid').searchParams.get('cursor');let cursor={time:now()+1,id:'ffffffff-ffff-4fff-8fff-ffffffffffff'}
     if(encoded){try{if(!/^[A-Za-z0-9_-]{1,200}$/.test(encoded))throw Error();cursor=JSON.parse(Buffer.from(encoded,'base64url'));if(!Number.isSafeInteger(cursor.time)||cursor.time<0||!uuid(cursor.id))throw Error()}catch{fail(400,'Choose a valid page.')}}
@@ -216,7 +222,7 @@ export async function createCourses({db,env={},readJson,origin,sendEmail,pdfRead
     const since=now()-7*86400000,recent=await db.prepare('SELECT created_at,payment_status,total_minor,items FROM course_orders WHERE created_at>=? ORDER BY created_at').all(since),daily={}
     for(const r of recent){const day=new Date(Number(r.created_at)).toISOString().slice(0,10),v=daily[day]||(daily[day]={date:day,freeOrders:0,paidOrders:0,paidRevenueMinor:0});if(r.payment_status==='free')v.freeOrders++;if(r.payment_status==='paid'){v.paidOrders++;v.paidRevenueMinor+=Number(r.total_minor)}}
     const orders=rows.slice(0,50).map(row=>{const d=JSON.parse(row.delivery);return {...receipt(row),email:row.email,items:JSON.parse(row.items),coupon:row.coupon,createdAt:Number(row.created_at),attempts:d.attempts,lastAttempt:d.lastAttempt||null,canRetry:d.status==='failed'&&d.retryable&&d.attempts<5&&Number(row.expires_at)>now()&&(!d.nextAttempt||d.nextAttempt<=now()),reason:d.reason||null}})
-    json(res,200,{ready:ready(),requirements,storageConfigured,assets,payments:paymentStatus(user),schemaSetup:schemaSetupState(user),summary:Object.fromEntries(Object.entries(totals).map(([k,v])=>[k,Number(v)])),daily:Object.values(daily),orders,nextCursor:rows.length>50?Buffer.from(JSON.stringify({time:Number(rows[49].created_at),id:rows[49].id})).toString('base64url'):null});return true
+    json(res,200,{ready:ready(),requirements,storageConfigured,pdfStorage:pdfStorage?.status(user),assets,payments:paymentStatus(user),schemaSetup:schemaSetupState(user),summary:Object.fromEntries(Object.entries(totals).map(([k,v])=>[k,Number(v)])),daily:Object.values(daily),orders,nextCursor:rows.length>50?Buffer.from(JSON.stringify({time:Number(rows[49].created_at),id:rows[49].id})).toString('base64url'):null});return true
    }
    if(req.method==='POST'){
     if(!ready())fail(503,'Course delivery is not ready.')

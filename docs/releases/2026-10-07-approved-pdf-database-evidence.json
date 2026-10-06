@@ -1,0 +1,20 @@
+{
+  "scope": "isolated persistent SQLite fixture; no production installation",
+  "assets": [
+    {
+      "course": "meta",
+      "bytes": 2710796,
+      "sha256": "213035507992b62cd373a920a583dab76df300ca68db75d64c65868e480925b5",
+      "pages": 54,
+      "chunks": 6
+    },
+    {
+      "course": "ai",
+      "bytes": 6854862,
+      "sha256": "e2a3116af5428c4893401d9fbb7b0293370563f89e2f329c2ce7485cc1a2f1e5",
+      "pages": 42,
+      "chunks": 14
+    }
+  ],
+  "reopenHashVerification": true
+}

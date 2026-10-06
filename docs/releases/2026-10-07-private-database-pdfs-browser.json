@@ -1,0 +1,48 @@
+{
+  "fixtures": [
+    {
+      "width": 320,
+      "allowed": true
+    },
+    {
+      "width": 390,
+      "allowed": true
+    },
+    {
+      "width": 768,
+      "allowed": true
+    },
+    {
+      "width": 1440,
+      "allowed": true
+    },
+    {
+      "uploadedFixture": "meta",
+      "bytes": 2710796,
+      "sha256": "213035507992b62cd373a920a583dab76df300ca68db75d64c65868e480925b5"
+    },
+    {
+      "uploadedFixture": "ai",
+      "bytes": 6854862,
+      "sha256": "e2a3116af5428c4893401d9fbb7b0293370563f89e2f329c2ce7485cc1a2f1e5"
+    },
+    {
+      "width": 320,
+      "allowed": false
+    },
+    {
+      "width": 390,
+      "allowed": false
+    },
+    {
+      "width": 768,
+      "allowed": false
+    },
+    {
+      "width": 1440,
+      "allowed": false
+    }
+  ],
+  "confirmation": "cancel sends no mutation; confirmed empty POST includes CSRF",
+  "errors": []
+}
