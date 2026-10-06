@@ -89,10 +89,10 @@ export async function createCourses({db,env={},readJson,origin,sendEmail,pdfRead
  }
  async function assetStatus(){const assets=await Promise.all(Object.entries(courseCatalog).map(async([id,p])=>{let installed=false;try{await pdfReader(env,id);installed=true}catch{}return {id,name:p.name,installed}}));requirements.privatePdfsReady=assets.every(a=>a.installed);return assets}
  const ready=()=>Object.values(requirements).every(Boolean)
- function paymentStatus(){
-  const status=paymentReadiness();if(!status)return null
+ function paymentStatus(user){
+  const status=paymentReadiness(user);if(!status)return null
   const fields=['enabled','schemaReady','contractVerified','apiKeyConfigured','webhookSecretConfigured','checkoutHostsConfigured','liveRequestsApproved','deliveryEnabled','termsApproved','senderConfigured','privatePdfsReady','originReady']
-  return {ready:status.ready===true,webhooksEnabled:status.webhooksEnabled===true,requirements:Object.fromEntries(fields.map(field=>[field,status.requirements?.[field]===true]))}
+  return {setup:status.setup,ready:status.ready===true,webhooksEnabled:status.webhooksEnabled===true,requirements:Object.fromEntries(fields.map(field=>[field,status.requirements?.[field]===true]))}
  }
 
  const mail=sendEmail||(requirements.senderConfigured?sender(env):null),flights=new Map()
@@ -206,7 +206,7 @@ export async function createCourses({db,env={},readJson,origin,sendEmail,pdfRead
     }finally{uploading=false;if(temporary)await rm(temporary,{recursive:true,force:true})}
    }
    const assets=await assetStatus(),storageConfigured=!!env.ASCORE_COURSE_PDF_DIR
-   if(!requirements.schemaReady){if(req.method!=='GET')fail(503,'Course database setup is not ready.');json(res,200,{ready:false,requirements,storageConfigured,assets,payments:paymentStatus(),schemaSetup:schemaSetupState(user),orders:[],summary:null});return true}
+   if(!requirements.schemaReady){if(req.method!=='GET')fail(503,'Course database setup is not ready.');json(res,200,{ready:false,requirements,storageConfigured,assets,payments:paymentStatus(user),schemaSetup:schemaSetupState(user),orders:[],summary:null});return true}
    if(path==='/api/courses/admin/orders'&&req.method==='GET'){
     const encoded=new URL(req.url,'http://local.invalid').searchParams.get('cursor');let cursor={time:now()+1,id:'ffffffff-ffff-4fff-8fff-ffffffffffff'}
     if(encoded){try{if(!/^[A-Za-z0-9_-]{1,200}$/.test(encoded))throw Error();cursor=JSON.parse(Buffer.from(encoded,'base64url'));if(!Number.isSafeInteger(cursor.time)||cursor.time<0||!uuid(cursor.id))throw Error()}catch{fail(400,'Choose a valid page.')}}
@@ -216,7 +216,7 @@ export async function createCourses({db,env={},readJson,origin,sendEmail,pdfRead
     const since=now()-7*86400000,recent=await db.prepare('SELECT created_at,payment_status,total_minor,items FROM course_orders WHERE created_at>=? ORDER BY created_at').all(since),daily={}
     for(const r of recent){const day=new Date(Number(r.created_at)).toISOString().slice(0,10),v=daily[day]||(daily[day]={date:day,freeOrders:0,paidOrders:0,paidRevenueMinor:0});if(r.payment_status==='free')v.freeOrders++;if(r.payment_status==='paid'){v.paidOrders++;v.paidRevenueMinor+=Number(r.total_minor)}}
     const orders=rows.slice(0,50).map(row=>{const d=JSON.parse(row.delivery);return {...receipt(row),email:row.email,items:JSON.parse(row.items),coupon:row.coupon,createdAt:Number(row.created_at),attempts:d.attempts,lastAttempt:d.lastAttempt||null,canRetry:d.status==='failed'&&d.retryable&&d.attempts<5&&Number(row.expires_at)>now()&&(!d.nextAttempt||d.nextAttempt<=now()),reason:d.reason||null}})
-    json(res,200,{ready:ready(),requirements,storageConfigured,assets,payments:paymentStatus(),schemaSetup:schemaSetupState(user),summary:Object.fromEntries(Object.entries(totals).map(([k,v])=>[k,Number(v)])),daily:Object.values(daily),orders,nextCursor:rows.length>50?Buffer.from(JSON.stringify({time:Number(rows[49].created_at),id:rows[49].id})).toString('base64url'):null});return true
+    json(res,200,{ready:ready(),requirements,storageConfigured,assets,payments:paymentStatus(user),schemaSetup:schemaSetupState(user),summary:Object.fromEntries(Object.entries(totals).map(([k,v])=>[k,Number(v)])),daily:Object.values(daily),orders,nextCursor:rows.length>50?Buffer.from(JSON.stringify({time:Number(rows[49].created_at),id:rows[49].id})).toString('base64url'):null});return true
    }
    if(req.method==='POST'){
     if(!ready())fail(503,'Course delivery is not ready.')

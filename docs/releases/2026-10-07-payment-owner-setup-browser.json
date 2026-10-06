@@ -1,0 +1,38 @@
+{
+  "fixtures": [
+    {
+      "width": 320,
+      "allowed": true
+    },
+    {
+      "width": 390,
+      "allowed": true
+    },
+    {
+      "width": 768,
+      "allowed": true
+    },
+    {
+      "width": 1440,
+      "allowed": true
+    },
+    {
+      "width": 320,
+      "allowed": false
+    },
+    {
+      "width": 390,
+      "allowed": false
+    },
+    {
+      "width": 768,
+      "allowed": false
+    },
+    {
+      "width": 1440,
+      "allowed": false
+    }
+  ],
+  "confirmation": "cancel sends no mutation; confirmed empty POST includes CSRF",
+  "errors": []
+}

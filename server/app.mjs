@@ -160,10 +160,10 @@ export async function createPortalServer(options = {}) {
   const enquiries = await createEnquiries({db,env,readJson,fetcher:options.zohoFetch||fetch,adapters:options.enquiryAdapters,now:options.now||Date.now})
   const courseReviews=await createCourseReviews({db,env,readJson,audit,now:options.now||Date.now})
   let nomod
-  const courses = await createCourses({db,env,readJson,origin,audit,sendEmail:options.courseSender,pdfReader:options.coursePdfReader,now:options.now||Date.now,workerInterval:options.courseWorkerInterval,paidReady:()=>nomod?.ready()===true,paymentReadiness:()=>({ready:nomod?.ready()===true,requirements:nomod?.requirements,webhooksEnabled:env.ASCORE_ENABLE_NOMOD_WEBHOOKS==='1'})})
+  const courses = await createCourses({db,env,readJson,origin,audit,sendEmail:options.courseSender,pdfReader:options.coursePdfReader,now:options.now||Date.now,workerInterval:options.courseWorkerInterval,paidReady:()=>nomod?.ready()===true,paymentReadiness:user=>({setup:nomod?.setupState(user),ready:nomod?.ready()===true,requirements:nomod?.requirements,webhooksEnabled:env.ASCORE_ENABLE_NOMOD_WEBHOOKS==='1'})})
   // Production remains closed until Hosted Checkout event correlation is
   // independently verified and a reviewed contract implementation replaces false.
-  nomod=await createNomodCourses({db,env,readJson,origin,contractVerified:false,fetcher:options.nomodFetch||fetch,sendEmail:options.courseSender,pdfReader:options.coursePdfReader,now:options.now||Date.now,workerInterval:options.courseWorkerInterval})
+  nomod=await createNomodCourses({db,env,readJson,origin,audit,contractVerified:false,fetcher:options.nomodFetch||fetch,sendEmail:options.courseSender,pdfReader:options.coursePdfReader,now:options.now||Date.now,workerInterval:options.courseWorkerInterval})
   const weeklySessions=await createWeeklyMetaSessions({db,env,audit,paymentReady:()=>nomod.ready(),sendEmail:options.courseSender,now:options.now||Date.now,workerInterval:options.courseWorkerInterval})
   const server = createServer(async (request, response) => {
     response.setHeader('Cache-Control', 'no-store')
@@ -233,6 +233,7 @@ export async function createPortalServer(options = {}) {
       if (user.role !== 'admin') fail(403, 'Agency access is required.')
       if (await enquiries.adminHandle(request,response,path,responseJson)) return
       if(await courseReviews.adminHandle(request,response,path,user,responseJson))return
+      if(await nomod.adminHandle(request,response,path,user,responseJson))return
       if (await courses.adminHandle(request,response,path,user,responseJson)) return
       if (await integration.handle(request,response,path,user,responseJson)) return
       if (request.method === 'POST' && path === '/api/projects') {
