@@ -69,7 +69,7 @@ export async function createCourses({db,env={},readJson,origin,sendEmail,pdfRead
  async function setupSchema(user){
   if(user?.username!=='aswinfrn')fail(403,'This setup action is restricted to the approved administrator.')
   if(env.ASCORE_ALLOW_COURSE_SCHEMA_SETUP!=='1')fail(403,'The operator must enable the temporary course schema setup flag.')
-  if(env.ASCORE_ENABLE_FREE_COURSES==='1')fail(403,'Keep FREE delivery disabled while initializing the course database.')
+  if(env.ASCORE_ENABLE_FREE_COURSES==='1')fail(403,'Keep public zero-payment checkout disabled while initializing the course database.')
   if(!approvedRuntime())fail(503,'The approved production database is not verified. No setup was performed.')
   if(schemaSetupFlight)return schemaSetupFlight
   const task=(async()=>{
