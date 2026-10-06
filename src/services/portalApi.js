@@ -1,7 +1,7 @@
 let csrf = null
-export async function portalRequest(path, { method = 'GET', body } = {}) {
+export async function portalRequest(path, { method = 'GET', body, signal } = {}) {
   const response = await fetch(`/api${path}`, {
-    method, credentials:'same-origin', headers:{ ...(body ? {'Content-Type':'application/json'} : {}), ...(csrf && method !== 'GET' ? {'X-CSRF-Token':csrf} : {}) },
+    method, signal, credentials:'same-origin', headers:{ ...(body ? {'Content-Type':'application/json'} : {}), ...(csrf && method !== 'GET' ? {'X-CSRF-Token':csrf} : {}) },
     ...(body ? { body:JSON.stringify(body) } : {})
   })
   let data

@@ -1,3 +1,4 @@
+import {isPrivateNomodTest} from './nomod-private-test.mjs'
 import {createHash} from 'node:crypto'
 import {smtpConfigured,sender} from './courses.mjs'
 
@@ -34,7 +35,7 @@ export async function createWeeklyMetaSessions({db,env={},paymentReady=()=>false
  const ready=()=>Object.values(requirements).every(Boolean)&&paymentReady()===true
  const mail=sendEmail||(requirements.senderConfigured?sender(env):null)
  let flight=null
- const eligible=row=>{try{return row?.payment_status==='paid'&&row.currency==='AED'&&JSON.parse(row.items).includes('meta')&&typeof row.email==='string'&&/^[^\s@<>]+@[^\s@<>]+\.[^\s@<>]+$/.test(row.email)}catch{return false}}
+ const eligible=row=>{try{return !isPrivateNomodTest(row)&&row?.payment_status==='paid'&&row.currency==='AED'&&JSON.parse(row.items).includes('meta')&&typeof row.email==='string'&&/^[^\s@<>]+@[^\s@<>]+\.[^\s@<>]+$/.test(row.email)}catch{return false}}
  async function run(){
   const session=fridaySession(now());if(!ready()||!session.friday||session.hour<Number(hour)||session.hour>=14)return
   // Ongoing access: PDF-link expiry does not end weekly session eligibility.

@@ -11,7 +11,7 @@ function minor(value){
 
 // This diagnostic only GETs one existing Hosted Checkout. It cannot create,
 // charge, refund, send email, mutate financial rows or approve the contract gate.
-export function createNomodDiagnostic({db,env,readJson,fetcher=fetch,now=Date.now,isSchemaReady}){
+export function createNomodDiagnostic({db,env,readJson,fetcher=fetch,now=Date.now,isSchemaReady,expectedCheckout=async()=>null}){
  let flight=null,last=null,attempts=[]
  const closed=()=>env.ASCORE_ENABLE_PAID_COURSES!=='1'&&env.ASCORE_ENABLE_FREE_COURSES!=='1'
  const state=user=>({ownerAllowed:user?.role==='admin'&&user.username==='aswinfrn',allowed:user?.role==='admin'&&user.username==='aswinfrn'&&closed()&&isSchemaReady()&&typeof env.NOMOD_HOSTED_CHECKOUT_API_KEY==='string'&&!!env.NOMOD_HOSTED_CHECKOUT_API_KEY,inProgress:!!flight})
@@ -52,8 +52,10 @@ export function createNomodDiagnostic({db,env,readJson,fetcher=fetch,now=Date.no
    }
    const configured=(env.NOMOD_CHECKOUT_HOSTS||'').split(',').map(h=>h.trim()).filter(Boolean)
    const idMatches=typeof details?.id==='string'&&details.id.toLowerCase()===id
+   const expected=await expectedCheckout(id),approvedTestMatches=expected?details?.reference_id===expected.id&&amount===Number(expected.total_minor)&&details?.currency===expected.currency:null
    const result={checkedAt:now(),apiAuthenticated:idMatches,checkoutIdMatches:idMatches,checkoutPaid:details?.status==='paid',currencyIsAED:details?.currency==='AED',amountMinor:amount,referencePresent:typeof details?.reference_id==='string'&&details.reference_id.length>0&&details.reference_id.length<=512,chargeCount:charges.length,chargeIdsValid,capturedChargeCount:captured.length,capturedAmountMatches:amount!==null&&capturedAmountsValid&&capturedMinor===amount,checkoutHost:host,nomodOwnedHost,configuredHostMatches:nomodOwnedHost&&configured.includes(host),signedCompletedEventMatched,contractApproved:false}
-   result.paidShapeVerified=result.checkoutIdMatches&&result.checkoutPaid&&result.currencyIsAED&&result.referencePresent&&result.chargeIdsValid&&result.capturedAmountMatches&&result.nomodOwnedHost
+   result.approvedTestMatches=approvedTestMatches
+   result.paidShapeVerified=result.checkoutIdMatches&&result.checkoutPaid&&result.currencyIsAED&&result.referencePresent&&result.chargeIdsValid&&result.capturedAmountMatches&&result.nomodOwnedHost&&approvedTestMatches!==false
    last={fingerprint,at:now(),result};return result
   })()
   flight={fingerprint,task};try{return await task}finally{if(flight?.task===task)flight=null}

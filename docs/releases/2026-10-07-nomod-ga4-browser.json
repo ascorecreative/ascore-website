@@ -1,0 +1,235 @@
+{
+  "layouts": [
+    {
+      "mode": "disabled",
+      "view": "Home GA4 missing",
+      "width": 320,
+      "noOverflow": true
+    },
+    {
+      "mode": "disabled",
+      "view": "Home GA4 missing",
+      "width": 390,
+      "noOverflow": true
+    },
+    {
+      "mode": "disabled",
+      "view": "Home GA4 missing",
+      "width": 768,
+      "noOverflow": true
+    },
+    {
+      "mode": "disabled",
+      "view": "Home GA4 missing",
+      "width": 1440,
+      "noOverflow": true
+    },
+    {
+      "mode": "disabled",
+      "view": "Analytics GA4 connected fixture",
+      "width": 320,
+      "noOverflow": true
+    },
+    {
+      "mode": "disabled",
+      "view": "Analytics GA4 connected fixture",
+      "width": 390,
+      "noOverflow": true
+    },
+    {
+      "mode": "disabled",
+      "view": "Analytics GA4 connected fixture",
+      "width": 768,
+      "noOverflow": true
+    },
+    {
+      "mode": "disabled",
+      "view": "Analytics GA4 connected fixture",
+      "width": 1440,
+      "noOverflow": true
+    },
+    {
+      "mode": "disabled",
+      "view": "Private payment action",
+      "width": 320,
+      "noOverflow": true
+    },
+    {
+      "mode": "disabled",
+      "view": "Private payment action",
+      "width": 390,
+      "noOverflow": true
+    },
+    {
+      "mode": "disabled",
+      "view": "Private payment action",
+      "width": 768,
+      "noOverflow": true
+    },
+    {
+      "mode": "disabled",
+      "view": "Private payment action",
+      "width": 1440,
+      "noOverflow": true
+    },
+    {
+      "mode": "enabled",
+      "view": "Home GA4 missing",
+      "width": 320,
+      "noOverflow": true
+    },
+    {
+      "mode": "enabled",
+      "view": "Home GA4 missing",
+      "width": 390,
+      "noOverflow": true
+    },
+    {
+      "mode": "enabled",
+      "view": "Home GA4 missing",
+      "width": 768,
+      "noOverflow": true
+    },
+    {
+      "mode": "enabled",
+      "view": "Home GA4 missing",
+      "width": 1440,
+      "noOverflow": true
+    },
+    {
+      "mode": "enabled",
+      "view": "Analytics GA4 connected fixture",
+      "width": 320,
+      "noOverflow": true
+    },
+    {
+      "mode": "enabled",
+      "view": "Analytics GA4 connected fixture",
+      "width": 390,
+      "noOverflow": true
+    },
+    {
+      "mode": "enabled",
+      "view": "Analytics GA4 connected fixture",
+      "width": 768,
+      "noOverflow": true
+    },
+    {
+      "mode": "enabled",
+      "view": "Analytics GA4 connected fixture",
+      "width": 1440,
+      "noOverflow": true
+    },
+    {
+      "mode": "enabled",
+      "view": "Private payment action",
+      "width": 320,
+      "noOverflow": true
+    },
+    {
+      "mode": "enabled",
+      "view": "Private payment action",
+      "width": 390,
+      "noOverflow": true
+    },
+    {
+      "mode": "enabled",
+      "view": "Private payment action",
+      "width": 768,
+      "noOverflow": true
+    },
+    {
+      "mode": "enabled",
+      "view": "Private payment action",
+      "width": 1440,
+      "noOverflow": true
+    },
+    {
+      "mode": "uncertain",
+      "view": "Home GA4 missing",
+      "width": 320,
+      "noOverflow": true
+    },
+    {
+      "mode": "uncertain",
+      "view": "Home GA4 missing",
+      "width": 390,
+      "noOverflow": true
+    },
+    {
+      "mode": "uncertain",
+      "view": "Home GA4 missing",
+      "width": 768,
+      "noOverflow": true
+    },
+    {
+      "mode": "uncertain",
+      "view": "Home GA4 missing",
+      "width": 1440,
+      "noOverflow": true
+    },
+    {
+      "mode": "uncertain",
+      "view": "Analytics GA4 connected fixture",
+      "width": 320,
+      "noOverflow": true
+    },
+    {
+      "mode": "uncertain",
+      "view": "Analytics GA4 connected fixture",
+      "width": 390,
+      "noOverflow": true
+    },
+    {
+      "mode": "uncertain",
+      "view": "Analytics GA4 connected fixture",
+      "width": 768,
+      "noOverflow": true
+    },
+    {
+      "mode": "uncertain",
+      "view": "Analytics GA4 connected fixture",
+      "width": 1440,
+      "noOverflow": true
+    },
+    {
+      "mode": "uncertain",
+      "view": "Private payment action",
+      "width": 320,
+      "noOverflow": true
+    },
+    {
+      "mode": "uncertain",
+      "view": "Private payment action",
+      "width": 390,
+      "noOverflow": true
+    },
+    {
+      "mode": "uncertain",
+      "view": "Private payment action",
+      "width": 768,
+      "noOverflow": true
+    },
+    {
+      "mode": "uncertain",
+      "view": "Private payment action",
+      "width": 1440,
+      "noOverflow": true
+    }
+  ],
+  "checks": [
+    "Home and Analytics readiness contain no fabricated counts",
+    "real fixture reports and all four dates",
+    "private action disabled until flag",
+    "cancel confirmation makes no request",
+    "exact server-approved body and CSRF",
+    "one creation disables repeats",
+    "generated session auto-fills diagnostic",
+    "uncertain outcome offers no payment link or retry",
+    "all APIs intercepted"
+  ],
+  "errors": [],
+  "realProviderRequests": 0,
+  "realPayments": 0,
+  "realEmails": 0
+}

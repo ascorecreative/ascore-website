@@ -1,3 +1,4 @@
+import {isPrivateNomodTest,privateNomodRequestId,privateNomodReason} from './nomod-private-test.mjs'
 import {createHash,randomUUID,timingSafeEqual} from 'node:crypto'
 import {verifyPaymentSchema} from './payment-schema.mjs'
 import {verifyDatabaseIdentity} from './database-preflight.mjs'
@@ -40,7 +41,7 @@ export async function createCourseReviews({db,env={},readJson,audit=async()=>{},
  async function buyer(req,id,course){
   if(!uuid(id)||!known(course))fail(403,'A verified course purchase is required.')
   const row=await db.prepare('SELECT * FROM course_paid_orders WHERE id=?').get(id)
-  if(!row||row.payment_status!=='paid'||row.currency!=='AED'||!JSON.parse(row.items).includes(course)||!tokenMatches(req.headers['x-course-review'],row))fail(403,'A verified course purchase is required.')
+  if(!row||isPrivateNomodTest(row)||row.payment_status!=='paid'||row.currency!=='AED'||!JSON.parse(row.items).includes(course)||!tokenMatches(req.headers['x-course-review'],row))fail(403,'A verified course purchase is required.')
   return row
  }
  function fields(body,allowed){if(!body||Array.isArray(body)||Object.keys(body).some(k=>!allowed.includes(k)))fail(400,'Review fields are invalid.')}
@@ -48,7 +49,7 @@ export async function createCourseReviews({db,env={},readJson,audit=async()=>{},
   const list=/^\/api\/courses\/reviews\/(meta|ai)$/.exec(path)
   if(list&&req.method==='GET'){
    if(!ready()){json(res,200,{ready:false,reviews:[],count:0,rating:null});return true}
-   const where="FROM course_reviews r JOIN course_paid_orders o ON o.id=r.order_id WHERE r.course_id=? AND r.state='published' AND o.payment_status='paid'"
+   const where=`FROM course_reviews r JOIN course_paid_orders o ON o.id=r.order_id WHERE r.course_id=? AND r.state='published' AND o.payment_status='paid' AND o.request_id<>'${privateNomodRequestId}' AND COALESCE(o.review_reason,'')<>'${privateNomodReason}'`
    const total=await db.prepare('SELECT COUNT(*) AS count,AVG(r.rating) AS rating '+where).get(list[1]),rows=await db.prepare('SELECT r.* '+where+' ORDER BY r.created_at DESC LIMIT 20').all(list[1])
    json(res,200,{ready:true,count:Number(total.count),rating:Number(total.count)>0?Math.round(Number(total.rating)*10)/10:null,reviews:rows.map(view)});return true
   }
@@ -91,7 +92,7 @@ export async function createCourseReviews({db,env={},readJson,audit=async()=>{},
   if(moderate&&req.method==='PATCH'){
    if(!schemaReady)fail(503,'Review storage is not ready.')
    const body=await readJson(req);fields(body,['state']);if(!['published','rejected'].includes(body.state))fail(400,'Choose publish or reject.')
-   await db.transaction(async()=>{const row=await db.prepare(db.lock('SELECT * FROM course_reviews WHERE id=?')).get(moderate[1]);if(!row)fail(404,'Review not found.');if(body.state==='published'){const order=await db.prepare('SELECT payment_status FROM course_paid_orders WHERE id=?').get(row.order_id);if(order?.payment_status!=='paid')fail(409,'The purchase is no longer eligible.')}await db.prepare('UPDATE course_reviews SET state=?,moderated_at=?,moderated_by=? WHERE id=?').run(body.state,now(),user.id,row.id);await audit(user.id,'course_review_'+body.state,row.id)})
+   await db.transaction(async()=>{const row=await db.prepare(db.lock('SELECT * FROM course_reviews WHERE id=?')).get(moderate[1]);if(!row)fail(404,'Review not found.');if(body.state==='published'){const order=await db.prepare('SELECT * FROM course_paid_orders WHERE id=?').get(row.order_id);if(isPrivateNomodTest(order)||order?.payment_status!=='paid')fail(409,'The purchase is no longer eligible.')}await db.prepare('UPDATE course_reviews SET state=?,moderated_at=?,moderated_by=? WHERE id=?').run(body.state,now(),user.id,row.id);await audit(user.id,'course_review_'+body.state,row.id)})
    json(res,200,{updated:true});return true
   }return false
  }}

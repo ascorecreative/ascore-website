@@ -94,7 +94,7 @@ export default function PortalLayout() {
     window.addEventListener('keydown',key);large.addEventListener('change',resize)
     return()=>{window.removeEventListener('keydown',key);large.removeEventListener('change',resize);document.body.style.overflow=overflow;main.inert=false;trigger?.focus({preventScroll:true})}
   },[isAdmin,menuOpen])
-  const descriptions={overview:'Projects, clients and course delivery in one place.',projects:'Keep project progress and milestones up to date.',documents:'Quotations, invoices and offline settlement records.',leads:'Manage the enquiries added to your studio pipeline.',clients:'Registered client accounts and their contact details.',connections:'Review the existing website and Zoho connections.',courses:'Private PDF setup, test orders and email delivery status.',analytics:'Counts and balances from real saved workspace records.'}
+  const descriptions={overview:'Projects, clients and course delivery in one place.',projects:'Keep project progress and milestones up to date.',documents:'Quotations, invoices and offline settlement records.',leads:'Manage the enquiries added to your studio pipeline.',clients:'Registered client accounts and their contact details.',connections:'Review the existing website and Zoho connections.',courses:'Private PDF setup, test orders and email delivery status.',analytics:'GA4 traffic reports and counts from saved workspace records.'}
 
   return <div className={'portal-workspace'+(isAdmin?' admin-workspace':'')}>
     {isAdmin&&menuOpen&&<button className="admin-nav-backdrop" type="button" aria-label="Close navigation" tabIndex={-1} onClick={()=>setMenuOpen(false)}/>}

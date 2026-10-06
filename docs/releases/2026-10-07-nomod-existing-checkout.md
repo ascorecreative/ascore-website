@@ -1,3 +1,5 @@
+> Current owner flow: there is no prior Hosted Checkout. Use the disabled-until-approved private test to generate its session automatically, then **Check test payment**. See [current handoff](2026-10-07-nomod-private-test-ga4-reporting.md). The historical read-only instructions below remain background, not a request for a missing prior ID.
+
 # Existing Nomod Hosted Checkout verification
 
 As aswinfrn, open Course orders → Nomod connection status → **Verify an existing Nomod checkout**. Enter the Checkout Session UUID of an already completed Hosted Checkout payment and select **Verify existing Nomod checkout**. This is not a payment-link ID, charge ID, API key or payment URL. The action needs the existing owner session, exact origin/CSRF, verified payment tables, saved Hosted Checkout key and closed paid/free checkout. No new flag or schema setup is required.

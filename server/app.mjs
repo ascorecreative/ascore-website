@@ -1,3 +1,4 @@
+import {createGA4Reporting} from './ga4-reporting.mjs'
 import {createPrivateCourseTest} from './private-course-test.mjs'
 import {createPdfStore} from './pdf-store.mjs'
 import { createServer } from 'node:http'
@@ -165,10 +166,11 @@ export async function createPortalServer(options = {}) {
   const coursePdfReader=options.coursePdfReader||(pdfStorage.mode==='mariadb'?(_env,id)=>pdfStorage.read(id):undefined)
   const privateCourseTest=createPrivateCourseTest({db,env,readJson,audit,pdfReader:coursePdfReader,sendEmail:options.courseSender})
   let nomod
-  const courses = await createCourses({db,env,readJson,origin,audit,sendEmail:options.courseSender,pdfReader:coursePdfReader,now:options.now||Date.now,workerInterval:options.courseWorkerInterval,pdfStorage,privateTestStatus:user=>privateCourseTest.status(user),paidReady:()=>nomod?.ready()===true,paymentReadiness:user=>({setup:nomod?.setupState(user),diagnostic:nomod?.diagnosticState(user),ready:nomod?.ready()===true,requirements:nomod?.requirements,webhooksEnabled:env.ASCORE_ENABLE_NOMOD_WEBHOOKS==='1'})})
+  const courses = await createCourses({db,env,readJson,origin,audit,sendEmail:options.courseSender,pdfReader:coursePdfReader,now:options.now||Date.now,workerInterval:options.courseWorkerInterval,pdfStorage,privateTestStatus:user=>privateCourseTest.status(user),paidReady:()=>nomod?.ready()===true,paymentReadiness:async user=>({privateNomodTest:await nomod?.privateTestState(user),setup:nomod?.setupState(user),diagnostic:nomod?.diagnosticState(user),ready:nomod?.ready()===true,requirements:nomod?.requirements,webhooksEnabled:env.ASCORE_ENABLE_NOMOD_WEBHOOKS==='1'})})
   // Production remains closed until Hosted Checkout event correlation is
   // independently verified and a reviewed contract implementation replaces false.
   nomod=await createNomodCourses({db,env,readJson,origin,audit,contractVerified:false,fetcher:options.nomodFetch||fetch,sendEmail:options.courseSender,pdfReader:coursePdfReader,now:options.now||Date.now,workerInterval:options.courseWorkerInterval})
+  const ga4=createGA4Reporting({env,fetcher:options.ga4Fetch||fetch,now:options.now||Date.now})
   const weeklySessions=await createWeeklyMetaSessions({db,env,audit,paymentReady:()=>nomod.ready(),sendEmail:options.courseSender,now:options.now||Date.now,workerInterval:options.courseWorkerInterval})
   const server = createServer(async (request, response) => {
     response.setHeader('Cache-Control', 'no-store')
@@ -236,6 +238,7 @@ export async function createPortalServer(options = {}) {
       }
       if (request.method === 'GET' && path === '/api/workspace') return responseJson(response, 200, await workspace(user))
       if (user.role !== 'admin') fail(403, 'Agency access is required.')
+      if(await ga4.handle(request,response,path,user,responseJson))return
       if (await enquiries.adminHandle(request,response,path,responseJson)) return
       if(await courseReviews.adminHandle(request,response,path,user,responseJson))return
       if(await privateCourseTest.adminHandle(request,response,path,user,responseJson))return
