@@ -1,0 +1,47 @@
+{
+  "checks": [
+    "Unknown consent, old Meta-only grant, GPC and DNT load zero Google SDKs",
+    "Explicit v2 consent, default denied, ads denied, one SDK/config, one view per public path, fixed titles and query/hash/referrer stripping; withdrawal/private routes disable GA",
+    "Sensitive query, private hash/path, unknown path and private referrer never load Google",
+    "Revocation during script download never configures Google or queues an event",
+    "Only server-paid, gate-enabled, exact AED receipt generates purchase; opaque transaction ID, known catalog items, no buyer/order/capability data, reload dedup",
+    "Independent Google/Meta loading and purchase dedup; blocked storage still respects a manual choice and in-memory dedup",
+    "Consent withdrawal propagates across tabs",
+    "Downloaded public Google SDK executes locally; all collection intercepted, exact manual pageviews and one AED purchase payload checked, no traffic on private route/withdrawal",
+    "Real Google SDK on initial campaign URL also excludes campaign query values and external referrer details"
+  ],
+  "realAnalyticsRequestsSent": 0,
+  "interceptedRealSdkEvents": [
+    {
+      "host": "www.google-analytics.com",
+      "event": "page_view",
+      "page": "http://127.0.0.1:50875/courses/meta-ads/",
+      "title": "Ascore Meta Ads course",
+      "bodyEvents": []
+    },
+    {
+      "host": "www.google-analytics.com",
+      "event": "page_view",
+      "page": "http://127.0.0.1:50875/courses/practical-ai/",
+      "title": "Ascore Practical AI course",
+      "bodyEvents": []
+    },
+    {
+      "host": "www.google-analytics.com",
+      "event": "page_view",
+      "page": "http://127.0.0.1:50875/courses/checkout/",
+      "title": "Ascore course checkout",
+      "bodyEvents": []
+    },
+    {
+      "host": "www.google-analytics.com",
+      "event": "purchase",
+      "page": "http://127.0.0.1:50875/courses/checkout/",
+      "title": "Ascore course checkout",
+      "bodyEvents": []
+    }
+  ],
+  "errors": [],
+  "mutations": [],
+  "sdkBytes": 467192
+}
