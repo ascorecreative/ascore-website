@@ -1,0 +1,42 @@
+{
+  "privateSourceEdition": "Meta PDF edition 5",
+  "privateSourceSha256": "213035507992b62cd373a920a583dab76df300ca68db75d64c65868e480925b5",
+  "actualPdfPages": [
+    10,
+    23,
+    45
+  ],
+  "publicArtifacts": "Selected raster previews only; no complete PDF",
+  "files": [
+    {
+      "file": "meta-p10-small.webp",
+      "bytes": 23312,
+      "sha256": "06d9eedeb0bcab93425c8211dcbae11dc3f1b45082d0aa7cffdac33084c98848"
+    },
+    {
+      "file": "meta-p10.webp",
+      "bytes": 110844,
+      "sha256": "550f398eb13fb8940ebb9529696f065f62b929ece603a2529fbc79582c2a04da"
+    },
+    {
+      "file": "meta-p23-small.webp",
+      "bytes": 9538,
+      "sha256": "76466dbc3aba605a479bbc0a61e0dbd7620f08af93a6e78e6bbed7d6ee90b7b0"
+    },
+    {
+      "file": "meta-p23.webp",
+      "bytes": 47122,
+      "sha256": "91a8bbbd30865fd89864a4403ccbc3cdf05d7c5575044434acecf8d49002d00e"
+    },
+    {
+      "file": "meta-p45-small.webp",
+      "bytes": 29974,
+      "sha256": "a21343bc2a6366826abdad1a52e0fa1103aad1f78978d875bf38ddb178abbed2"
+    },
+    {
+      "file": "meta-p45.webp",
+      "bytes": 140546,
+      "sha256": "02bbcc1183757f1ef84b889efd9721b27e9bbcf2c34a6ab8b865b12d619179af"
+    }
+  ]
+}

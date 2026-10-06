@@ -4,6 +4,7 @@ import { promisify } from 'node:util'
 import { createZohoSync } from './zoho-sync.mjs'
 import { createEnquiries } from './enquiries.mjs'
 import { createCourses } from './courses.mjs'
+import {createNomodCourses,nomodWebhookPath} from './nomod-courses.mjs'
 import { createPersistence,uniqueConflict } from './persistence.mjs'
 
 const derive = promisify(scrypt)
@@ -155,7 +156,11 @@ export async function createPortalServer(options = {}) {
   const responseJson = (response, status, data) => { response.writeHead(status, { 'Content-Type': 'application/json; charset=utf-8' }); response.end(JSON.stringify(data)) }
   const integration = await createZohoSync({db,env,readJson,audit,fetcher:options.zohoFetch || fetch})
   const enquiries = await createEnquiries({db,env,readJson,fetcher:options.zohoFetch||fetch,adapters:options.enquiryAdapters,now:options.now||Date.now})
-  const courses = await createCourses({db,env,readJson,origin,audit,sendEmail:options.courseSender,pdfReader:options.coursePdfReader,now:options.now||Date.now,workerInterval:options.courseWorkerInterval})
+  let nomod
+  const courses = await createCourses({db,env,readJson,origin,audit,sendEmail:options.courseSender,pdfReader:options.coursePdfReader,now:options.now||Date.now,workerInterval:options.courseWorkerInterval,paidReady:()=>nomod?.ready()===true})
+  // Production remains closed until Hosted Checkout event correlation is
+  // independently verified and a reviewed contract implementation replaces false.
+  nomod=await createNomodCourses({db,env,readJson,origin,contractVerified:false,fetcher:options.nomodFetch||fetch,sendEmail:options.courseSender,pdfReader:options.coursePdfReader,now:options.now||Date.now,workerInterval:options.courseWorkerInterval})
   const server = createServer(async (request, response) => {
     response.setHeader('Cache-Control', 'no-store')
     response.setHeader('X-Content-Type-Options', 'nosniff')
@@ -164,9 +169,13 @@ export async function createPortalServer(options = {}) {
     const mutation = !['GET','HEAD'].includes(request.method)
     try {
       if (!path.startsWith('/api/')) fail(404, 'Not found.')
+      // This is the sole cross-origin mutation exception. Nomod must verify the
+      // untouched body and Svix signature before any event can be persisted.
+      if(path===nomodWebhookPath&&request.method==='POST'){await nomod.publicHandle(request,response,path,responseJson);return}
       if (mutation && request.headers.origin !== origin) fail(403, 'Request origin is not allowed.')
       if (await enquiries.publicHandle(request,response,path,responseJson)) return
       if (await courses.publicHandle(request,response,path,responseJson)) return
+      if(await nomod.publicHandle(request,response,path,responseJson))return
       const session = await currentSession(request)
       const user = session.user
       if (request.method === 'GET' && path === '/api/health') {if(!await db.health())fail(503,'Persistent storage is unavailable.');return responseJson(response,200,{status:'ok',mode:production?'production':'local',storage:db.kind,payments:'tracking-only',...(db.readiness?{databaseVerified:true,schemaVersion:db.readiness.schemaVersion,schemaAppliedAt:db.readiness.schemaAppliedAt}:{})})}
@@ -309,5 +318,5 @@ export async function createPortalServer(options = {}) {
   })
   server.requestTimeout = 15000
   server.headersTimeout = 10000
-  return { server, databaseReadiness:db.readiness, close:async () => { if(server.listening)await new Promise((resolve,reject) => server.close(error => error ? reject(error) : resolve())); await courses.close(); await db.close() } }
+  return { server, databaseReadiness:db.readiness, close:async () => { if(server.listening)await new Promise((resolve,reject) => server.close(error => error ? reject(error) : resolve())); await nomod.close(); await courses.close(); await db.close() } }
 }

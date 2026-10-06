@@ -43,21 +43,21 @@ export async function privateCoursePdf(env,id){
   return bytes
  }finally{await handle.close()}
 }
-function smtpConfigured(env){return env.SMTP_HOST==='smtp.hostinger.com'&&Number(env.SMTP_PORT)===465&&env.SMTP_USER==='info@ascore.ae'&&typeof env.SMTP_PASSWORD==='string'&&!!env.SMTP_PASSWORD}
+export function smtpConfigured(env){return env.COURSE_SMTP_HOST==='smtp.hostinger.com'&&Number(env.COURSE_SMTP_PORT)===465&&env.COURSE_SMTP_USER==='orders@ascore.ae'&&typeof env.COURSE_SMTP_PASSWORD==='string'&&!!env.COURSE_SMTP_PASSWORD}
 export function courseEmail(row,origin){
  const items=JSON.parse(row.items),links=items.map(id=>({name:courseCatalog[id].name,url:`${origin}/api/courses/download/${row.id}/${id}?token=${token(row,'download:'+id)}`}))
- return {from:{name:'Ascore Creative',address:'info@ascore.ae'},to:row.email,messageId:`<course-${row.id}@ascore.ae>`,subject:'Your Ascore course downloads',text:`Thank you for learning with Ascore.\n\nOrder: ${row.id}\nFREE coupon applied. Total paid: AED 0.\n\n${links.map(x=>`${x.name}\n${x.url}`).join('\n\n')}\n\nThese private links expire at ${new Date(Number(row.expires_at)).toISOString()} and allow up to 10 downloads per course.\nFor help, contact info@ascore.ae.`,envelope:{from:'info@ascore.ae',to:[row.email]}}
+ return {from:{name:'Ascore Creative',address:'orders@ascore.ae'},to:row.email,messageId:`<course-${row.id}@ascore.ae>`,subject:'Your Ascore course downloads',text:`Thank you for learning with Ascore.\n\nOrder: ${row.id}\nFREE coupon applied. Total paid: AED 0.\n\n${links.map(x=>`${x.name}\n${x.url}`).join('\n\n')}\n\nThese private links expire at ${new Date(Number(row.expires_at)).toISOString()} and allow up to 10 downloads per course.\nFor help, contact info@ascore.ae.`,envelope:{from:'orders@ascore.ae',to:[row.email]}}
 }
-function sender(env){
+export function sender(env){
  let mail
  return async message=>{
-  if(!mail){const {default:nodemailer}=await import('nodemailer');mail=nodemailer.createTransport({host:env.SMTP_HOST,port:465,secure:true,auth:{user:env.SMTP_USER,pass:env.SMTP_PASSWORD},tls:{minVersion:'TLSv1.2'},connectionTimeout:10000,greetingTimeout:10000,socketTimeout:15000,logger:false,debug:false,disableFileAccess:true,disableUrlAccess:true})}
+  if(!mail){const {default:nodemailer}=await import('nodemailer');mail=nodemailer.createTransport({host:env.COURSE_SMTP_HOST,port:465,secure:true,auth:{user:env.COURSE_SMTP_USER,pass:env.COURSE_SMTP_PASSWORD},tls:{minVersion:'TLSv1.2'},connectionTimeout:10000,greetingTimeout:10000,socketTimeout:15000,logger:false,debug:false,disableFileAccess:true,disableUrlAccess:true})}
   const result=await mail.sendMail(message)
   if(!result.accepted?.includes(message.to))throw Object.assign(Error('Recipient rejected'),{responseCode:550})
   return {reference:result.messageId}
  }
 }
-export async function createCourses({db,env={},readJson,origin,sendEmail,pdfReader=privateCoursePdf,now=Date.now,audit=async()=>{},workerInterval=60000}){
+export async function createCourses({db,env={},readJson,origin,sendEmail,pdfReader=privateCoursePdf,now=Date.now,audit=async()=>{},workerInterval=60000,paidReady=()=>false}){
  const enabled=env.ASCORE_ENABLE_FREE_COURSES==='1',requirements={enabled,schemaReady:false,privatePdfsReady:false,senderConfigured:!!sendEmail||smtpConfigured(env)}
  try{if(enabled&&db.kind==='sqlite')await initializeCourseSchema(db);else await verifyCourseSchema(db);requirements.schemaReady=true}catch{}
  if(enabled){try{await Promise.all(Object.keys(courseCatalog).map(id=>pdfReader(env,id)));requirements.privatePdfsReady=true}catch{}}
@@ -109,7 +109,7 @@ export async function createCourses({db,env={},readJson,origin,sendEmail,pdfRead
   requirements,deliver,tick,
   async close(){if(interval)clearInterval(interval);await Promise.allSettled([...flights.values()])},
   async publicHandle(req,res,path,json){
-   if(path==='/api/courses/config'&&req.method==='GET'){json(res,200,{freeCheckoutReady:ready(),paidCheckoutEnabled:false});return true}
+   if(path==='/api/courses/config'&&req.method==='GET'){json(res,200,{freeCheckoutReady:ready(),paidCheckoutEnabled:paidReady()});return true}
    if(path==='/api/courses/quote'&&req.method==='POST'){const body=await readJson(req);strictFields(body,['items','coupon']);json(res,200,{...quote(body),freeCheckoutReady:ready()});return true}
    if(path==='/api/courses/orders'&&req.method==='POST'){
     if(!ready())fail(503,'Free course delivery is being prepared. Please try again later.')
