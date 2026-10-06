@@ -1,0 +1,57 @@
+{
+  "fixtures": [
+    {
+      "width": 320,
+      "allowed": true,
+      "noOverflow": true
+    },
+    {
+      "width": 390,
+      "allowed": true,
+      "noOverflow": true
+    },
+    {
+      "width": 768,
+      "allowed": true,
+      "noOverflow": true
+    },
+    {
+      "width": 1440,
+      "allowed": true,
+      "noOverflow": true
+    },
+    {
+      "width": 320,
+      "allowed": false,
+      "noOverflow": true
+    },
+    {
+      "width": 390,
+      "allowed": false,
+      "noOverflow": true
+    },
+    {
+      "width": 768,
+      "allowed": false,
+      "noOverflow": true
+    },
+    {
+      "width": 1440,
+      "allowed": false,
+      "noOverflow": true
+    }
+  ],
+  "checks": [
+    "no lookup on page load",
+    "existing UUID only",
+    "saved session and CSRF",
+    "no charge or email fixtures",
+    "host display from provider result only",
+    "signed event missing stays unverified",
+    "contract gate stays closed",
+    "responsive input and result"
+  ],
+  "errors": [],
+  "realProviderRequests": 0,
+  "realCharges": 0
+}
