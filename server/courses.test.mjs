@@ -69,6 +69,22 @@ test('team analytics enforce existing role and CSRF checks, report genuine zero 
  const admin=await a.auth(true),result=await a.call('/api/courses/admin/orders',null,admin);assert.equal(result.status,200);assert.equal(result.data.summary.freeOrders,1);assert.equal(result.data.summary.paidOrders,0);assert.equal(result.data.summary.paidRevenueMinor,0);assert.equal(result.data.summary.emailsAccepted,1);assert.equal(result.data.orders[0].email,'customer@example.com');assert.ok(!JSON.stringify(result.data).includes(order.receiptToken));assert.ok(!Object.hasOwn(result.data.orders[0],'secret'))
  assert.equal((await a.call('/api/courses/admin/orders/'+order.id+'/retry',{}, {Cookie:admin.Cookie})).status,403);assert.equal((await a.call('/api/courses/admin/orders/'+order.id+'/retry',{},admin)).status,409)
 })
+test('private payment configuration is boolean-only and role-protected without enabling checkout or making provider requests',async t=>{
+ for(const configured of [false,true]){
+  const privateKey='fixture-private-nomod-key',privateSecret='whsec_'+Buffer.alloc(32,7).toString('base64');let calls=0
+  const a=await start({env:{ASCORE_ENABLE_FREE_COURSES:'0',ASCORE_ENABLE_PAID_COURSES:'0',ASCORE_ENABLE_PAID_COURSE_DELIVERY:'0',ASCORE_ENABLE_NOMOD_WEBHOOKS:'0',...(configured?{NOMOD_HOSTED_CHECKOUT_API_KEY:privateKey,NOMOD_WEBHOOK_SIGNING_SECRET:privateSecret,NOMOD_CHECKOUT_HOSTS:'checkout.nomod.example'}:{})},nomodFetch:async()=>{calls++;throw Error('No provider request is authorized')}});t.after(()=>a.portal.close())
+  assert.equal((await a.call('/api/courses/admin/orders')).status,401)
+  const client=await a.auth();assert.equal((await a.call('/api/courses/admin/orders',null,client)).status,403)
+  const admin=await a.auth(true),result=await a.call('/api/courses/admin/orders',null,admin);assert.equal(result.status,200)
+  const status=result.data.payments;assert.equal(status.ready,false);assert.equal(status.webhooksEnabled,false)
+  assert.equal(status.requirements.apiKeyConfigured,configured);assert.equal(status.requirements.webhookSecretConfigured,configured);assert.equal(status.requirements.checkoutHostsConfigured,configured)
+  for(const field of ['enabled','deliveryEnabled','liveRequestsApproved','termsApproved','contractVerified','schemaReady'])assert.equal(status.requirements[field],false)
+  for(const value of Object.values(status.requirements))assert.equal(typeof value,'boolean')
+  const serialized=JSON.stringify(result.data);for(const value of [privateKey,privateSecret,'checkout.nomod.example'])assert.ok(!serialized.includes(value))
+  assert.deepEqual((await a.call('/api/courses/config')).data,{freeCheckoutReady:false,paidCheckoutEnabled:false})
+  assert.equal(calls,0);assert.equal(a.messages.length,0)
+ }
+})
 test('private PDF loader rejects public/repository directories, loose permissions, symlinks and wrong editions',async()=>{
  await assert.rejects(privateCoursePdf({ASCORE_COURSE_PDF_DIR:process.cwd()},'meta'))
  const directory=mkdtempSync(join(tmpdir(),'ascore-pdf-'));try{chmodSync(directory,0o700);const path=join(directory,courseCatalog.meta.file);writeFileSync(path,fixture,{mode:0o600});await assert.rejects(privateCoursePdf({ASCORE_COURSE_PDF_DIR:directory},'meta'),/edition/);chmodSync(path,0o644);await assert.rejects(privateCoursePdf({ASCORE_COURSE_PDF_DIR:directory},'meta'),/unavailable/);rmSync(path);symlinkSync('/etc/hosts',path);await assert.rejects(privateCoursePdf({ASCORE_COURSE_PDF_DIR:directory},'meta'))}finally{rmSync(directory,{recursive:true,force:true})}

@@ -1,0 +1,9 @@
+{
+  "checks": [
+    "Missing credentials rendered as boolean status only; four responsive widths; read-only gates; refresh stays a GET",
+    "Present credentials rendered as boolean status only; four responsive widths; read-only gates; refresh stays a GET",
+    "Client receives no private payment panel or course admin request"
+  ],
+  "errors": [],
+  "mutations": []
+}

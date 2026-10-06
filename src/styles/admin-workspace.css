@@ -192,3 +192,10 @@
 @media(max-width:850px){.portal-workspace:not(.admin-workspace) .admin-sidebar-brand img{width:125px}}
 @media(prefers-reduced-motion:reduce){.admin-workspace .workspace-sidebar{transition:none}}
 @media print{.admin-topbar,.admin-workspace .workspace-sidebar{display:none}}
+
+.admin-workspace .course-payment-note{margin:0 0 20px;line-height:1.65}
+.admin-workspace .course-payment-readiness details{margin-top:20px;border-top:1px solid var(--admin-line);padding-top:8px}
+.admin-workspace .course-payment-readiness summary{min-height:44px;display:flex;align-items:center;cursor:pointer;font-size:13px;font-weight:600;color:var(--admin-accent)}
+.admin-workspace .course-payment-readiness details ul{margin:12px 0 16px}
+.admin-workspace .course-payment-result{margin-top:20px;font-weight:600}
+@media(max-width:400px){.admin-workspace .course-payment-readiness li{align-items:start;gap:10px}.admin-workspace .course-payment-readiness li>span{min-width:0}}

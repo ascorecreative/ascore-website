@@ -157,7 +157,7 @@ export async function createPortalServer(options = {}) {
   const integration = await createZohoSync({db,env,readJson,audit,fetcher:options.zohoFetch || fetch})
   const enquiries = await createEnquiries({db,env,readJson,fetcher:options.zohoFetch||fetch,adapters:options.enquiryAdapters,now:options.now||Date.now})
   let nomod
-  const courses = await createCourses({db,env,readJson,origin,audit,sendEmail:options.courseSender,pdfReader:options.coursePdfReader,now:options.now||Date.now,workerInterval:options.courseWorkerInterval,paidReady:()=>nomod?.ready()===true})
+  const courses = await createCourses({db,env,readJson,origin,audit,sendEmail:options.courseSender,pdfReader:options.coursePdfReader,now:options.now||Date.now,workerInterval:options.courseWorkerInterval,paidReady:()=>nomod?.ready()===true,paymentReadiness:()=>({ready:nomod?.ready()===true,requirements:nomod?.requirements,webhooksEnabled:env.ASCORE_ENABLE_NOMOD_WEBHOOKS==='1'})})
   // Production remains closed until Hosted Checkout event correlation is
   // independently verified and a reviewed contract implementation replaces false.
   nomod=await createNomodCourses({db,env,readJson,origin,contractVerified:false,fetcher:options.nomodFetch||fetch,sendEmail:options.courseSender,pdfReader:options.coursePdfReader,now:options.now||Date.now,workerInterval:options.courseWorkerInterval})
