@@ -1,0 +1,55 @@
+{
+  "navigation": [
+    {
+      "route": "/courses/",
+      "width": 1440,
+      "input": "click",
+      "destination": "/",
+      "accessibleName": "Ascore home"
+    },
+    {
+      "route": "/courses/meta-ads/",
+      "width": 1440,
+      "input": "click",
+      "destination": "/",
+      "accessibleName": "Ascore home"
+    },
+    {
+      "route": "/courses/practical-ai/",
+      "width": 1440,
+      "input": "click",
+      "destination": "/",
+      "accessibleName": "Ascore home"
+    },
+    {
+      "route": "/courses/checkout/",
+      "width": 1440,
+      "input": "click",
+      "destination": "/",
+      "accessibleName": "Ascore home"
+    },
+    {
+      "route": "/courses/meta-ads/",
+      "logo": "footer",
+      "destination": "/"
+    },
+    {
+      "route": "/courses/meta-ads/",
+      "width": 390,
+      "input": "keyboard Enter after cart close",
+      "destination": "/"
+    }
+  ],
+  "regression": {
+    "cartRetained": true,
+    "priceAED50": true,
+    "catalog46Pages": true,
+    "emailValidation": true,
+    "checkoutGates": {
+      "freeCheckoutReady": false,
+      "paidCheckoutEnabled": false
+    },
+    "noOrderSubmitted": true
+  },
+  "errors": []
+}
