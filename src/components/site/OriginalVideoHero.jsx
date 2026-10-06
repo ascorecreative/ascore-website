@@ -6,7 +6,7 @@ import '../../styles/original-video-hero.css'
 export default function OriginalVideoHero({ progress=1, near=false, visible=true, reducedMotion=false, standalone=false }) {
  const wrapper=useRef(null),video=useRef(null),playback=useRef(null),sample=useRef(null),sampleTime=useRef(-1000)
  const [mobile,setMobile]=useState(false),[source,setSource]=useState(null)
- const [ready,setReady]=useState(false),[playing,setPlaying]=useState(false),[blocked,setBlocked]=useState(false)
+ const [ready,setReady]=useState(false),[playing,setPlaying]=useState(false)
  const [requested,setRequested]=useState(false),[paused,setPaused]=useState(false),[inView,setInView]=useState(false),[theme,setTheme]=useState('light')
  const active=inView&&(standalone||visible&&progress>.025)
  const shouldLoad=(!reducedMotion&&near)||requested
@@ -16,7 +16,7 @@ export default function OriginalVideoHero({ progress=1, near=false, visible=true
   if(!state.active||document.hidden||state.paused||state.reducedMotion&&!state.requested){element.pause();return}
   element.muted=true; element.defaultMuted=true; element.playsInline=true
   if(element.readyState>=2)setReady(true)
-  element.play().then(()=>setBlocked(false)).catch(error=>{if(error.name!=='AbortError'){setBlocked(true);setPlaying(false)}})
+  element.play().catch(error=>{if(error.name!=='AbortError')setPlaying(false)})
  },[])
  const sampleTheme=useCallback(()=>{
   const element=video.current;if(!element||element.readyState<2||!playback.current.active||document.hidden)return
@@ -38,21 +38,35 @@ export default function OriginalVideoHero({ progress=1, near=false, visible=true
  useEffect(()=>{
   const next=mobile?'/hero-video-mobile.mp4':'/hero-video.mp4'
   // Re-entering the chapter must keep an already decoded video visible.
-  if(shouldLoad&&source!==next){setReady(false);setBlocked(false);setTheme('light');setSource(next)}
+  if(shouldLoad&&source!==next){setReady(false);setTheme('light');setSource(next)}
  },[shouldLoad,mobile,source])
  useEffect(()=>{
   const element=video.current;if(!element||!source)return
   play();document.addEventListener('visibilitychange',play)
-  return()=>{document.removeEventListener('visibilitychange',play);element.pause()}
+  // State updates after a trusted Play click must not cancel that play request.
+  // Inactive/hidden/paused states are handled by play(); unmount has its own cleanup.
+  return()=>document.removeEventListener('visibilitychange',play)
  },[source,active,paused,reducedMotion,requested,play])
+ useEffect(()=>{const element=video.current;return()=>element?.pause()},[])
  if(reducedMotion&&!standalone)return null
  const poster=mobile?'/hero/original-video-mobile-poster.webp':'/hero/original-video-desktop-poster.webp'
  const loaded=()=>{setReady(true);sampleTime.current=-1000;sampleTheme();play()}
- const toggle=()=>{if(playing){setPaused(true);video.current?.pause()}else{setRequested(true);setPaused(false);video.current?.play().then(()=>setBlocked(false)).catch(error=>{if(error.name!=='AbortError')setBlocked(true)})}}
- const controlVisible=(standalone||active&&progress>.225)&&(standalone||playing||paused||blocked)
+ const toggle=()=>{
+  const element=video.current;if(!element)return
+  if(playing){setPaused(true);element.pause();return}
+  setRequested(true);setPaused(false)
+  element.muted=true;element.defaultMuted=true;element.playsInline=true
+  // Reduced-motion/manual entry can have no source yet. Attach it inside this
+  // trusted click, rather than asking Safari to start later from a state effect.
+  if(!source){const next=mobile?'/hero-video-mobile.mp4':'/hero-video.mp4';element.src=next;element.load();setSource(next)}
+  element.play().catch(error=>{if(error.name!=='AbortError')setPlaying(false)})
+ }
+ // A pending or aborted autoplay promise is still an idle video. Keep a manual
+ // recovery control available without overriding the browser's autoplay policy.
+ const controlVisible=standalone||active&&progress>.225
  return <section ref={wrapper} className={`original-video-hero${standalone?' is-standalone':''}${mobile?' is-mobile-format':''}`} data-theme={theme} style={{'--video-progress':progress}} aria-label="Original Ascore video hero" aria-hidden={!active&&!standalone?true:undefined} inert={!active&&!standalone?true:undefined}>
   {(near||standalone)&&<picture><img className="original-video-poster" src={poster} alt="" width={mobile?720:1280} height={mobile?1280:720} loading="lazy"/></picture>}
-  {source&&<video ref={video} className={ready?'is-ready':''} src={source} poster={poster} muted loop playsInline preload={active?'auto':'metadata'} aria-label="Ascore Creative original video hero" onLoadedData={loaded} onCanPlay={loaded} onTimeUpdate={sampleTheme} onPlay={()=>setPlaying(true)} onPause={()=>setPlaying(false)}/>}
+  <video ref={video} className={ready?'is-ready':''} src={source||undefined} poster={source?poster:undefined} muted loop playsInline preload={source?(active?'auto':'metadata'):'none'} aria-label="Ascore Creative original video hero" onLoadedData={loaded} onCanPlay={loaded} onTimeUpdate={sampleTheme} onPlaying={()=>setPlaying(true)} onWaiting={()=>setPlaying(false)} onStalled={()=>{if(video.current?.paused||video.current?.readyState<3)setPlaying(false)}} onPause={()=>setPlaying(false)} onError={()=>setPlaying(false)}/>
   {mobile&&(near||standalone)&&<MobileVideoBadgeMask active={active} playing={playing}/>}
   {controlVisible&&<button className={`original-video-control${playing?' is-keyboard-only':''}`} type="button" onClick={toggle}>{playing?<Pause size={15}/>:<Play size={15}/>}<span>{playing?'Pause video':'Play video'}</span></button>}
  </section>

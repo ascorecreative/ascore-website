@@ -1,0 +1,902 @@
+{
+  "before": [
+    {
+      "engine": "chrome",
+      "scenario": "aborted",
+      "before": {
+        "progress": "0.65",
+        "paused": true,
+        "ready": 4,
+        "time": 0,
+        "error": null,
+        "autoplay": false,
+        "muted": true,
+        "control": false,
+        "buttonVisible": false,
+        "calls": [
+          {
+            "time": 1592.4000000059605,
+            "src": "http://127.0.0.1:4173/hero-video.mp4",
+            "muted": true,
+            "paused": true,
+            "ready": 0,
+            "user": false,
+            "activation": false,
+            "error": "AbortError"
+          },
+          {
+            "time": 2202.5999999940395,
+            "src": "http://127.0.0.1:4173/hero-video.mp4",
+            "muted": true,
+            "paused": true,
+            "ready": 4,
+            "user": false,
+            "activation": false,
+            "error": "AbortError"
+          },
+          {
+            "time": 2214.199999988079,
+            "src": "http://127.0.0.1:4173/hero-video.mp4",
+            "muted": true,
+            "paused": true,
+            "ready": 4,
+            "user": false,
+            "activation": false,
+            "error": "AbortError"
+          }
+        ]
+      },
+      "manual": null,
+      "errors": [],
+      "network": [
+        {
+          "status": 206,
+          "url": "http://127.0.0.1:4173/hero-video.mp4",
+          "headers": {
+            "cache-control": "no-cache",
+            "etag": "W/\"ba066c-1a10e756967-identity\"",
+            "connection": "keep-alive",
+            "content-range": "bytes 0-12191339/12191340",
+            "x-content-type-options": "nosniff",
+            "accept-ranges": "bytes",
+            "keep-alive": "timeout=5",
+            "content-length": "12191340",
+            "date": "Tue, 06 Oct 2026 09:25:59 GMT",
+            "content-type": "video/mp4",
+            "last-modified": "Mon, 05 Oct 2026 23:45:38 GMT"
+          }
+        }
+      ]
+    },
+    {
+      "engine": "webkit",
+      "scenario": "aborted",
+      "before": {
+        "progress": "0.65",
+        "paused": true,
+        "ready": 4,
+        "time": 0,
+        "error": null,
+        "autoplay": false,
+        "muted": true,
+        "control": false,
+        "buttonVisible": false,
+        "calls": [
+          {
+            "time": 1110,
+            "src": "http://127.0.0.1:4173/hero-video.mp4",
+            "muted": true,
+            "paused": true,
+            "ready": 0,
+            "user": false,
+            "activation": false,
+            "error": "AbortError"
+          },
+          {
+            "time": 1491,
+            "src": "http://127.0.0.1:4173/hero-video.mp4",
+            "muted": true,
+            "paused": true,
+            "ready": 4,
+            "user": false,
+            "activation": false,
+            "error": "AbortError"
+          },
+          {
+            "time": 1494,
+            "src": "http://127.0.0.1:4173/hero-video.mp4",
+            "muted": true,
+            "paused": true,
+            "ready": 4,
+            "user": false,
+            "activation": false,
+            "error": "AbortError"
+          }
+        ]
+      },
+      "manual": null,
+      "errors": [],
+      "network": [
+        {
+          "status": 206,
+          "url": "http://127.0.0.1:4173/hero-video.mp4",
+          "headers": {
+            "x-content-type-options": "nosniff",
+            "content-type": "video/mp4",
+            "cache-control": "no-cache",
+            "last-modified": "Mon, 05 Oct 2026 23:45:38 GMT",
+            "content-range": "bytes 0-1/12191340",
+            "etag": "W/\"ba066c-1a10e756967-identity\"",
+            "accept-ranges": "bytes",
+            "date": "Tue, 06 Oct 2026 09:26:05 GMT",
+            "keep-alive": "timeout=5",
+            "content-length": "2",
+            "connection": "keep-alive"
+          }
+        },
+        {
+          "status": 206,
+          "url": "http://127.0.0.1:4173/hero-video.mp4",
+          "headers": {
+            "x-content-type-options": "nosniff",
+            "content-type": "video/mp4",
+            "cache-control": "no-cache",
+            "last-modified": "Mon, 05 Oct 2026 23:45:38 GMT",
+            "content-range": "bytes 0-12191339/12191340",
+            "etag": "W/\"ba066c-1a10e756967-identity\"",
+            "accept-ranges": "bytes",
+            "date": "Tue, 06 Oct 2026 09:26:05 GMT",
+            "keep-alive": "timeout=5",
+            "content-length": "12191340",
+            "connection": "keep-alive"
+          }
+        }
+      ]
+    }
+  ],
+  "after": [
+    {
+      "engine": "chrome",
+      "scenario": "normal",
+      "before": {
+        "progress": "0.65",
+        "paused": false,
+        "ready": 4,
+        "time": 0.729759,
+        "error": null,
+        "autoplay": false,
+        "muted": true,
+        "control": true,
+        "buttonVisible": false,
+        "text": "Pause video",
+        "calls": [
+          {
+            "time": 1657.800000011921,
+            "src": "http://127.0.0.1:4173/hero-video.mp4",
+            "muted": true,
+            "paused": true,
+            "ready": 0,
+            "user": false,
+            "activation": false
+          },
+          {
+            "time": 3276.5999999940395,
+            "src": "http://127.0.0.1:4173/hero-video.mp4",
+            "muted": true,
+            "paused": false,
+            "ready": 4,
+            "user": false,
+            "activation": false
+          },
+          {
+            "time": 3298.7000000178814,
+            "src": "http://127.0.0.1:4173/hero-video.mp4",
+            "muted": true,
+            "paused": false,
+            "ready": 4,
+            "user": false,
+            "activation": false
+          }
+        ]
+      },
+      "manual": null,
+      "errors": [],
+      "network": [
+        {
+          "status": 206,
+          "url": "http://127.0.0.1:4173/hero-video.mp4",
+          "headers": {
+            "cache-control": "no-cache",
+            "etag": "W/\"ba066c-1a1108a7ba9-identity\"",
+            "connection": "keep-alive",
+            "content-range": "bytes 0-12191339/12191340",
+            "x-content-type-options": "nosniff",
+            "accept-ranges": "bytes",
+            "keep-alive": "timeout=5",
+            "content-length": "12191340",
+            "date": "Tue, 06 Oct 2026 09:28:31 GMT",
+            "content-type": "video/mp4",
+            "last-modified": "Tue, 06 Oct 2026 09:27:53 GMT"
+          }
+        }
+      ]
+    },
+    {
+      "engine": "chrome",
+      "scenario": "blocked",
+      "before": {
+        "progress": "0.65",
+        "paused": true,
+        "ready": 4,
+        "time": 0,
+        "error": null,
+        "autoplay": false,
+        "muted": true,
+        "control": true,
+        "buttonVisible": true,
+        "text": "Play video",
+        "calls": [
+          {
+            "time": 1848.2000000178814,
+            "src": "http://127.0.0.1:4173/hero-video.mp4",
+            "muted": true,
+            "paused": true,
+            "ready": 0,
+            "user": false,
+            "activation": false,
+            "error": "NotAllowedError"
+          },
+          {
+            "time": 2025.5,
+            "src": "http://127.0.0.1:4173/hero-video.mp4",
+            "muted": true,
+            "paused": true,
+            "ready": 4,
+            "user": false,
+            "activation": false,
+            "error": "NotAllowedError"
+          },
+          {
+            "time": 2033.300000011921,
+            "src": "http://127.0.0.1:4173/hero-video.mp4",
+            "muted": true,
+            "paused": true,
+            "ready": 4,
+            "user": false,
+            "activation": false,
+            "error": "NotAllowedError"
+          }
+        ]
+      },
+      "manual": {
+        "progress": "0.65",
+        "paused": false,
+        "ready": 4,
+        "time": 1.022683,
+        "error": null,
+        "autoplay": false,
+        "muted": true,
+        "control": true,
+        "buttonVisible": false,
+        "text": "Pause video",
+        "calls": [
+          {
+            "time": 1848.2000000178814,
+            "src": "http://127.0.0.1:4173/hero-video.mp4",
+            "muted": true,
+            "paused": true,
+            "ready": 0,
+            "user": false,
+            "activation": false,
+            "error": "NotAllowedError"
+          },
+          {
+            "time": 2025.5,
+            "src": "http://127.0.0.1:4173/hero-video.mp4",
+            "muted": true,
+            "paused": true,
+            "ready": 4,
+            "user": false,
+            "activation": false,
+            "error": "NotAllowedError"
+          },
+          {
+            "time": 2033.300000011921,
+            "src": "http://127.0.0.1:4173/hero-video.mp4",
+            "muted": true,
+            "paused": true,
+            "ready": 4,
+            "user": false,
+            "activation": false,
+            "error": "NotAllowedError"
+          },
+          {
+            "time": 4231.200000017881,
+            "src": "http://127.0.0.1:4173/hero-video.mp4",
+            "muted": true,
+            "paused": true,
+            "ready": 4,
+            "user": true,
+            "activation": true
+          },
+          {
+            "time": 4232.600000023842,
+            "src": "http://127.0.0.1:4173/hero-video.mp4",
+            "muted": true,
+            "paused": false,
+            "ready": 4,
+            "user": true,
+            "activation": true
+          }
+        ]
+      },
+      "errors": [],
+      "network": [
+        {
+          "status": 206,
+          "url": "http://127.0.0.1:4173/hero-video.mp4",
+          "headers": {
+            "cache-control": "no-cache",
+            "etag": "W/\"ba066c-1a1108a7ba9-identity\"",
+            "connection": "keep-alive",
+            "content-range": "bytes 0-12191339/12191340",
+            "x-content-type-options": "nosniff",
+            "accept-ranges": "bytes",
+            "keep-alive": "timeout=5",
+            "content-length": "12191340",
+            "date": "Tue, 06 Oct 2026 09:28:37 GMT",
+            "content-type": "video/mp4",
+            "last-modified": "Tue, 06 Oct 2026 09:27:53 GMT"
+          }
+        }
+      ]
+    },
+    {
+      "engine": "chrome",
+      "scenario": "aborted",
+      "before": {
+        "progress": "0.65",
+        "paused": true,
+        "ready": 4,
+        "time": 0,
+        "error": null,
+        "autoplay": false,
+        "muted": true,
+        "control": true,
+        "buttonVisible": true,
+        "text": "Play video",
+        "calls": [
+          {
+            "time": 1545.6000000238419,
+            "src": "http://127.0.0.1:4173/hero-video.mp4",
+            "muted": true,
+            "paused": true,
+            "ready": 0,
+            "user": false,
+            "activation": false,
+            "error": "AbortError"
+          },
+          {
+            "time": 1640.7000000178814,
+            "src": "http://127.0.0.1:4173/hero-video.mp4",
+            "muted": true,
+            "paused": true,
+            "ready": 4,
+            "user": false,
+            "activation": false,
+            "error": "AbortError"
+          },
+          {
+            "time": 1651.4000000059605,
+            "src": "http://127.0.0.1:4173/hero-video.mp4",
+            "muted": true,
+            "paused": true,
+            "ready": 4,
+            "user": false,
+            "activation": false,
+            "error": "AbortError"
+          }
+        ]
+      },
+      "manual": {
+        "progress": "0.65",
+        "paused": false,
+        "ready": 4,
+        "time": 0.961377,
+        "error": null,
+        "autoplay": false,
+        "muted": true,
+        "control": true,
+        "buttonVisible": false,
+        "text": "Pause video",
+        "calls": [
+          {
+            "time": 1545.6000000238419,
+            "src": "http://127.0.0.1:4173/hero-video.mp4",
+            "muted": true,
+            "paused": true,
+            "ready": 0,
+            "user": false,
+            "activation": false,
+            "error": "AbortError"
+          },
+          {
+            "time": 1640.7000000178814,
+            "src": "http://127.0.0.1:4173/hero-video.mp4",
+            "muted": true,
+            "paused": true,
+            "ready": 4,
+            "user": false,
+            "activation": false,
+            "error": "AbortError"
+          },
+          {
+            "time": 1651.4000000059605,
+            "src": "http://127.0.0.1:4173/hero-video.mp4",
+            "muted": true,
+            "paused": true,
+            "ready": 4,
+            "user": false,
+            "activation": false,
+            "error": "AbortError"
+          },
+          {
+            "time": 3879,
+            "src": "http://127.0.0.1:4173/hero-video.mp4",
+            "muted": true,
+            "paused": true,
+            "ready": 4,
+            "user": true,
+            "activation": true
+          },
+          {
+            "time": 3879.4000000059605,
+            "src": "http://127.0.0.1:4173/hero-video.mp4",
+            "muted": true,
+            "paused": false,
+            "ready": 4,
+            "user": true,
+            "activation": true
+          }
+        ]
+      },
+      "errors": [],
+      "network": [
+        {
+          "status": 206,
+          "url": "http://127.0.0.1:4173/hero-video.mp4",
+          "headers": {
+            "cache-control": "no-cache",
+            "etag": "W/\"ba066c-1a1108a7ba9-identity\"",
+            "connection": "keep-alive",
+            "content-range": "bytes 0-12191339/12191340",
+            "x-content-type-options": "nosniff",
+            "accept-ranges": "bytes",
+            "keep-alive": "timeout=5",
+            "content-length": "12191340",
+            "date": "Tue, 06 Oct 2026 09:28:43 GMT",
+            "content-type": "video/mp4",
+            "last-modified": "Tue, 06 Oct 2026 09:27:53 GMT"
+          }
+        }
+      ]
+    },
+    {
+      "engine": "webkit",
+      "scenario": "normal",
+      "before": {
+        "progress": "0.65",
+        "paused": false,
+        "ready": 4,
+        "time": 1.7373035416550002,
+        "error": null,
+        "autoplay": false,
+        "muted": true,
+        "control": true,
+        "buttonVisible": false,
+        "text": "Pause video",
+        "calls": [
+          {
+            "time": 1178,
+            "src": "http://127.0.0.1:4173/hero-video.mp4",
+            "muted": true,
+            "paused": true,
+            "ready": 0,
+            "user": false,
+            "activation": false
+          },
+          {
+            "time": 1649,
+            "src": "http://127.0.0.1:4173/hero-video.mp4",
+            "muted": true,
+            "paused": false,
+            "ready": 4,
+            "user": false,
+            "activation": false
+          },
+          {
+            "time": 1654,
+            "src": "http://127.0.0.1:4173/hero-video.mp4",
+            "muted": true,
+            "paused": false,
+            "ready": 4,
+            "user": false,
+            "activation": false
+          }
+        ]
+      },
+      "manual": null,
+      "errors": [],
+      "network": [
+        {
+          "status": 206,
+          "url": "http://127.0.0.1:4173/hero-video.mp4",
+          "headers": {
+            "x-content-type-options": "nosniff",
+            "content-type": "video/mp4",
+            "cache-control": "no-cache",
+            "last-modified": "Tue, 06 Oct 2026 09:27:53 GMT",
+            "content-range": "bytes 0-1/12191340",
+            "etag": "W/\"ba066c-1a1108a7ba9-identity\"",
+            "accept-ranges": "bytes",
+            "date": "Tue, 06 Oct 2026 09:28:51 GMT",
+            "keep-alive": "timeout=5",
+            "content-length": "2",
+            "connection": "keep-alive"
+          }
+        },
+        {
+          "status": 206,
+          "url": "http://127.0.0.1:4173/hero-video.mp4",
+          "headers": {
+            "x-content-type-options": "nosniff",
+            "content-type": "video/mp4",
+            "cache-control": "no-cache",
+            "last-modified": "Tue, 06 Oct 2026 09:27:53 GMT",
+            "content-range": "bytes 0-12191339/12191340",
+            "etag": "W/\"ba066c-1a1108a7ba9-identity\"",
+            "accept-ranges": "bytes",
+            "date": "Tue, 06 Oct 2026 09:28:51 GMT",
+            "keep-alive": "timeout=5",
+            "content-length": "12191340",
+            "connection": "keep-alive"
+          }
+        }
+      ]
+    },
+    {
+      "engine": "webkit",
+      "scenario": "blocked",
+      "before": {
+        "progress": "0.65",
+        "paused": true,
+        "ready": 4,
+        "time": 0,
+        "error": null,
+        "autoplay": false,
+        "muted": true,
+        "control": true,
+        "buttonVisible": true,
+        "text": "Play video",
+        "calls": [
+          {
+            "time": 1029,
+            "src": "http://127.0.0.1:4173/hero-video.mp4",
+            "muted": true,
+            "paused": true,
+            "ready": 0,
+            "user": false,
+            "activation": false,
+            "error": "NotAllowedError"
+          },
+          {
+            "time": 1283,
+            "src": "http://127.0.0.1:4173/hero-video.mp4",
+            "muted": true,
+            "paused": true,
+            "ready": 4,
+            "user": false,
+            "activation": false,
+            "error": "NotAllowedError"
+          },
+          {
+            "time": 1286,
+            "src": "http://127.0.0.1:4173/hero-video.mp4",
+            "muted": true,
+            "paused": true,
+            "ready": 4,
+            "user": false,
+            "activation": false,
+            "error": "NotAllowedError"
+          }
+        ]
+      },
+      "manual": {
+        "progress": "0.65",
+        "paused": false,
+        "ready": 4,
+        "time": 0.9777735836778214,
+        "error": null,
+        "autoplay": false,
+        "muted": true,
+        "control": true,
+        "buttonVisible": false,
+        "text": "Pause video",
+        "calls": [
+          {
+            "time": 1029,
+            "src": "http://127.0.0.1:4173/hero-video.mp4",
+            "muted": true,
+            "paused": true,
+            "ready": 0,
+            "user": false,
+            "activation": false,
+            "error": "NotAllowedError"
+          },
+          {
+            "time": 1283,
+            "src": "http://127.0.0.1:4173/hero-video.mp4",
+            "muted": true,
+            "paused": true,
+            "ready": 4,
+            "user": false,
+            "activation": false,
+            "error": "NotAllowedError"
+          },
+          {
+            "time": 1286,
+            "src": "http://127.0.0.1:4173/hero-video.mp4",
+            "muted": true,
+            "paused": true,
+            "ready": 4,
+            "user": false,
+            "activation": false,
+            "error": "NotAllowedError"
+          },
+          {
+            "time": 3501,
+            "src": "http://127.0.0.1:4173/hero-video.mp4",
+            "muted": true,
+            "paused": true,
+            "ready": 4,
+            "user": true,
+            "activation": true
+          },
+          {
+            "time": 3503,
+            "src": "http://127.0.0.1:4173/hero-video.mp4",
+            "muted": true,
+            "paused": false,
+            "ready": 4,
+            "user": true,
+            "activation": true
+          }
+        ]
+      },
+      "errors": [],
+      "network": [
+        {
+          "status": 206,
+          "url": "http://127.0.0.1:4173/hero-video.mp4",
+          "headers": {
+            "x-content-type-options": "nosniff",
+            "content-type": "video/mp4",
+            "cache-control": "no-cache",
+            "last-modified": "Tue, 06 Oct 2026 09:27:53 GMT",
+            "content-range": "bytes 0-1/12191340",
+            "etag": "W/\"ba066c-1a1108a7ba9-identity\"",
+            "accept-ranges": "bytes",
+            "date": "Tue, 06 Oct 2026 09:28:55 GMT",
+            "keep-alive": "timeout=5",
+            "content-length": "2",
+            "connection": "keep-alive"
+          }
+        },
+        {
+          "status": 206,
+          "url": "http://127.0.0.1:4173/hero-video.mp4",
+          "headers": {
+            "x-content-type-options": "nosniff",
+            "content-type": "video/mp4",
+            "cache-control": "no-cache",
+            "last-modified": "Tue, 06 Oct 2026 09:27:53 GMT",
+            "content-range": "bytes 0-12191339/12191340",
+            "etag": "W/\"ba066c-1a1108a7ba9-identity\"",
+            "accept-ranges": "bytes",
+            "date": "Tue, 06 Oct 2026 09:28:55 GMT",
+            "keep-alive": "timeout=5",
+            "content-length": "12191340",
+            "connection": "keep-alive"
+          }
+        }
+      ]
+    },
+    {
+      "engine": "webkit",
+      "scenario": "aborted",
+      "before": {
+        "progress": "0.65",
+        "paused": true,
+        "ready": 4,
+        "time": 0,
+        "error": null,
+        "autoplay": false,
+        "muted": true,
+        "control": true,
+        "buttonVisible": true,
+        "text": "Play video",
+        "calls": [
+          {
+            "time": 994,
+            "src": "http://127.0.0.1:4173/hero-video.mp4",
+            "muted": true,
+            "paused": true,
+            "ready": 0,
+            "user": false,
+            "activation": false,
+            "error": "AbortError"
+          },
+          {
+            "time": 1154,
+            "src": "http://127.0.0.1:4173/hero-video.mp4",
+            "muted": true,
+            "paused": true,
+            "ready": 4,
+            "user": false,
+            "activation": false,
+            "error": "AbortError"
+          },
+          {
+            "time": 1158,
+            "src": "http://127.0.0.1:4173/hero-video.mp4",
+            "muted": true,
+            "paused": true,
+            "ready": 4,
+            "user": false,
+            "activation": false,
+            "error": "AbortError"
+          }
+        ]
+      },
+      "manual": {
+        "progress": "0.65",
+        "paused": false,
+        "ready": 4,
+        "time": 0.9769091243200999,
+        "error": null,
+        "autoplay": false,
+        "muted": true,
+        "control": true,
+        "buttonVisible": false,
+        "text": "Pause video",
+        "calls": [
+          {
+            "time": 994,
+            "src": "http://127.0.0.1:4173/hero-video.mp4",
+            "muted": true,
+            "paused": true,
+            "ready": 0,
+            "user": false,
+            "activation": false,
+            "error": "AbortError"
+          },
+          {
+            "time": 1154,
+            "src": "http://127.0.0.1:4173/hero-video.mp4",
+            "muted": true,
+            "paused": true,
+            "ready": 4,
+            "user": false,
+            "activation": false,
+            "error": "AbortError"
+          },
+          {
+            "time": 1158,
+            "src": "http://127.0.0.1:4173/hero-video.mp4",
+            "muted": true,
+            "paused": true,
+            "ready": 4,
+            "user": false,
+            "activation": false,
+            "error": "AbortError"
+          },
+          {
+            "time": 3511,
+            "src": "http://127.0.0.1:4173/hero-video.mp4",
+            "muted": true,
+            "paused": true,
+            "ready": 4,
+            "user": true,
+            "activation": true
+          },
+          {
+            "time": 3514,
+            "src": "http://127.0.0.1:4173/hero-video.mp4",
+            "muted": true,
+            "paused": false,
+            "ready": 4,
+            "user": true,
+            "activation": true
+          }
+        ]
+      },
+      "errors": [],
+      "network": [
+        {
+          "status": 206,
+          "url": "http://127.0.0.1:4173/hero-video.mp4",
+          "headers": {
+            "x-content-type-options": "nosniff",
+            "content-type": "video/mp4",
+            "cache-control": "no-cache",
+            "last-modified": "Tue, 06 Oct 2026 09:27:53 GMT",
+            "content-range": "bytes 0-1/12191340",
+            "etag": "W/\"ba066c-1a1108a7ba9-identity\"",
+            "accept-ranges": "bytes",
+            "date": "Tue, 06 Oct 2026 09:29:00 GMT",
+            "keep-alive": "timeout=5",
+            "content-length": "2",
+            "connection": "keep-alive"
+          }
+        },
+        {
+          "status": 206,
+          "url": "http://127.0.0.1:4173/hero-video.mp4",
+          "headers": {
+            "x-content-type-options": "nosniff",
+            "content-type": "video/mp4",
+            "cache-control": "no-cache",
+            "last-modified": "Tue, 06 Oct 2026 09:27:53 GMT",
+            "content-range": "bytes 0-12191339/12191340",
+            "etag": "W/\"ba066c-1a1108a7ba9-identity\"",
+            "accept-ranges": "bytes",
+            "date": "Tue, 06 Oct 2026 09:29:00 GMT",
+            "keep-alive": "timeout=5",
+            "content-length": "12191340",
+            "connection": "keep-alive"
+          }
+        }
+      ]
+    }
+  ],
+  "lifecycle": [
+    {
+      "engine": "chrome",
+      "mobile": false,
+      "pauseResume": true,
+      "exitReentry": true,
+      "noEarlyVideoDownload": true
+    },
+    {
+      "engine": "chrome",
+      "mobile": true,
+      "pauseResume": true,
+      "exitReentry": true,
+      "noEarlyVideoDownload": true
+    },
+    {
+      "engine": "chrome",
+      "reducedMotionManualFirstClick": true,
+      "noAutomaticReducedMotionVideoFetch": true
+    },
+    {
+      "engine": "webkit",
+      "mobile": false,
+      "pauseResume": true,
+      "exitReentry": true,
+      "noEarlyVideoDownload": true
+    },
+    {
+      "engine": "webkit",
+      "mobile": true,
+      "pauseResume": true,
+      "exitReentry": true,
+      "noEarlyVideoDownload": true
+    },
+    {
+      "engine": "webkit",
+      "reducedMotionManualFirstClick": true,
+      "noAutomaticReducedMotionVideoFetch": true
+    }
+  ]
+}
