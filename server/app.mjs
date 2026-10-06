@@ -1,3 +1,4 @@
+import {createPrivateCourseTest} from './private-course-test.mjs'
 import {createPdfStore} from './pdf-store.mjs'
 import { createServer } from 'node:http'
 import { randomBytes, randomUUID, scrypt, timingSafeEqual, createHash } from 'node:crypto'
@@ -162,8 +163,9 @@ export async function createPortalServer(options = {}) {
   const courseReviews=await createCourseReviews({db,env,readJson,audit,now:options.now||Date.now})
   const pdfStorage=await createPdfStore({db,env,catalog:courseCatalog,readJson,audit})
   const coursePdfReader=options.coursePdfReader||(pdfStorage.mode==='mariadb'?(_env,id)=>pdfStorage.read(id):undefined)
+  const privateCourseTest=createPrivateCourseTest({db,env,readJson,audit,pdfReader:coursePdfReader,sendEmail:options.courseSender})
   let nomod
-  const courses = await createCourses({db,env,readJson,origin,audit,sendEmail:options.courseSender,pdfReader:coursePdfReader,now:options.now||Date.now,workerInterval:options.courseWorkerInterval,pdfStorage,paidReady:()=>nomod?.ready()===true,paymentReadiness:user=>({setup:nomod?.setupState(user),ready:nomod?.ready()===true,requirements:nomod?.requirements,webhooksEnabled:env.ASCORE_ENABLE_NOMOD_WEBHOOKS==='1'})})
+  const courses = await createCourses({db,env,readJson,origin,audit,sendEmail:options.courseSender,pdfReader:coursePdfReader,now:options.now||Date.now,workerInterval:options.courseWorkerInterval,pdfStorage,privateTestStatus:user=>privateCourseTest.status(user),paidReady:()=>nomod?.ready()===true,paymentReadiness:user=>({setup:nomod?.setupState(user),ready:nomod?.ready()===true,requirements:nomod?.requirements,webhooksEnabled:env.ASCORE_ENABLE_NOMOD_WEBHOOKS==='1'})})
   // Production remains closed until Hosted Checkout event correlation is
   // independently verified and a reviewed contract implementation replaces false.
   nomod=await createNomodCourses({db,env,readJson,origin,audit,contractVerified:false,fetcher:options.nomodFetch||fetch,sendEmail:options.courseSender,pdfReader:coursePdfReader,now:options.now||Date.now,workerInterval:options.courseWorkerInterval})
@@ -236,6 +238,7 @@ export async function createPortalServer(options = {}) {
       if (user.role !== 'admin') fail(403, 'Agency access is required.')
       if (await enquiries.adminHandle(request,response,path,responseJson)) return
       if(await courseReviews.adminHandle(request,response,path,user,responseJson))return
+      if(await privateCourseTest.adminHandle(request,response,path,user,responseJson))return
       if(await pdfStorage.adminHandle(request,response,path,user,responseJson))return
       if(await nomod.adminHandle(request,response,path,user,responseJson))return
       if (await courses.adminHandle(request,response,path,user,responseJson)) return

@@ -1,0 +1,45 @@
+{
+  "fixtures": [
+    {
+      "width": 320,
+      "pdfReady": true
+    },
+    {
+      "width": 390,
+      "pdfReady": true
+    },
+    {
+      "width": 768,
+      "pdfReady": true
+    },
+    {
+      "width": 1440,
+      "pdfReady": true
+    },
+    {
+      "width": 320,
+      "pdfReady": false
+    },
+    {
+      "width": 390,
+      "pdfReady": false
+    },
+    {
+      "width": 768,
+      "pdfReady": false
+    },
+    {
+      "width": 1440,
+      "pdfReady": false
+    }
+  ],
+  "checks": [
+    "empty recipient disables button",
+    "unverified PDF disables input and send",
+    "cancel sends nothing",
+    "wrong recipient denied",
+    "approved recipient confirmation and CSRF",
+    "accepted state disables repeat"
+  ],
+  "errors": []
+}

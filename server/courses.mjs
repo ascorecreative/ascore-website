@@ -59,7 +59,7 @@ export function sender(env){
   return {reference:result.messageId}
  }
 }
-export async function createCourses({db,env={},readJson,origin,sendEmail,pdfReader=privateCoursePdf,now=Date.now,audit=async()=>{},workerInterval=60000,paidReady=()=>false,paymentReadiness=()=>null,pdfStorage=null}){
+export async function createCourses({db,env={},readJson,origin,sendEmail,pdfReader=privateCoursePdf,now=Date.now,audit=async()=>{},workerInterval=60000,paidReady=()=>false,paymentReadiness=()=>null,pdfStorage=null,privateTestStatus=async()=>null}){
  const enabled=env.ASCORE_ENABLE_FREE_COURSES==='1',requirements={enabled,schemaReady:false,privatePdfsReady:false,senderConfigured:!!sendEmail||smtpConfigured(env)}
  try{if(enabled&&db.kind==='sqlite')await initializeCourseSchema(db);else await verifyCourseSchema(db);requirements.schemaReady=true}catch{}
  if(enabled){try{await Promise.all(Object.keys(courseCatalog).map(id=>pdfReader(env,id)));requirements.privatePdfsReady=true}catch{}}
@@ -212,7 +212,7 @@ export async function createCourses({db,env={},readJson,origin,sendEmail,pdfRead
     }finally{uploading=false;if(temporary)await rm(temporary,{recursive:true,force:true})}
    }
    const assets=await assetStatus(),storageConfigured=pdfStorage?.mode==='mariadb'?pdfStorage.ready():!!env.ASCORE_COURSE_PDF_DIR
-   if(!requirements.schemaReady){if(req.method!=='GET')fail(503,'Course database setup is not ready.');json(res,200,{ready:false,requirements,storageConfigured,pdfStorage:pdfStorage?.status(user),assets,payments:paymentStatus(user),schemaSetup:schemaSetupState(user),orders:[],summary:null});return true}
+   if(!requirements.schemaReady){if(req.method!=='GET')fail(503,'Course database setup is not ready.');json(res,200,{ready:false,requirements,storageConfigured,pdfStorage:pdfStorage?.status(user),privateTest:await privateTestStatus(user),assets,payments:paymentStatus(user),schemaSetup:schemaSetupState(user),orders:[],summary:null});return true}
    if(path==='/api/courses/admin/orders'&&req.method==='GET'){
     const encoded=new URL(req.url,'http://local.invalid').searchParams.get('cursor');let cursor={time:now()+1,id:'ffffffff-ffff-4fff-8fff-ffffffffffff'}
     if(encoded){try{if(!/^[A-Za-z0-9_-]{1,200}$/.test(encoded))throw Error();cursor=JSON.parse(Buffer.from(encoded,'base64url'));if(!Number.isSafeInteger(cursor.time)||cursor.time<0||!uuid(cursor.id))throw Error()}catch{fail(400,'Choose a valid page.')}}
@@ -222,7 +222,7 @@ export async function createCourses({db,env={},readJson,origin,sendEmail,pdfRead
     const since=now()-7*86400000,recent=await db.prepare('SELECT created_at,payment_status,total_minor,items FROM course_orders WHERE created_at>=? ORDER BY created_at').all(since),daily={}
     for(const r of recent){const day=new Date(Number(r.created_at)).toISOString().slice(0,10),v=daily[day]||(daily[day]={date:day,freeOrders:0,paidOrders:0,paidRevenueMinor:0});if(r.payment_status==='free')v.freeOrders++;if(r.payment_status==='paid'){v.paidOrders++;v.paidRevenueMinor+=Number(r.total_minor)}}
     const orders=rows.slice(0,50).map(row=>{const d=JSON.parse(row.delivery);return {...receipt(row),email:row.email,items:JSON.parse(row.items),coupon:row.coupon,createdAt:Number(row.created_at),attempts:d.attempts,lastAttempt:d.lastAttempt||null,canRetry:d.status==='failed'&&d.retryable&&d.attempts<5&&Number(row.expires_at)>now()&&(!d.nextAttempt||d.nextAttempt<=now()),reason:d.reason||null}})
-    json(res,200,{ready:ready(),requirements,storageConfigured,pdfStorage:pdfStorage?.status(user),assets,payments:paymentStatus(user),schemaSetup:schemaSetupState(user),summary:Object.fromEntries(Object.entries(totals).map(([k,v])=>[k,Number(v)])),daily:Object.values(daily),orders,nextCursor:rows.length>50?Buffer.from(JSON.stringify({time:Number(rows[49].created_at),id:rows[49].id})).toString('base64url'):null});return true
+    json(res,200,{ready:ready(),requirements,storageConfigured,pdfStorage:pdfStorage?.status(user),privateTest:await privateTestStatus(user),assets,payments:paymentStatus(user),schemaSetup:schemaSetupState(user),summary:Object.fromEntries(Object.entries(totals).map(([k,v])=>[k,Number(v)])),daily:Object.values(daily),orders,nextCursor:rows.length>50?Buffer.from(JSON.stringify({time:Number(rows[49].created_at),id:rows[49].id})).toString('base64url'):null});return true
    }
    if(req.method==='POST'){
     if(!ready())fail(503,'Course delivery is not ready.')
