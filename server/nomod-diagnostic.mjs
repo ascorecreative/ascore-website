@@ -45,8 +45,8 @@ export function createNomodDiagnostic({db,env,readJson,fetcher=fetch,now=Date.no
    let host=null,nomodOwnedHost=false
    try{const url=new URL(details?.url);if(url.protocol==='https:'&&!url.username&&!url.password&&!url.port&&/^[a-z0-9]+(?:[.-][a-z0-9]+)*\.[a-z]{2,}$/.test(url.hostname)){host=url.hostname;nomodOwnedHost=host==='nomod.com'||host.endsWith('.nomod.com')}}catch{}
    let signedCompletedEventMatched=false
-   if(chargeIdsValid){
-    const ids=charges.map(c=>c.id.toLowerCase())
+   if(chargeIdsValid&&captured.length){
+    const ids=captured.map(c=>c.id.toLowerCase())
     const row=await db.prepare(`SELECT COUNT(*) AS n FROM course_payment_events WHERE event_type=? AND charge_id IN (${ids.map(()=>'?').join(',')})`).get('charge.completed',...ids)
     signedCompletedEventMatched=Number(row?.n)>0
    }
