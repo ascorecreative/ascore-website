@@ -4,6 +4,8 @@ import {constants} from 'node:fs'
 import {resolve,sep,isAbsolute,dirname,relative} from 'node:path'
 import {initializeCourseSchema,verifyCourseSchema} from './course-schema.mjs'
 import {uniqueConflict} from './persistence.mjs'
+import {verifyDatabaseIdentity} from './database-preflight.mjs'
+import {verifyMariaDbSchema} from './mariadb-schema.mjs'
 
 export const courseCatalog=Object.freeze({
  meta:{name:'Mastering Facebook Ads: Meta Ads — Beginner to Expert',priceMinor:5000,pages:54,file:'Mastering Facebook Ads - Meta Ads - Beginner to Expert.pdf',sha256:'213035507992b62cd373a920a583dab76df300ca68db75d64c65868e480925b5'},
@@ -61,7 +63,30 @@ export async function createCourses({db,env={},readJson,origin,sendEmail,pdfRead
  const enabled=env.ASCORE_ENABLE_FREE_COURSES==='1',requirements={enabled,schemaReady:false,privatePdfsReady:false,senderConfigured:!!sendEmail||smtpConfigured(env)}
  try{if(enabled&&db.kind==='sqlite')await initializeCourseSchema(db);else await verifyCourseSchema(db);requirements.schemaReady=true}catch{}
  if(enabled){try{await Promise.all(Object.keys(courseCatalog).map(id=>pdfReader(env,id)));requirements.privatePdfsReady=true}catch{}}
- let uploading=false
+ let uploading=false,schemaSetupFlight=null
+ const approvedRuntime=()=>db.kind==='mariadb'&&db.readiness?.identityVerified===true&&db.readiness?.schemaVersion===1
+ const schemaSetupState=user=>({allowed:!requirements.schemaReady&&user?.username==='aswinfrn'&&env.ASCORE_ALLOW_COURSE_SCHEMA_SETUP==='1'&&env.ASCORE_ENABLE_FREE_COURSES!=='1'&&approvedRuntime(),inProgress:!!schemaSetupFlight,reason:requirements.schemaReady?'already_initialized':user?.username!=='aswinfrn'?'owner_required':env.ASCORE_ALLOW_COURSE_SCHEMA_SETUP!=='1'?'operator_flag_required':env.ASCORE_ENABLE_FREE_COURSES==='1'?'delivery_must_be_disabled':!approvedRuntime()?'runtime_not_verified':'ready'})
+ async function setupSchema(user){
+  if(user?.username!=='aswinfrn')fail(403,'This setup action is restricted to the approved administrator.')
+  if(env.ASCORE_ALLOW_COURSE_SCHEMA_SETUP!=='1')fail(403,'The operator must enable the temporary course schema setup flag.')
+  if(env.ASCORE_ENABLE_FREE_COURSES==='1')fail(403,'Keep FREE delivery disabled while initializing the course database.')
+  if(!approvedRuntime())fail(503,'The approved production database is not verified. No setup was performed.')
+  if(schemaSetupFlight)return schemaSetupFlight
+  const task=(async()=>{
+   try{await verifyDatabaseIdentity(db,env);await verifyMariaDbSchema(db)}catch{fail(503,'The approved application database could not be verified. No setup was performed.')}
+   if(requirements.schemaReady){await verifyCourseSchema(db);return {schemaReady:true,initialized:false}}
+   await audit(user.id,'course_schema_setup_started','ascore-courses')
+   try{
+    await initializeCourseSchema(db,env);await verifyCourseSchema(db);requirements.schemaReady=true
+    await audit(user.id,'course_schema_setup_completed','ascore-courses')
+    return {schemaReady:true,initialized:true}
+   }catch{
+    try{await verifyCourseSchema(db);requirements.schemaReady=true}catch{requirements.schemaReady=false}
+    await audit(user.id,'course_schema_setup_needs_review','ascore-courses')
+    fail(409,'Course setup needs review. DDL may have partially completed; refresh readiness before retrying.')
+   }
+  })();schemaSetupFlight=task;try{return await task}finally{if(schemaSetupFlight===task)schemaSetupFlight=null}
+ }
  async function assetStatus(){const assets=await Promise.all(Object.entries(courseCatalog).map(async([id,p])=>{let installed=false;try{await pdfReader(env,id);installed=true}catch{}return {id,name:p.name,installed}}));requirements.privatePdfsReady=assets.every(a=>a.installed);return assets}
  const ready=()=>Object.values(requirements).every(Boolean)
  const mail=sendEmail||(requirements.senderConfigured?sender(env):null),flights=new Map()
@@ -107,7 +132,7 @@ export async function createCourses({db,env={},readJson,origin,sendEmail,pdfRead
  const interval=enabled&&requirements.schemaReady?setInterval(()=>{tick().catch(()=>{})},workerInterval):null;interval?.unref();if(ready())queueMicrotask(()=>{tick().catch(()=>{})})
  return {
   requirements,deliver,tick,
-  async close(){if(interval)clearInterval(interval);await Promise.allSettled([...flights.values()])},
+  async close(){if(interval)clearInterval(interval);await Promise.allSettled([...flights.values(),...(schemaSetupFlight?[schemaSetupFlight]:[])])},
   async publicHandle(req,res,path,json){
    if(path==='/api/courses/config'&&req.method==='GET'){json(res,200,{freeCheckoutReady:ready(),paidCheckoutEnabled:paidReady()});return true}
    if(path==='/api/courses/quote'&&req.method==='POST'){const body=await readJson(req);strictFields(body,['items','coupon']);json(res,200,{...quote(body),freeCheckoutReady:ready()});return true}
@@ -150,8 +175,13 @@ export async function createCourses({db,env={},readJson,origin,sendEmail,pdfRead
   },
   async adminHandle(req,res,path,user,json){
    const upload=/^\/api\/courses\/admin\/assets\/(meta|ai)$/.exec(path)
-   if(path!=='/api/courses/admin/orders'&&!/^\/api\/courses\/admin\/orders\/[0-9a-f-]+\/retry$/i.test(path)&&!upload)return false
+   if(path!=='/api/courses/admin/orders'&&path!=='/api/courses/admin/setup'&&!/^\/api\/courses\/admin\/orders\/[0-9a-f-]+\/retry$/i.test(path)&&!upload)return false
    if(user?.role!=='admin')fail(403,'Agency access is required.')
+   if(path==='/api/courses/admin/setup'){
+    if(req.method!=='POST')fail(405,'Method not allowed.')
+    const body=await readJson(req);if(!body||Array.isArray(body)||typeof body!=='object'||Object.keys(body).length)fail(400,'Setup accepts no SQL, database, path or configuration values.')
+    json(res,200,await setupSchema(user));return true
+   }
    if(upload){
     if(req.method!=='PUT')fail(405,'Method not allowed.')
     if(uploading)fail(429,'Another course upload is in progress. Please try again shortly.')
@@ -170,7 +200,7 @@ export async function createCourses({db,env={},readJson,origin,sendEmail,pdfRead
     }finally{uploading=false;if(temporary)await rm(temporary,{recursive:true,force:true})}
    }
    const assets=await assetStatus(),storageConfigured=!!env.ASCORE_COURSE_PDF_DIR
-   if(!requirements.schemaReady){if(req.method!=='GET')fail(503,'Course database setup is not ready.');json(res,200,{ready:false,requirements,storageConfigured,assets,orders:[],summary:null});return true}
+   if(!requirements.schemaReady){if(req.method!=='GET')fail(503,'Course database setup is not ready.');json(res,200,{ready:false,requirements,storageConfigured,assets,schemaSetup:schemaSetupState(user),orders:[],summary:null});return true}
    if(path==='/api/courses/admin/orders'&&req.method==='GET'){
     const encoded=new URL(req.url,'http://local.invalid').searchParams.get('cursor');let cursor={time:now()+1,id:'ffffffff-ffff-4fff-8fff-ffffffffffff'}
     if(encoded){try{if(!/^[A-Za-z0-9_-]{1,200}$/.test(encoded))throw Error();cursor=JSON.parse(Buffer.from(encoded,'base64url'));if(!Number.isSafeInteger(cursor.time)||cursor.time<0||!uuid(cursor.id))throw Error()}catch{fail(400,'Choose a valid page.')}}
@@ -180,7 +210,7 @@ export async function createCourses({db,env={},readJson,origin,sendEmail,pdfRead
     const since=now()-7*86400000,recent=await db.prepare('SELECT created_at,payment_status,total_minor,items FROM course_orders WHERE created_at>=? ORDER BY created_at').all(since),daily={}
     for(const r of recent){const day=new Date(Number(r.created_at)).toISOString().slice(0,10),v=daily[day]||(daily[day]={date:day,freeOrders:0,paidOrders:0,paidRevenueMinor:0});if(r.payment_status==='free')v.freeOrders++;if(r.payment_status==='paid'){v.paidOrders++;v.paidRevenueMinor+=Number(r.total_minor)}}
     const orders=rows.slice(0,50).map(row=>{const d=JSON.parse(row.delivery);return {...receipt(row),email:row.email,items:JSON.parse(row.items),coupon:row.coupon,createdAt:Number(row.created_at),attempts:d.attempts,lastAttempt:d.lastAttempt||null,canRetry:d.status==='failed'&&d.retryable&&d.attempts<5&&Number(row.expires_at)>now()&&(!d.nextAttempt||d.nextAttempt<=now()),reason:d.reason||null}})
-    json(res,200,{ready:ready(),requirements,storageConfigured,assets,summary:Object.fromEntries(Object.entries(totals).map(([k,v])=>[k,Number(v)])),daily:Object.values(daily),orders,nextCursor:rows.length>50?Buffer.from(JSON.stringify({time:Number(rows[49].created_at),id:rows[49].id})).toString('base64url'):null});return true
+    json(res,200,{ready:ready(),requirements,storageConfigured,assets,schemaSetup:schemaSetupState(user),summary:Object.fromEntries(Object.entries(totals).map(([k,v])=>[k,Number(v)])),daily:Object.values(daily),orders,nextCursor:rows.length>50?Buffer.from(JSON.stringify({time:Number(rows[49].created_at),id:rows[49].id})).toString('base64url'):null});return true
    }
    if(req.method==='POST'){
     if(!ready())fail(503,'Course delivery is not ready.')

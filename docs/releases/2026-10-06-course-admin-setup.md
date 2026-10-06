@@ -1,0 +1,11 @@
+# Approved course database action
+
+Baseline: `aa3f7d1f06c9926b079eda4aeb365c624507bec4` on `codex/ascore-cloud-hero-portals`. Publish through the established Git/Node workflow. The user explicitly approved the temporary admin-only database initialization capability. No Hostinger controls, File Manager, production credentials or browser security settings were accessed.
+
+When Course orders reports missing course tables, the existing authenticated `aswinfrn` administrator sees **Initialize course database**. POST `/api/courses/admin/setup` uses existing role, session, exact-origin and CSRF guards. It additionally requires the temporary `ASCORE_ALLOW_COURSE_SCHEMA_SETUP=1` operator flag, FREE delivery disabled, and the verified MariaDB runtime. It rechecks the platform identity and core schema before invoking the existing fixed three-table ownership-checked helper. The request must contain an empty object; arbitrary SQL, database names, paths and settings are rejected.
+
+Concurrent requests share one operation in this process. A completed rerun verifies readiness without repeating DDL. A partial failure returns a review-required response and is audited; the UI does not automatically retry or claim success. The action cannot activate payments, enable FREE delivery, install PDFs, change accounts or send email. The operator turns the temporary flag off after verified initialization. Existing account activation remains disabled.
+
+Validation: all 55 backend tests pass, including HTTP-level role/origin/CSRF/operator gates, database identity and ownership failures, unchanged core accounts, concurrent/repeated requests and partial-DDL review. Lint passes with three existing warnings; the normal production build passes. Isolated browser checks passed at 320, 390 and 1440px: no overflow, visible operator/private-storage explanations, disabled gates, cancellation without a request, a single confirmed empty-body CSRF request, and no setup UI/request for a client. No production initialization, PDF installation or email occurred during these checks.
+
+The public homepage design, course storefront and desktop video source are preserved. Normal bundling updates entry references and dependent chunks for the private portal change. Complete PDFs and private dashboard reference images remain outside Git/public/dist.
