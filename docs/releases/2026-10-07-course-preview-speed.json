@@ -8,42 +8,42 @@
     {
       "width": 390,
       "route": "/courses/meta-ads/",
-      "LCP": 852,
+      "LCP": 888,
       "CLS": 0.0017762747803893638,
-      "load": 1043,
-      "bytes": 143785,
-      "firstPreviewMs": 161,
-      "readablePreviewMs": 632
+      "load": 1078,
+      "bytes": 146265,
+      "firstPreviewMs": 147,
+      "readablePreviewMs": 619
     },
     {
       "width": 390,
       "route": "/courses/practical-ai/",
-      "LCP": 876,
+      "LCP": 880,
       "CLS": 0.006308003768993353,
-      "load": 942,
-      "bytes": 129683,
-      "firstPreviewMs": 85,
-      "readablePreviewMs": 841
+      "load": 960,
+      "bytes": 132163,
+      "firstPreviewMs": 100,
+      "readablePreviewMs": 827
     },
     {
       "width": 1440,
       "route": "/courses/meta-ads/",
-      "LCP": 732,
+      "LCP": 748,
       "CLS": 0.0010255902828012473,
-      "load": 1010,
-      "bytes": 143785,
-      "firstPreviewMs": 156,
-      "readablePreviewMs": 636
+      "load": 1033,
+      "bytes": 146265,
+      "firstPreviewMs": 109,
+      "readablePreviewMs": 633
     },
     {
       "width": 1440,
       "route": "/courses/practical-ai/",
-      "LCP": 712,
+      "LCP": 724,
       "CLS": 0.000834226707175926,
-      "load": 1252,
-      "bytes": 194243,
-      "firstPreviewMs": 88,
-      "readablePreviewMs": 860
+      "load": 1269,
+      "bytes": 196723,
+      "firstPreviewMs": 101,
+      "readablePreviewMs": 816
     }
   ]
 }

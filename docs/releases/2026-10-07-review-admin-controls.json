@@ -1,0 +1,10 @@
+{
+  "widths": [
+    320,
+    390,
+    768,
+    1440
+  ],
+  "moderation": "publish/reject with CSRF",
+  "errors": []
+}

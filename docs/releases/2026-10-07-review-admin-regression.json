@@ -1,0 +1,46 @@
+{
+  "checks": [
+    "Home uses exact saved-record counts, separate AED/USD invoice balances, and private readiness",
+    "All eight sections fit 320/390/768/1440px; disabled connection writes preserved; traffic analytics unavailable",
+    "Mobile navigation traps keyboard focus, Escape restores focus, desktop resize releases main content",
+    "Workspace search opens saved financial document, selects real project, handles empty results and Escape",
+    "Existing project create/update, lead create, document create and offline settlement issue unchanged CSRF-protected requests",
+    "Course email/course/ID search and status filtering; native detail dialog; uncertain resend unavailable; confirmed retry cancelled/sent exactly once",
+    "Empty records stay empty, missing course schema shows unavailable metrics, creation without registered client remains disabled",
+    "Client retains existing theme/navigation and never requests agency course data",
+    "Workspace errors are visible and no fabricated data is rendered"
+  ],
+  "errors": [],
+  "mutations": [
+    {
+      "path": "/api/projects",
+      "method": "POST",
+      "csrfVerified": true
+    },
+    {
+      "path": "/api/projects/p1",
+      "method": "PATCH",
+      "csrfVerified": true
+    },
+    {
+      "path": "/api/leads",
+      "method": "POST",
+      "csrfVerified": true
+    },
+    {
+      "path": "/api/documents",
+      "method": "POST",
+      "csrfVerified": true
+    },
+    {
+      "path": "/api/documents/d1/payment-records",
+      "method": "POST",
+      "csrfVerified": true
+    },
+    {
+      "path": "/api/courses/admin/orders/failed-fixture/retry",
+      "method": "POST",
+      "csrfVerified": true
+    }
+  ]
+}

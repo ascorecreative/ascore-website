@@ -6,6 +6,7 @@ import { createEnquiries } from './enquiries.mjs'
 import { createCourses } from './courses.mjs'
 import {createNomodCourses,nomodWebhookPath} from './nomod-courses.mjs'
 import {createWeeklyMetaSessions} from './course-sessions.mjs'
+import {createCourseReviews} from './course-reviews.mjs'
 import { createPersistence,uniqueConflict } from './persistence.mjs'
 
 const derive = promisify(scrypt)
@@ -157,6 +158,7 @@ export async function createPortalServer(options = {}) {
   const responseJson = (response, status, data) => { response.writeHead(status, { 'Content-Type': 'application/json; charset=utf-8' }); response.end(JSON.stringify(data)) }
   const integration = await createZohoSync({db,env,readJson,audit,fetcher:options.zohoFetch || fetch})
   const enquiries = await createEnquiries({db,env,readJson,fetcher:options.zohoFetch||fetch,adapters:options.enquiryAdapters,now:options.now||Date.now})
+  const courseReviews=await createCourseReviews({db,env,readJson,audit,now:options.now||Date.now})
   let nomod
   const courses = await createCourses({db,env,readJson,origin,audit,sendEmail:options.courseSender,pdfReader:options.coursePdfReader,now:options.now||Date.now,workerInterval:options.courseWorkerInterval,paidReady:()=>nomod?.ready()===true,paymentReadiness:()=>({ready:nomod?.ready()===true,requirements:nomod?.requirements,webhooksEnabled:env.ASCORE_ENABLE_NOMOD_WEBHOOKS==='1'})})
   // Production remains closed until Hosted Checkout event correlation is
@@ -176,6 +178,7 @@ export async function createPortalServer(options = {}) {
       if(path===nomodWebhookPath&&request.method==='POST'){await nomod.publicHandle(request,response,path,responseJson);return}
       if (mutation && request.headers.origin !== origin) fail(403, 'Request origin is not allowed.')
       if (await enquiries.publicHandle(request,response,path,responseJson)) return
+      if(await courseReviews.publicHandle(request,response,path,responseJson))return
       if (await courses.publicHandle(request,response,path,responseJson)) return
       if(await nomod.publicHandle(request,response,path,responseJson))return
       const session = await currentSession(request)
@@ -229,6 +232,7 @@ export async function createPortalServer(options = {}) {
       if (request.method === 'GET' && path === '/api/workspace') return responseJson(response, 200, await workspace(user))
       if (user.role !== 'admin') fail(403, 'Agency access is required.')
       if (await enquiries.adminHandle(request,response,path,responseJson)) return
+      if(await courseReviews.adminHandle(request,response,path,user,responseJson))return
       if (await courses.adminHandle(request,response,path,user,responseJson)) return
       if (await integration.handle(request,response,path,user,responseJson)) return
       if (request.method === 'POST' && path === '/api/projects') {

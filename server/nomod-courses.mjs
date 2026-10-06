@@ -1,3 +1,4 @@
+import {courseReviewToken} from './course-reviews.mjs'
 import {createHash,randomBytes,randomUUID,timingSafeEqual} from 'node:crypto'
 import {Webhook} from 'svix'
 import {courseCatalog,privateCoursePdf,smtpConfigured,sender} from './courses.mjs'
@@ -46,7 +47,7 @@ export async function createNomodCourses({db,env={},origin,readJson,fetcher=fetc
  const ready=()=>Object.values(requirements).every(Boolean)
  const mail=sendEmail||(requirements.senderConfigured?sender(env):null),flights=new Map(),eventFlights=new Map()
  const rowFor=id=>db.prepare('SELECT * FROM course_paid_orders WHERE id=?').get(id)
- const receipt=row=>({id:row.id,currency:'AED',totalMinor:Number(row.total_minor),paymentStatus:row.payment_status,delivery:JSON.parse(row.delivery).status,expiresAt:Number(row.expires_at),...(row.payment_status==='paid'?{items:JSON.parse(row.items),paymentEventId:coursePurchaseEventId(row)}:{})})
+ const receipt=row=>({id:row.id,currency:'AED',totalMinor:Number(row.total_minor),paymentStatus:row.payment_status,delivery:JSON.parse(row.delivery).status,expiresAt:Number(row.expires_at),...(row.payment_status==='paid'?{items:JSON.parse(row.items),paymentEventId:coursePurchaseEventId(row),reviewToken:courseReviewToken(row)}:{})})
  async function limit(key,max,window){
   const r=await db.prepare(db.lock('SELECT count,expires FROM course_payment_limits WHERE `key`=?')).get(key),time=now()
   if(r&&Number(r.expires)>time){if(Number(r.count)>=max)fail(429,'Too many checkout requests. Try again later.');await db.prepare('UPDATE course_payment_limits SET count=count+1 WHERE `key`=?').run(key)}

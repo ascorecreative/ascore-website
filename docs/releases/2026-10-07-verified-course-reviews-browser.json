@@ -1,0 +1,73 @@
+{
+  "layouts": [
+    {
+      "width": 320,
+      "ready": false,
+      "overflow": false
+    },
+    {
+      "width": 320,
+      "ready": true,
+      "overflow": false
+    },
+    {
+      "width": 390,
+      "ready": false,
+      "overflow": false
+    },
+    {
+      "width": 390,
+      "ready": true,
+      "overflow": false
+    },
+    {
+      "width": 768,
+      "ready": false,
+      "overflow": false
+    },
+    {
+      "width": 768,
+      "ready": true,
+      "overflow": false
+    },
+    {
+      "width": 1440,
+      "ready": false,
+      "overflow": false
+    },
+    {
+      "width": 1440,
+      "ready": true,
+      "overflow": false
+    }
+  ],
+  "checks": [
+    "Disabled storage keeps form closed and emits no rating aggregate",
+    "Published API feedback alone populates clickable stars/count",
+    "User text remains text; no HTML/image execution",
+    "Verified buyer form validates publication consent and submits only to moderation",
+    "320/390/768/1440 layouts and reduced motion"
+  ],
+  "submissions": [
+    {
+      "width": 320,
+      "state": "pending",
+      "mockOnly": true
+    },
+    {
+      "width": 390,
+      "state": "pending",
+      "mockOnly": true
+    },
+    {
+      "width": 768,
+      "state": "pending",
+      "mockOnly": true
+    },
+    {
+      "width": 1440,
+      "state": "pending",
+      "mockOnly": true
+    }
+  ]
+}
