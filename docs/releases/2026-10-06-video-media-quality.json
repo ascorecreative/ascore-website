@@ -1,0 +1,73 @@
+{
+  "originalBytes": 12191340,
+  "optimizedBytes": 1694685,
+  "reductionPercent": 86.1,
+  "originalSha256": "2ccd52dd9f3ab27bbc136759f3ed8bd2e80247bea026efbda1705084db0a2f75",
+  "optimizedSha256": "0c01ec9e86c68f4f25f56bee8930e27ccdcfcffb8ff62a655c60ecaffbf2195b",
+  "atoms": [
+    {
+      "type": "ftyp",
+      "offset": 0,
+      "bytes": 32
+    },
+    {
+      "type": "moov",
+      "offset": 32,
+      "bytes": 15739
+    },
+    {
+      "type": "free",
+      "offset": 15771,
+      "bytes": 8
+    },
+    {
+      "type": "mdat",
+      "offset": 15779,
+      "bytes": 1678906
+    }
+  ],
+  "decodedAudio": {
+    "original": {
+      "bytes": 2633728,
+      "sha256": "f11ea6b31fc4c34d1184fabb9e86f86bbd67290ead4504ea04892fe1cbe25144"
+    },
+    "optimized": {
+      "bytes": 2633728,
+      "sha256": "f11ea6b31fc4c34d1184fabb9e86f86bbd67290ead4504ea04892fe1cbe25144"
+    }
+  },
+  "sampleTimes": [
+    0.5,
+    2.5,
+    5.5,
+    8.5,
+    12.5
+  ],
+  "codec": {
+    "video": "H.264 Main",
+    "level": "3.1",
+    "sampleEntry": "avc1",
+    "pixelFormat": "yuv420p",
+    "color": "BT.709",
+    "width": 1280,
+    "height": 720,
+    "frameRate": "30000/1001",
+    "frames": 411,
+    "durationSeconds": 13.714,
+    "audio": "AAC LC; original stream copied",
+    "audioSampleRate": 48000,
+    "channels": 2,
+    "ssimAgainstOriginalAt720p": 0.995516,
+    "videoAverageKbps": 661.9,
+    "encoding": {
+      "preset": "slow",
+      "crf": 24,
+      "maxVideoKbps": 1000,
+      "bufferKbits": 2000,
+      "gopFrames": 60
+    }
+  },
+  "originalLocation": "media-source/hero-video-original.mp4",
+  "publicLocation": "public/hero-video.mp4",
+  "visualComparison": "Five paired frames inspected at 0.5, 2.5, 5.5, 8.5 and 12.5 seconds; no content or framing changes observed."
+}

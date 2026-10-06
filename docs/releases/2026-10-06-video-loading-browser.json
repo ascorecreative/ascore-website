@@ -1,0 +1,225 @@
+{
+  "scope": "Focused video checks; isolated local browsers, not the actual affected tab",
+  "componentChecksBeforeFinalBitrateAdjustment": [
+    {
+      "engine": "installed Chrome",
+      "scenario": "decoded-abort",
+      "before": {
+        "time": 0,
+        "paused": true,
+        "ready": 4,
+        "presented": false,
+        "opacity": "0",
+        "posterLoaded": true,
+        "status": "Press Play to start the video.",
+        "button": "Play video",
+        "buttonWidth": 110.8125,
+        "error": null,
+        "src": "http://127.0.0.1:4173/hero-video.mp4?v=web-20261006"
+      },
+      "after": {
+        "time": 0.202659,
+        "paused": false,
+        "ready": 4,
+        "presented": true,
+        "opacity": "0.96035",
+        "posterLoaded": true,
+        "status": "",
+        "button": "Pause video",
+        "buttonWidth": 1,
+        "error": null,
+        "src": "http://127.0.0.1:4173/hero-video.mp4?v=web-20261006"
+      },
+      "errors": []
+    },
+    {
+      "engine": "installed Chrome",
+      "scenario": "pending-response",
+      "before": {
+        "time": 0,
+        "paused": false,
+        "ready": 0,
+        "presented": false,
+        "opacity": "0",
+        "posterLoaded": true,
+        "status": "Loading video\u2026",
+        "button": "Play video",
+        "buttonWidth": 110.8125,
+        "error": null,
+        "src": "http://127.0.0.1:4173/hero-video.mp4?v=web-20261006"
+      },
+      "after": {
+        "time": 0.208834,
+        "paused": false,
+        "ready": 4,
+        "presented": true,
+        "opacity": "0.924597",
+        "posterLoaded": true,
+        "status": "",
+        "button": "Pause video",
+        "buttonWidth": 1,
+        "error": null,
+        "src": "http://127.0.0.1:4173/hero-video.mp4?v=web-20261006"
+      },
+      "errors": []
+    },
+    {
+      "engine": "installed Chrome",
+      "scenario": "failed-request-retry",
+      "before": {
+        "time": 0,
+        "paused": true,
+        "ready": 0,
+        "presented": false,
+        "opacity": "0",
+        "posterLoaded": true,
+        "status": "Video couldn\u2019t load. Retry to continue.",
+        "button": "Retry video",
+        "buttonWidth": 116.796875,
+        "error": 4,
+        "src": "http://127.0.0.1:4173/hero-video.mp4?v=web-20261006"
+      },
+      "after": {
+        "time": 0.214246,
+        "paused": false,
+        "ready": 4,
+        "presented": true,
+        "opacity": "0.983446",
+        "posterLoaded": true,
+        "status": "",
+        "button": "Pause video",
+        "buttonWidth": 1,
+        "error": null,
+        "src": "http://127.0.0.1:4173/hero-video.mp4?v=web-20261006"
+      },
+      "errors": []
+    },
+    {
+      "engine": "installed Chrome",
+      "scenario": "paced-native",
+      "before": null,
+      "after": {
+        "time": 0.310739,
+        "paused": false,
+        "ready": 3,
+        "presented": true,
+        "opacity": "1",
+        "posterLoaded": true,
+        "status": "",
+        "button": "Pause video",
+        "buttonWidth": 120.21875,
+        "error": null,
+        "src": "http://127.0.0.1:4173/hero-video.mp4?v=web-20261006"
+      },
+      "errors": []
+    },
+    {
+      "engine": "installed Chrome",
+      "scenario": "mobile-native",
+      "before": null,
+      "after": {
+        "time": 0.209925,
+        "paused": false,
+        "ready": 4,
+        "presented": true,
+        "opacity": "0.960542",
+        "posterLoaded": true,
+        "status": "",
+        "button": "Pause video",
+        "buttonWidth": 132.921875,
+        "error": null,
+        "src": "http://127.0.0.1:4173/hero-video-mobile.mp4"
+      },
+      "errors": []
+    },
+    {
+      "engine": "WebKit",
+      "scenario": "reduced-motion-first-manual",
+      "after": {
+        "time": 0.22041633366028276,
+        "paused": false,
+        "ready": 4,
+        "presented": true,
+        "opacity": "1",
+        "posterLoaded": true,
+        "status": "",
+        "button": "Pause video",
+        "buttonWidth": 1,
+        "error": null,
+        "src": "http://127.0.0.1:4173/hero-video.mp4?v=web-20261006"
+      },
+      "errors": []
+    }
+  ],
+  "finalMediaChecks": [
+    {
+      "engine": "installed Chrome",
+      "scenario": "paced-native",
+      "before": {
+        "start": {
+          "time": 0.220948,
+          "paused": false,
+          "ready": 3,
+          "presented": true,
+          "opacity": "0.996083",
+          "posterLoaded": true,
+          "status": "",
+          "button": "Pause video",
+          "buttonWidth": 1,
+          "error": null,
+          "src": "http://127.0.0.1:4173/hero-video.mp4?v=web-20261006"
+        },
+        "steady": {
+          "time": 6.993396,
+          "paused": false,
+          "ready": 4,
+          "presented": true,
+          "opacity": "1",
+          "posterLoaded": true,
+          "status": "",
+          "button": "Pause video",
+          "buttonWidth": 1,
+          "error": null,
+          "src": "http://127.0.0.1:4173/hero-video.mp4?v=web-20261006"
+        },
+        "networkBytesPerSecond": 144284,
+        "latencyMs": 80
+      },
+      "after": {
+        "time": 7.245493,
+        "paused": false,
+        "ready": 4,
+        "presented": true,
+        "opacity": "1",
+        "posterLoaded": true,
+        "status": "",
+        "button": "Pause video",
+        "buttonWidth": 120.21875,
+        "error": null,
+        "src": "http://127.0.0.1:4173/hero-video.mp4?v=web-20261006"
+      },
+      "errors": []
+    },
+    {
+      "engine": "WebKit",
+      "scenario": "reduced-motion-first-manual",
+      "after": {
+        "time": 0.21221750064230452,
+        "paused": false,
+        "ready": 4,
+        "presented": true,
+        "opacity": "1",
+        "posterLoaded": true,
+        "status": "",
+        "button": "Pause video",
+        "buttonWidth": 1,
+        "error": null,
+        "src": "http://127.0.0.1:4173/hero-video.mp4?v=web-20261006"
+      },
+      "errors": []
+    }
+  ],
+  "finalMediaBytes": 1694685,
+  "finalMediaSha256": "0c01ec9e86c68f4f25f56bee8930e27ccdcfcffb8ff62a655c60ecaffbf2195b",
+  "notes": "The same final component passed all six focused scenarios before the last bitrate adjustment. The final 1.69 MB encoding then passed sustained throttled installed-Chrome playback with pause/resume and WebKit first manual play. Its throttled media time advanced 6.77 seconds over an eight-second sample; some buffering remains possible."
+}
