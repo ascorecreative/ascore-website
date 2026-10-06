@@ -5,6 +5,7 @@ import { createZohoSync } from './zoho-sync.mjs'
 import { createEnquiries } from './enquiries.mjs'
 import { createCourses } from './courses.mjs'
 import {createNomodCourses,nomodWebhookPath} from './nomod-courses.mjs'
+import {createWeeklyMetaSessions} from './course-sessions.mjs'
 import { createPersistence,uniqueConflict } from './persistence.mjs'
 
 const derive = promisify(scrypt)
@@ -161,6 +162,7 @@ export async function createPortalServer(options = {}) {
   // Production remains closed until Hosted Checkout event correlation is
   // independently verified and a reviewed contract implementation replaces false.
   nomod=await createNomodCourses({db,env,readJson,origin,contractVerified:false,fetcher:options.nomodFetch||fetch,sendEmail:options.courseSender,pdfReader:options.coursePdfReader,now:options.now||Date.now,workerInterval:options.courseWorkerInterval})
+  const weeklySessions=await createWeeklyMetaSessions({db,env,audit,paymentReady:()=>nomod.ready(),sendEmail:options.courseSender,now:options.now||Date.now,workerInterval:options.courseWorkerInterval})
   const server = createServer(async (request, response) => {
     response.setHeader('Cache-Control', 'no-store')
     response.setHeader('X-Content-Type-Options', 'nosniff')
@@ -318,5 +320,5 @@ export async function createPortalServer(options = {}) {
   })
   server.requestTimeout = 15000
   server.headersTimeout = 10000
-  return { server, databaseReadiness:db.readiness, close:async () => { if(server.listening)await new Promise((resolve,reject) => server.close(error => error ? reject(error) : resolve())); await nomod.close(); await courses.close(); await db.close() } }
+  return { server, databaseReadiness:db.readiness, close:async () => { if(server.listening)await new Promise((resolve,reject) => server.close(error => error ? reject(error) : resolve())); await weeklySessions.close(); await nomod.close(); await courses.close(); await db.close() } }
 }

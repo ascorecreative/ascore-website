@@ -35,8 +35,8 @@ test('Nomod defaults closed even with keys: no schema writes, provider requests 
  for(const field of ['ASCORE_ENABLE_PAID_COURSES','ASCORE_ENABLE_PAID_COURSE_DELIVERY','ASCORE_NOMOD_LIVE_REQUESTS_APPROVED','ASCORE_PAID_COURSE_TERMS_APPROVED']){const p=await createNomodCourses({...h.services,env:{...h.services.env,[field]:'0'}});assert.equal(p.ready(),false);await p.close()}
 })
 test('Nomod checkout is server-priced, retry-idempotent and stores its mapping before redirect',async t=>{
- const h=await harness(t),a=await h.buy(['meta','ai']);assert.equal(a.response.status,200);assert.equal(a.order.totalMinor,10000);assert.equal(h.calls.length,1)
- const call=h.calls[0];assert.equal(call.headers['X-API-KEY'],configured.NOMOD_HOSTED_CHECKOUT_API_KEY);assert.equal(call.body.amount,'100.00');assert.equal(call.body.currency,'AED');assert.equal(call.body.reference_id,a.order.id);assert.notEqual(a.order.id,a.requestId);assert.deepEqual(call.body.items.map(i=>[i.item_id,i.quantity,i.unit_amount]),[['ai',1,'50.00'],['meta',1,'50.00']]);assert.equal(call.body.success_url,`${origin}/courses/checkout/?payment=success&order=${a.order.id}`);assert.equal(call.body.failure_url,`${origin}/courses/checkout/?payment=failure&order=${a.order.id}`);assert.equal(call.body.cancelled_url,`${origin}/courses/checkout/?payment=cancelled&order=${a.order.id}`)
+ const h=await harness(t),a=await h.buy(['meta','ai']);assert.equal(a.response.status,200);assert.equal(a.order.totalMinor,9998);assert.equal(h.calls.length,1)
+ const call=h.calls[0];assert.equal(call.headers['X-API-KEY'],configured.NOMOD_HOSTED_CHECKOUT_API_KEY);assert.equal(call.body.amount,'99.98');assert.equal(call.body.currency,'AED');assert.equal(call.body.reference_id,a.order.id);assert.notEqual(a.order.id,a.requestId);assert.deepEqual(call.body.items.map(i=>[i.item_id,i.quantity,i.unit_amount]),[['ai',1,'49.99'],['meta',1,'49.99']]);assert.equal(call.body.success_url,`${origin}/courses/checkout/?payment=success&order=${a.order.id}`);assert.equal(call.body.failure_url,`${origin}/courses/checkout/?payment=failure&order=${a.order.id}`);assert.equal(call.body.cancelled_url,`${origin}/courses/checkout/?payment=cancelled&order=${a.order.id}`)
  const retry=await h.buy(['meta','ai'],'learner@example.com',a.requestId);assert.equal(retry.order.id,a.order.id);assert.equal(h.calls.length,1)
  assert.equal((await h.buy(['meta'],'learner@example.com',a.requestId)).response.status,409)
  const malicious=await h.request('/api/courses/paid/orders',{body:{requestId:randomUUID(),items:['meta'],email:'learner@example.com',amount:'1.00'}});assert.equal(malicious.status,400)
@@ -47,7 +47,7 @@ test('unknown checkout creation is never automatically retried, including concur
  const h=await harness(t,{fetchFailure:true}),id=randomUUID();const result=await Promise.all([h.buy(['meta'],'retry@example.com',id),h.buy(['meta'],'retry@example.com',id)]);assert.ok(result.some(r=>r.response.status===502));assert.equal(h.calls.filter(c=>c.method==='POST').length,1);assert.equal((await h.buy(['meta'],'retry@example.com',id)).response.status,409);assert.equal(h.mails.length,0)
 })
 test('paid state requires exact reference, amount, currency and captured-charge evidence',async t=>{
- for(const change of [r=>r.amount=49,r=>r.currency='USD',r=>r.reference_id=randomUUID(),r=>r.charges[0].status='authorised']){
+ for(const change of [r=>r.amount=50,r=>r.currency='USD',r=>r.reference_id=randomUUID(),r=>r.charges[0].status='authorised']){
   const h=await harness(t),a=await h.buy(),row=h.paid(a.order);change(row);await h.payments.confirm(a.order.id);await h.payments.deliver(a.order.id);assert.equal(h.mails.length,0);assert.equal((await h.db.prepare('SELECT payment_status FROM course_paid_orders WHERE id=?').get(a.order.id)).payment_status,'review')
  }
 })
@@ -55,6 +55,19 @@ test('a redirect, created session or authorisation does not fulfill or expose a 
  const h=await harness(t),a=await h.buy();await h.payments.confirm(a.order.id);await h.payments.deliver(a.order.id);assert.equal(h.mails.length,0)
  const r=await h.request(`/api/courses/paid/orders/${a.order.id}?payment=success`,{headers:{'x-course-receipt':a.order.receiptToken}});assert.equal((await r.json()).paymentStatus,'pending');assert.equal((await h.request(`/api/courses/paid/download/${a.order.id}/meta?token=${a.order.receiptToken}`)).status,404)
  const auth=await h.webhook({type:'charge.authorised',eventId:randomUUID(),data:{id:randomUUID()}});assert.equal(auth.status,200);await h.payments.tick();assert.equal(h.mails.length,0)
+})
+test('Purchase identity is absent before captured payment and stable without exposing capabilities',async t=>{
+ const h=await harness(t),a=await h.buy()
+ assert.equal(a.order.paymentEventId,undefined)
+ h.paid(a.order);await h.payments.confirm(a.order.id)
+ const get=async()=>{const r=await h.request(`/api/courses/paid/orders/${a.order.id}`,{headers:{'x-course-receipt':a.order.receiptToken}});assert.equal(r.status,200);return r.json()}
+ const first=await get(),second=await get()
+ assert.equal(first.paymentStatus,'paid');assert.equal(first.totalMinor,4999);assert.equal(first.currency,'AED');assert.deepEqual(first.items,['meta'])
+ assert.match(first.paymentEventId,/^[a-f0-9]{64}$/);assert.equal(first.paymentEventId,second.paymentEventId);assert.notEqual(first.paymentEventId,a.order.receiptToken)
+ assert.equal(first.email,undefined);assert.equal(first.secret,undefined)
+ const wrong=await h.request(`/api/courses/paid/orders/${a.order.id}`,{headers:{'x-course-receipt':first.paymentEventId}});assert.equal(wrong.status,404)
+ const other=await h.buy(['ai'],'other@example.com');h.paid(other.order);await h.payments.confirm(other.order.id)
+ const b=await(await h.request(`/api/courses/paid/orders/${other.order.id}`,{headers:{'x-course-receipt':other.order.receiptToken}})).json();assert.notEqual(first.paymentEventId,b.paymentEventId)
 })
 test('raw signed events reject tampering and stale timestamps and durably deduplicate before acknowledgment',async t=>{
  const h=await harness(t),a=await h.buy(),row=h.paid(a.order),event={type:'charge.completed',eventId:randomUUID(),data:{id:row.charges[0].id}},payload=JSON.stringify(event,null,2)+'\n'

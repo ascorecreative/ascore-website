@@ -1,0 +1,113 @@
+{
+  "checks": [
+    "Default/denied zero SDK, affirmative consent, manual-only configuration, route deduplication and private-route revocation",
+    "Private, sensitive query and browser privacy signals never load Meta",
+    "Consent withdrawn while SDK loads produces no init or event",
+    "Safe ad-campaign tags work after consent; consent changes propagate across tabs",
+    "Purchase only for server-confirmed paid receipt with open gates, exact AED value/items; no redirect/authorisation conversion; stable event ID and reload dedup",
+    "16 responsive layouts; sticky Add to cart at top/middle/footer; no consent overlap; stale cart repriced to AED 99.98; AED 89 regular price; real logos; Friday benefits; honest feedback anchor",
+    "No noscript tracking, no real Meta events, no backend mutations, no charges/emails"
+  ],
+  "layouts": [
+    {
+      "width": 320,
+      "route": "/courses/",
+      "overflow": false,
+      "sticky": true
+    },
+    {
+      "width": 320,
+      "route": "/courses/meta-ads/",
+      "overflow": false,
+      "sticky": true
+    },
+    {
+      "width": 320,
+      "route": "/courses/practical-ai/",
+      "overflow": false,
+      "sticky": true
+    },
+    {
+      "width": 320,
+      "route": "/courses/checkout/",
+      "overflow": false,
+      "sticky": true
+    },
+    {
+      "width": 390,
+      "route": "/courses/",
+      "overflow": false,
+      "sticky": true
+    },
+    {
+      "width": 390,
+      "route": "/courses/meta-ads/",
+      "overflow": false,
+      "sticky": true
+    },
+    {
+      "width": 390,
+      "route": "/courses/practical-ai/",
+      "overflow": false,
+      "sticky": true
+    },
+    {
+      "width": 390,
+      "route": "/courses/checkout/",
+      "overflow": false,
+      "sticky": true
+    },
+    {
+      "width": 768,
+      "route": "/courses/",
+      "overflow": false,
+      "sticky": true
+    },
+    {
+      "width": 768,
+      "route": "/courses/meta-ads/",
+      "overflow": false,
+      "sticky": true
+    },
+    {
+      "width": 768,
+      "route": "/courses/practical-ai/",
+      "overflow": false,
+      "sticky": true
+    },
+    {
+      "width": 768,
+      "route": "/courses/checkout/",
+      "overflow": false,
+      "sticky": true
+    },
+    {
+      "width": 1440,
+      "route": "/courses/",
+      "overflow": false,
+      "sticky": true
+    },
+    {
+      "width": 1440,
+      "route": "/courses/meta-ads/",
+      "overflow": false,
+      "sticky": true
+    },
+    {
+      "width": 1440,
+      "route": "/courses/practical-ai/",
+      "overflow": false,
+      "sticky": true
+    },
+    {
+      "width": 1440,
+      "route": "/courses/checkout/",
+      "overflow": false,
+      "sticky": true
+    }
+  ],
+  "errors": [],
+  "missing": [],
+  "mutations": [],
+  "realMetaEvents": 0
+}

@@ -11,6 +11,8 @@ const uuid=value=>typeof value==='string'&&/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}
 const fail=(status,message)=>{throw Object.assign(Error(message),{status})}
 const constantEqual=(a,b)=>typeof a==='string'&&/^[a-f0-9]{64}$/.test(a)&&timingSafeEqual(Buffer.from(a),Buffer.from(b))
 const receiptToken=row=>hash(`${row.secret}:${row.id}:receipt`)
+// Opaque, stable conversion identity; never a receipt/download capability.
+export const coursePurchaseEventId=row=>hash(`ascore:meta:purchase:v1:${row.id}:${row.secret}`)
 const downloadToken=(row,item)=>hash(`${row.secret}:${row.id}:download:${item}`)
 const events=new Set(['charge.completed','charge.failed','charge.cancelled','charge.refunded','charge.partially_refunded','charge.dispute.created'])
 const reviewEvents=new Set(['charge.refunded','charge.partially_refunded','charge.dispute.created'])
@@ -44,7 +46,7 @@ export async function createNomodCourses({db,env={},origin,readJson,fetcher=fetc
  const ready=()=>Object.values(requirements).every(Boolean)
  const mail=sendEmail||(requirements.senderConfigured?sender(env):null),flights=new Map(),eventFlights=new Map()
  const rowFor=id=>db.prepare('SELECT * FROM course_paid_orders WHERE id=?').get(id)
- const receipt=row=>({id:row.id,currency:'AED',totalMinor:Number(row.total_minor),paymentStatus:row.payment_status,delivery:JSON.parse(row.delivery).status,expiresAt:Number(row.expires_at)})
+ const receipt=row=>({id:row.id,currency:'AED',totalMinor:Number(row.total_minor),paymentStatus:row.payment_status,delivery:JSON.parse(row.delivery).status,expiresAt:Number(row.expires_at),...(row.payment_status==='paid'?{items:JSON.parse(row.items),paymentEventId:coursePurchaseEventId(row)}:{})})
  async function limit(key,max,window){
   const r=await db.prepare(db.lock('SELECT count,expires FROM course_payment_limits WHERE `key`=?')).get(key),time=now()
   if(r&&Number(r.expires)>time){if(Number(r.count)>=max)fail(429,'Too many checkout requests. Try again later.');await db.prepare('UPDATE course_payment_limits SET count=count+1 WHERE `key`=?').run(key)}
@@ -144,7 +146,7 @@ export async function createNomodCourses({db,env={},origin,readJson,fetcher=fetc
     })}catch(error){if(!uniqueConflict(error)&&!['ER_LOCK_DEADLOCK','ER_LOCK_WAIT_TIMEOUT'].includes(error.code))throw error;row=await db.prepare('SELECT * FROM course_paid_orders WHERE request_id=?').get(q.requestId);if(!row||row.payload_hash!==fingerprint)fail(409,'Checkout is busy or changed. Retry the same selection.')}
     if(Number(row.expires_at)<=now())fail(410,'This checkout preview has expired. Start a new selection.')
     if(created){
-     const amount=(q.totalMinor/100).toFixed(2),items=q.items.map(id=>({item_id:id,name:courseCatalog[id].name,quantity:1,unit_amount:'50.00',discount_type:'flat',discount_amount:'0.00',total_amount:'50.00',net_amount:'50.00'}))
+     const amount=(q.totalMinor/100).toFixed(2),items=q.items.map(id=>({item_id:id,name:courseCatalog[id].name,quantity:1,unit_amount:(courseCatalog[id].priceMinor/100).toFixed(2),discount_type:'flat',discount_amount:'0.00',total_amount:(courseCatalog[id].priceMinor/100).toFixed(2),net_amount:(courseCatalog[id].priceMinor/100).toFixed(2)}))
      try{
       const result=await providerRequest('POST','',{reference_id:row.id,amount,currency:'AED',items,discount:'0.00',customer:{email:row.email},...nomodReturnURLs(origin,row.id)})
       if(!uuid(result.id)||!detailsMatch(result,{...row,provider_id:result.id})||!['created','paid','cancelled','expired'].includes(result.status))throw Error('Provider checkout does not match')
@@ -165,7 +167,7 @@ export async function createNomodCourses({db,env={},origin,readJson,fetcher=fetc
    const download=/^\/api\/courses\/paid\/download\/([0-9a-f-]+)\/(meta|ai)$/i.exec(path)
    if(download&&['GET','HEAD'].includes(req.method)){
     if(!ready())fail(503,'Course delivery is unavailable.');const [,id,item]=download,row=await rowFor(id),provided=new URL(req.url,'http://local.invalid').searchParams.get('token')
-    if(!row||row.payment_status!=='paid'||row.currency!=='AED'||![5000,10000].includes(Number(row.total_minor))||!JSON.parse(row.items).includes(item)||!constantEqual(provided,downloadToken(row,item)))fail(404,'Download not found.')
+    if(!row||row.payment_status!=='paid'||row.currency!=='AED'||![4999,9998,5000,10000].includes(Number(row.total_minor))||!JSON.parse(row.items).includes(item)||!constantEqual(provided,downloadToken(row,item)))fail(404,'Download not found.')
     if(Number(row.expires_at)<=now())fail(410,'This download has expired. Contact info@ascore.ae.')
     let bytes;try{bytes=await pdfReader(env,item)}catch{fail(503,'Your course file is temporarily unavailable.')}
     await db.transaction(async()=>{await limit('download:'+hash(req.socket.remoteAddress||'local'),100,3600000);const current=await db.prepare(db.lock('SELECT * FROM course_paid_orders WHERE id=?')).get(id);if(current.payment_status!=='paid')fail(404,'Download not found.');if(req.method==='GET'){const d=await db.prepare(db.lock('SELECT uses FROM course_paid_downloads WHERE order_id=? AND course_id=?')).get(id,item);if(!d||Number(d.uses)>=10)fail(410,'This download limit has been reached.');await db.prepare('UPDATE course_paid_downloads SET uses=uses+1 WHERE order_id=? AND course_id=?').run(id,item)}})

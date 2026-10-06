@@ -26,7 +26,7 @@ export function createWebServer({portal,dist=resolve('dist')}){
    }
    if(!info.isFile())throw Error('Missing public file')
    const extension=extname(file)
-   const versioned=status===200&&(pathname.startsWith('/assets/')||(/^\/courses\/(app\.js|styles\.css)$/.test(pathname)&&/^[a-f0-9]{12}$/.test(new URL(req.url,'http://local.invalid').searchParams.get('v')||'')))
+   const versioned=status===200&&(pathname.startsWith('/assets/')||(/^(?:\/courses\/(?:app\.js|styles\.css|assets\/previews\/[a-z0-9-]+\.webp)|\/marketing-consent\.(?:js|css))$/.test(pathname)&&/^[a-f0-9]{12}$/.test(new URL(req.url,'http://local.invalid').searchParams.get('v')||'')))
    const imageOrModel=status===200&&['.png','.webp','.jpg','.glb','.woff2'].includes(extension)
    const headers={'Content-Type':types[extension]||'application/octet-stream','X-Content-Type-Options':'nosniff','Cache-Control':versioned?'public, max-age=31536000, immutable':imageOrModel?'public, max-age=300, must-revalidate':'no-cache','Last-Modified':info.mtime.toUTCString()}
    if(compressible.has(extension)){

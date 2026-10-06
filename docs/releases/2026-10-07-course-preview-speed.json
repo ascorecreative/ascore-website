@@ -1,0 +1,49 @@
+{
+  "profile": {
+    "latencyMs": 120,
+    "downloadKBps": 200,
+    "cpu": 4
+  },
+  "samples": [
+    {
+      "width": 390,
+      "route": "/courses/meta-ads/",
+      "LCP": 852,
+      "CLS": 0.0017762747803893638,
+      "load": 1043,
+      "bytes": 143785,
+      "firstPreviewMs": 161,
+      "readablePreviewMs": 632
+    },
+    {
+      "width": 390,
+      "route": "/courses/practical-ai/",
+      "LCP": 876,
+      "CLS": 0.006308003768993353,
+      "load": 942,
+      "bytes": 129683,
+      "firstPreviewMs": 85,
+      "readablePreviewMs": 841
+    },
+    {
+      "width": 1440,
+      "route": "/courses/meta-ads/",
+      "LCP": 732,
+      "CLS": 0.0010255902828012473,
+      "load": 1010,
+      "bytes": 143785,
+      "firstPreviewMs": 156,
+      "readablePreviewMs": 636
+    },
+    {
+      "width": 1440,
+      "route": "/courses/practical-ai/",
+      "LCP": 712,
+      "CLS": 0.000834226707175926,
+      "load": 1252,
+      "bytes": 194243,
+      "firstPreviewMs": 88,
+      "readablePreviewMs": 860
+    }
+  ]
+}

@@ -1,0 +1,116 @@
+{
+  "layouts": [
+    {
+      "width": 320,
+      "route": "/courses/",
+      "overflow": false,
+      "CLS": 0
+    },
+    {
+      "width": 320,
+      "route": "/courses/meta-ads/",
+      "overflow": false,
+      "CLS": 0
+    },
+    {
+      "width": 320,
+      "route": "/courses/practical-ai/",
+      "overflow": false,
+      "CLS": 0
+    },
+    {
+      "width": 320,
+      "route": "/courses/checkout/",
+      "overflow": false,
+      "CLS": 0
+    },
+    {
+      "width": 390,
+      "route": "/courses/",
+      "overflow": false,
+      "CLS": 0
+    },
+    {
+      "width": 390,
+      "route": "/courses/meta-ads/",
+      "overflow": false,
+      "CLS": 0
+    },
+    {
+      "width": 390,
+      "route": "/courses/practical-ai/",
+      "overflow": false,
+      "CLS": 0
+    },
+    {
+      "width": 390,
+      "route": "/courses/checkout/",
+      "overflow": false,
+      "CLS": 0
+    },
+    {
+      "width": 768,
+      "route": "/courses/",
+      "overflow": false,
+      "CLS": 0
+    },
+    {
+      "width": 768,
+      "route": "/courses/meta-ads/",
+      "overflow": false,
+      "CLS": 0
+    },
+    {
+      "width": 768,
+      "route": "/courses/practical-ai/",
+      "overflow": false,
+      "CLS": 0
+    },
+    {
+      "width": 768,
+      "route": "/courses/checkout/",
+      "overflow": false,
+      "CLS": 0
+    },
+    {
+      "width": 1440,
+      "route": "/courses/",
+      "overflow": false,
+      "CLS": 0
+    },
+    {
+      "width": 1440,
+      "route": "/courses/meta-ads/",
+      "overflow": false,
+      "CLS": 0
+    },
+    {
+      "width": 1440,
+      "route": "/courses/practical-ai/",
+      "overflow": false,
+      "CLS": 0
+    },
+    {
+      "width": 1440,
+      "route": "/courses/checkout/",
+      "overflow": false,
+      "CLS": 0
+    }
+  ],
+  "errors": [],
+  "failedAssets": [],
+  "mutations": [],
+  "thirdPartyRequests": [],
+  "checks": [
+    "16 responsive route/viewport combinations",
+    "real Meta and AI raster samples, decode and rapid navigation",
+    "dialog/drawer focus traps, Escape and restoration",
+    "native keyboard curriculum, expand/collapse all and rapid reversal",
+    "learning outcomes disclosure and keyboard sample tabs",
+    "cart deduplication, persistence, removal, empty state and browser back",
+    "email validation and review invalidation",
+    "disabled payment/delivery, hidden public test coupon, untrusted return URL",
+    "prerendered no-JavaScript content and samples",
+    "reduced motion and no third-party requests"
+  ]
+}

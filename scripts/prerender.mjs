@@ -1,9 +1,10 @@
+import {marketingAssets} from './marketing-assets.mjs'
 import { readFile,writeFile,mkdir } from 'node:fs/promises'
 import { resolve,dirname } from 'node:path'
 import { createServer } from 'vite'
 import { publicRoutes,privateRoutes,metadataForPath,SITE_URL } from '../src/lib/siteRoutes.js'
 const escape=value=>String(value).replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]))
-const template=await readFile(resolve('dist/index.html'),'utf8')
+const template=await marketingAssets(await readFile(resolve('dist/index.html'),'utf8'))
 const vite=await createServer({server:{middlewareMode:true,hmr:false},appType:'custom',logLevel:'warn'})
 try{
  const {render}=await vite.ssrLoadModule('/src/prerender.jsx')

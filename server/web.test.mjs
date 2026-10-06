@@ -23,6 +23,10 @@ test('Hostinger entry serves public/private pages, API, errors and bounded video
  const clip=await fetch(base+'/clip.mp4',{headers:{Range:'bytes=2-4'}});assert.equal(clip.status,206);assert.equal(await clip.text(),'234');assert.equal(clip.headers.get('content-range'),'bytes 2-4/10')
  assert.equal((await fetch(base+'/clip.mp4',{headers:{Range:'bytes=15-20'}})).status,416)
  assert.match((await fetch(base+'/assets/test.js')).headers.get('cache-control'),/immutable/)
+ mkdirSync(join(dist,'courses/assets/previews'),{recursive:true});writeFileSync(join(dist,'courses/assets/previews/meta-p10.webp'),'preview-fixture')
+ const preview=await fetch(base+'/courses/assets/previews/meta-p10.webp?v=abcdef123456');assert.match(preview.headers.get('cache-control'),/immutable/);assert.equal(preview.headers.get('content-type'),'image/webp')
+ const cachedPreview=await fetch(base+'/courses/assets/previews/meta-p10.webp?v=abcdef123456',{headers:{'If-None-Match':preview.headers.get('etag')}});assert.equal(cachedPreview.status,304)
+ assert.doesNotMatch((await fetch(base+'/courses/assets/previews/meta-p10.webp')).headers.get('cache-control'),/immutable/)
 })
 
 test('static representations negotiate compression, validate cache and preserve video/API behavior',async t=>{

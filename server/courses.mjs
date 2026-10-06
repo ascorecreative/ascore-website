@@ -8,8 +8,8 @@ import {verifyDatabaseIdentity} from './database-preflight.mjs'
 import {verifyMariaDbSchema} from './mariadb-schema.mjs'
 
 export const courseCatalog=Object.freeze({
- meta:{name:'Mastering Facebook Ads: Meta Ads — Beginner to Expert',priceMinor:5000,pages:54,file:'Mastering Facebook Ads - Meta Ads - Beginner to Expert.pdf',sha256:'213035507992b62cd373a920a583dab76df300ca68db75d64c65868e480925b5'},
- ai:{name:'Practical AI Course',priceMinor:5000,file:'Ascore Practical AI Course.pdf',sha256:'e2a3116af5428c4893401d9fbb7b0293370563f89e2f329c2ce7485cc1a2f1e5'}
+ meta:{name:'Mastering Facebook Ads: Meta Ads — Beginner to Expert',priceMinor:4999,regularPriceMinor:8900,pages:54,file:'Mastering Facebook Ads - Meta Ads - Beginner to Expert.pdf',sha256:'213035507992b62cd373a920a583dab76df300ca68db75d64c65868e480925b5'},
+ ai:{name:'Practical AI Course',priceMinor:4999,regularPriceMinor:8900,file:'Ascore Practical AI Course.pdf',sha256:'e2a3116af5428c4893401d9fbb7b0293370563f89e2f329c2ce7485cc1a2f1e5'}
 })
 const hash=s=>createHash('sha256').update(s).digest('hex')
 const fail=(status,message)=>{throw Object.assign(Error(message),{status})}
