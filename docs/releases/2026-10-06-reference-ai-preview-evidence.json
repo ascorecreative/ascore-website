@@ -1,0 +1,36 @@
+{
+  "sourcePages": 42,
+  "selectedPages": [
+    10,
+    23,
+    31
+  ],
+  "sourceSha256": "e2a3116af5428c4893401d9fbb7b0293370563f89e2f329c2ce7485cc1a2f1e5",
+  "rasterMethod": "Native PDFKit selected-page rendering, WebP encoding; no recreated lesson content",
+  "assets": {
+    "public/courses/assets/previews/ai-p10.webp": {
+      "bytes": 148818,
+      "sha256": "fccb05055274147d1e3f3e5b2d99a9b29957b2ffaf28e6d216e0f0907d9c6844"
+    },
+    "public/courses/assets/previews/ai-p10-small.webp": {
+      "bytes": 31432,
+      "sha256": "393941a87a4dbee4201dd8a18ed5142fd14fa3e663aba3ce9f337d1fbf5ecc81"
+    },
+    "public/courses/assets/previews/ai-p23.webp": {
+      "bytes": 158630,
+      "sha256": "711c4b40635caf1fce35edf16bf32a16c4b36b8d9ced38b7b10af77a9d7551fd"
+    },
+    "public/courses/assets/previews/ai-p23-small.webp": {
+      "bytes": 33280,
+      "sha256": "2dab0f1980698acec3d30d8f2d551a6ed58e1141729a2b7f8d1f3573bce678ed"
+    },
+    "public/courses/assets/previews/ai-p31.webp": {
+      "bytes": 142392,
+      "sha256": "12f6e5f1ca0a0e4150cb63858db5b9ff786ef56367379d60d886b49b17b69c93"
+    },
+    "public/courses/assets/previews/ai-p31-small.webp": {
+      "bytes": 30680,
+      "sha256": "06d9dad8eb70c289901be5bd9b25ee56e3c41f33ab36317e3ecd81e4b389ed88"
+    }
+  }
+}

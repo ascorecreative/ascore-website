@@ -1,0 +1,85 @@
+{
+  "conditions": "Headless Chrome on Apple M2; cold cache; 75 ms latency, 200 kB/s download, 4x CPU slowdown. Two samples per revision/viewport; not real-phone or Safari guarantees.",
+  "results": [
+    {
+      "revision": "c135129",
+      "width": 390,
+      "round": 0,
+      "domReadyMs": 632,
+      "loadMs": 635,
+      "LCPms": 632,
+      "CLS": 0,
+      "transferredBytes": 60455
+    },
+    {
+      "revision": "candidate",
+      "width": 390,
+      "round": 0,
+      "domReadyMs": 487,
+      "loadMs": 505,
+      "LCPms": 420,
+      "CLS": 0,
+      "transferredBytes": 65314
+    },
+    {
+      "revision": "c135129",
+      "width": 390,
+      "round": 1,
+      "domReadyMs": 478,
+      "loadMs": 500,
+      "LCPms": 480,
+      "CLS": 0,
+      "transferredBytes": 60455
+    },
+    {
+      "revision": "candidate",
+      "width": 390,
+      "round": 1,
+      "domReadyMs": 485,
+      "loadMs": 505,
+      "LCPms": 396,
+      "CLS": 0,
+      "transferredBytes": 65314
+    },
+    {
+      "revision": "c135129",
+      "width": 1440,
+      "round": 0,
+      "domReadyMs": 459,
+      "loadMs": 496,
+      "LCPms": 504,
+      "CLS": 0.0001385049148674741,
+      "transferredBytes": 100567
+    },
+    {
+      "revision": "candidate",
+      "width": 1440,
+      "round": 0,
+      "domReadyMs": 486,
+      "loadMs": 506,
+      "LCPms": 424,
+      "CLS": 0,
+      "transferredBytes": 65314
+    },
+    {
+      "revision": "c135129",
+      "width": 1440,
+      "round": 1,
+      "domReadyMs": 470,
+      "loadMs": 498,
+      "LCPms": 508,
+      "CLS": 0.0001385049148674741,
+      "transferredBytes": 100567
+    },
+    {
+      "revision": "candidate",
+      "width": 1440,
+      "round": 1,
+      "domReadyMs": 492,
+      "loadMs": 512,
+      "LCPms": 412,
+      "CLS": 0,
+      "transferredBytes": 65314
+    }
+  ]
+}
