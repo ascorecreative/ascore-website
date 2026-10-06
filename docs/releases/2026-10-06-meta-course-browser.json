@@ -1,0 +1,115 @@
+{
+  "layouts": [
+    {
+      "width": 320,
+      "path": "/courses/",
+      "titleCorrect": true,
+      "price50": true,
+      "noHorizontalOverflow": true,
+      "coverLoaded": true
+    },
+    {
+      "width": 320,
+      "path": "/courses/meta-ads/",
+      "titleCorrect": true,
+      "price50": true,
+      "noHorizontalOverflow": true,
+      "coverLoaded": true
+    },
+    {
+      "width": 390,
+      "path": "/courses/",
+      "titleCorrect": true,
+      "price50": true,
+      "noHorizontalOverflow": true,
+      "coverLoaded": true
+    },
+    {
+      "width": 390,
+      "path": "/courses/meta-ads/",
+      "titleCorrect": true,
+      "price50": true,
+      "noHorizontalOverflow": true,
+      "coverLoaded": true
+    },
+    {
+      "width": 1440,
+      "path": "/courses/",
+      "titleCorrect": true,
+      "price50": true,
+      "noHorizontalOverflow": true,
+      "coverLoaded": true
+    },
+    {
+      "width": 1440,
+      "path": "/courses/meta-ads/",
+      "titleCorrect": true,
+      "price50": true,
+      "noHorizontalOverflow": true,
+      "coverLoaded": true
+    }
+  ],
+  "flow": {
+    "cartPersists": true,
+    "titleUpdated": true,
+    "totalAED100": true,
+    "emailValidation": true,
+    "paidDisabled": true,
+    "freeDeliveryDisabled": true,
+    "noOrderSubmitted": true
+  },
+  "errors": [],
+  "requests": [
+    {
+      "method": "POST",
+      "url": "http://127.0.0.1:4173/api/courses/quote"
+    }
+  ],
+  "homepage": {
+    "currentCover": true,
+    "courseRoute": true,
+    "decodedCovers": [
+      {
+        "src": "/courses/assets/meta-cover-20261006.webp",
+        "natural": [
+          800,
+          1132
+        ],
+        "rect": {
+          "x": 698.1240844726562,
+          "y": 232.01438903808594,
+          "width": 396.58001708984375,
+          "height": 508.6612548828125,
+          "top": 232.01438903808594,
+          "right": 1094.7041015625,
+          "bottom": 740.6756439208984,
+          "left": 698.1240844726562
+        },
+        "display": "block",
+        "opacity": "1",
+        "transform": "matrix(0.978148, -0.207912, 0.207912, 0.978148, 0, 0)"
+      },
+      {
+        "src": "/courses/assets/ai-book.webp",
+        "natural": [
+          850,
+          1000
+        ],
+        "rect": {
+          "x": 950.038330078125,
+          "y": 303.2143249511719,
+          "width": 411.90771484375,
+          "height": 479.8551940917969,
+          "top": 303.2143249511719,
+          "right": 1361.946044921875,
+          "bottom": 783.0695190429688,
+          "left": 950.038330078125
+        },
+        "display": "block",
+        "opacity": "1",
+        "transform": "matrix(0.997564, 0.0697565, -0.0697565, 0.997564, 0, 0)"
+      }
+    ],
+    "visibleCoverVerification": true
+  }
+}

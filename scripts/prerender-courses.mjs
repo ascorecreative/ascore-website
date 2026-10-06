@@ -16,8 +16,8 @@ for(const [page,path] of [['home',''],['meta','meta-ads/'],['ai','practical-ai/'
  const safe=markup.replace(/<button\b([^>]*(?:data-add=|data-open-cart|id="(?:apply-coupon|review-order)")[^>]*)>/g,'<button$1 disabled data-course-pending>')
  html=html.replace('<div id="app"></div>',`<div id="app">${safe}</div>`)
  html=html.replace(/styles\.css\?v=[^" ]+/g,`styles.css?v=${version(css)}`).replace(/app\.js\?v=[^" ]+/g,`app.js?v=${version(script)}`)
- const hero=page==='home'?'course-hero':page==='meta'?'meta-book':page==='ai'?'ai-book':null
- if(hero)html=html.replace('</head>',`<link rel="preload" as="image" href="/courses/assets/${hero}.webp" fetchpriority="high"></head>`)
+ const hero=page==='home'||page==='meta'?vm.runInContext('PRODUCTS.meta.image',context):page==='ai'?'/courses/assets/ai-book.webp':null
+ if(hero)html=html.replace('</head>',`<link rel="preload" as="image" href="${hero}" fetchpriority="high"></head>`)
  await writeFile(`dist/courses/${path}index.html`,html)
 }
 console.log('Prerendered all four course routes with content-versioned assets.')

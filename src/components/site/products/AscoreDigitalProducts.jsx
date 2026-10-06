@@ -8,11 +8,14 @@ export default function AscoreDigitalProducts({ courseUrl = '/courses/' }) {
           <p className="asdp-eyebrow">PRACTICAL SKILLS. YOUR NEXT MOVE.</p>
           <h2 id="asdp-title">Explore our<br /><span>digital products.</span></h2>
           <p className="asdp-description">Build your business skills, one clear step at a time. Discover our practical guides to Meta advertising and AI.</p>
-          <div className="asdp-topics"><span>Meta Ads Setup</span><span>ChatGPT, Codex & Claude</span></div>
+          <div className="asdp-topics"><span>Mastering Facebook Ads</span><span>ChatGPT, Codex & Claude</span></div>
           <div className="asdp-action-row"><a className="asdp-cta" href={courseUrl}>Explore the courses</a><p className="asdp-price">PDF courses<br /><strong>AED 50 each</strong></p></div>
         </div>
         <a className="asdp-art" href={courseUrl} aria-label="Explore Ascore Meta Ads and Practical AI courses">
-          <img src="/images/ascore-course-hero.webp" width="1400" height="1100" loading="lazy" alt="Two Ascore course books, Meta Ads and Practical AI, rendered in 3D with the actual PDF covers" />
+          <div className="asdp-books">
+            <img className="asdp-meta-cover" src="/courses/assets/meta-cover-20261006.webp" width="800" height="1132" loading="lazy" alt="Cover of Mastering Facebook Ads: Meta Ads — Beginner to Expert" />
+            <img className="asdp-ai-cover" src="/courses/assets/ai-book.webp" width="850" height="1000" loading="lazy" alt="Practical AI course book" />
+          </div>
           <span className="asdp-caption">Read. Try. Build.</span>
         </a>
       </div>

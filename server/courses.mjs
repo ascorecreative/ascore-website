@@ -6,7 +6,7 @@ import {initializeCourseSchema,verifyCourseSchema} from './course-schema.mjs'
 import {uniqueConflict} from './persistence.mjs'
 
 export const courseCatalog=Object.freeze({
- meta:{name:'Meta Ads Setup Course',priceMinor:5000,file:'Meta 2026–2027 Setup Course.pdf',sha256:'3b70d8d8ecbd0a33fe445bee123c08da059ae80390a3ab895933218722d4c61b'},
+ meta:{name:'Mastering Facebook Ads: Meta Ads — Beginner to Expert',priceMinor:5000,pages:46,file:'Mastering Facebook Ads - Meta Ads - Beginner to Expert.pdf',sha256:'52bc630788bcec5a36719b99ccfc70ddac04325f4ec4c4fd1dc62e3bf9d10d75'},
  ai:{name:'Practical AI Course',priceMinor:5000,file:'Ascore Practical AI Course.pdf',sha256:'e2a3116af5428c4893401d9fbb7b0293370563f89e2f329c2ce7485cc1a2f1e5'}
 })
 const hash=s=>createHash('sha256').update(s).digest('hex')
