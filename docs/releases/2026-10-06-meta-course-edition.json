@@ -1,50 +1,53 @@
 {
-  "title": "Mastering Facebook Ads: Meta Ads — Beginner to Expert",
+  "title": "Mastering Facebook Ads: Meta Ads \u2014 Beginner to Expert",
   "privateFilename": "Mastering Facebook Ads - Meta Ads - Beginner to Expert.pdf",
-  "pages": 46,
-  "bookmarks": 46,
-  "sizeBytes": 1577797,
-  "sha256": "52bc630788bcec5a36719b99ccfc70ddac04325f4ec4c4fd1dc62e3bf9d10d75",
+  "libraryVersion": 4,
+  "pages": 54,
+  "bookmarks": 54,
+  "sizeBytes": 2707546,
+  "sha256": "6390a6b82b99ceff79026f2fca1c3e736050927d191478ae70cf05387d3b1913",
   "editionDate": "2026-10-06",
-  "competitorResearchPages": [
-    26,
-    27,
-    28,
-    29
+  "whatsappWalkthroughPages": [
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15,
+    16
   ],
-  "pixelSetupAndTestingPages": [
-    30,
-    31,
-    32,
-    33,
+  "competitorResearchPages": [
     34,
     35,
     36,
-    37,
+    37
+  ],
+  "pixelSetupAndTestingPages": [
     38,
     39,
     40,
     41,
-    42
+    42,
+    43,
+    44,
+    45,
+    46,
+    47,
+    48,
+    49,
+    50
   ],
-  "sanitisedCapturesDeclared": 8,
-  "capturePages": [
-    24,
-    25,
-    26,
-    27,
-    30,
-    31
-  ],
-  "referenceLinkAnnotations": 34,
+  "sanitisedCapturesDeclared": 17,
+  "externalReferenceLinkAnnotations": 34,
+  "internalLinkAnnotations": 8,
+  "totalLinkAnnotations": 42,
   "uniqueReferenceURLs": 30,
   "privateEditionLoaderAccepted": true,
   "publicPdfIncluded": false,
-  "publicCoverOnly": "/courses/assets/meta-cover-20261006.webp",
+  "publicCoverOnly": "/courses/assets/meta-cover-20261006-whatsapp.webp",
   "priceAED": 50,
-  "publicReadinessBefore": {
-    "freeCheckoutReady": false,
-    "paidCheckoutEnabled": false
-  },
-  "productionPrivateInstallation": "Not performed: overall delivery readiness is false; no authenticated administrator/private-storage readiness evidence is available."
+  "productionPrivateInstallation": "Not performed: private installation and SMTP/runtime setup remain blocked; no authenticated administrator/private-storage readiness evidence is available. Payment and delivery gates remain disabled."
 }

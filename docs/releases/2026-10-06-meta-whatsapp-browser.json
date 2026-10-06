@@ -1,0 +1,111 @@
+{
+  "catalog": {
+    "layouts": [
+      {
+        "width": 320,
+        "route": "/courses/",
+        "overflow": false,
+        "coverDecoded": true,
+        "currentCatalog": true
+      },
+      {
+        "width": 320,
+        "route": "/courses/meta-ads/",
+        "overflow": false,
+        "coverDecoded": true,
+        "currentCatalog": true
+      },
+      {
+        "width": 390,
+        "route": "/courses/",
+        "overflow": false,
+        "coverDecoded": true,
+        "currentCatalog": true
+      },
+      {
+        "width": 390,
+        "route": "/courses/meta-ads/",
+        "overflow": false,
+        "coverDecoded": true,
+        "currentCatalog": true
+      },
+      {
+        "width": 1440,
+        "route": "/courses/",
+        "overflow": false,
+        "coverDecoded": true,
+        "currentCatalog": true
+      },
+      {
+        "width": 1440,
+        "route": "/courses/meta-ads/",
+        "overflow": false,
+        "coverDecoded": true,
+        "currentCatalog": true
+      }
+    ],
+    "errors": [],
+    "homepageTeaser": {
+      "currentCover": true,
+      "courseCTA": "/courses/"
+    }
+  },
+  "navigationAndCheckout": {
+    "navigation": [
+      {
+        "route": "/courses/",
+        "width": 1440,
+        "input": "click",
+        "destination": "/",
+        "accessibleName": "Ascore home"
+      },
+      {
+        "route": "/courses/meta-ads/",
+        "width": 1440,
+        "input": "click",
+        "destination": "/",
+        "accessibleName": "Ascore home"
+      },
+      {
+        "route": "/courses/practical-ai/",
+        "width": 1440,
+        "input": "click",
+        "destination": "/",
+        "accessibleName": "Ascore home"
+      },
+      {
+        "route": "/courses/checkout/",
+        "width": 1440,
+        "input": "click",
+        "destination": "/",
+        "accessibleName": "Ascore home"
+      },
+      {
+        "route": "/courses/meta-ads/",
+        "logo": "footer",
+        "destination": "/"
+      },
+      {
+        "route": "/courses/meta-ads/",
+        "width": 390,
+        "input": "keyboard Enter after cart close",
+        "destination": "/"
+      }
+    ],
+    "regression": {
+      "cartRetained": true,
+      "priceAED50": true,
+      "catalog54Pages": true,
+      "emailValidation": true,
+      "checkoutGates": {
+        "freeCheckoutReady": false,
+        "paidCheckoutEnabled": false
+      },
+      "noOrderSubmitted": true
+    },
+    "errors": []
+  },
+  "privateEditionLoaderAccepted": true,
+  "previousEditionRejected": true,
+  "publicPdfIncluded": false
+}

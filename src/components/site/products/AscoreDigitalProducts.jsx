@@ -13,7 +13,7 @@ export default function AscoreDigitalProducts({ courseUrl = '/courses/' }) {
         </div>
         <a className="asdp-art" href={courseUrl} aria-label="Explore Ascore Meta Ads and Practical AI courses">
           <div className="asdp-books">
-            <img className="asdp-meta-cover" src="/courses/assets/meta-cover-20261006.webp" width="800" height="1132" loading="lazy" alt="Cover of Mastering Facebook Ads: Meta Ads — Beginner to Expert" />
+            <img className="asdp-meta-cover" src="/courses/assets/meta-cover-20261006-whatsapp.webp" width="800" height="1132" loading="lazy" alt="Cover of Mastering Facebook Ads: Meta Ads — Beginner to Expert" />
             <img className="asdp-ai-cover" src="/courses/assets/ai-book.webp" width="850" height="1000" loading="lazy" alt="Practical AI course book" />
           </div>
           <span className="asdp-caption">Read. Try. Build.</span>
