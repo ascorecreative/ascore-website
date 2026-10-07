@@ -43,11 +43,57 @@ test('private rows stay quarantined even with future public readiness and a paid
  const receipt=createHash('sha256').update(`${row.secret}:${row.id}:receipt`).digest('hex');await assert.rejects(service.publicHandle({method:'GET',headers:{'x-course-receipt':receipt}}, {},'/api/courses/paid/orders/'+row.id,()=>{}),{status:404})
  const token=createHash('sha256').update(`${row.secret}:${row.id}:download:meta`).digest('hex');await assert.rejects(service.publicHandle({method:'GET',url:'/?token='+token,socket:{remoteAddress:'local'}}, {},`/api/courses/paid/download/${row.id}/meta`,()=>{}),{status:404})
 })
+test('recovery reads the existing reference and independently verifies the Checkout, retaining quarantine and one creation claim',async t=>{
+ const h=await fixture(t)
+ const broken=createPrivateNomodTest({...h.options,fetcher:async()=>{throw Error('Unknown creation result')}})
+ await broken.create(owner,body);h.env.ASCORE_ALLOW_NOMOD_PRIVATE_TEST='0'
+ const row=await h.db.prepare('SELECT * FROM course_paid_orders').get(),reads=[],url='https://pay.nomodapp.com/en/l/synthetic/'
+ const service=createPrivateNomodTest({...h.options,fetcher:async(target,options)=>{
+  reads.push({target,options})
+  assert.equal(options.method,'GET');assert.equal(options.body,undefined)
+  const match={id:h.id,reference_id:row.id,currency:'AED',amount:'49.99',url}
+  return new Response(JSON.stringify(target.includes('/v1/links?')?{count:1,results:[match]}:{...match,status:'paid'}))
+ }})
+ const result=await service.reconcile(owner,{confirmation:'reconcile-existing-meta-4999-v1'})
+ assert.equal(result.state,'reconciled');assert.equal(result.checkoutId,h.id);assert.equal(reads.length,2)
+ assert.equal(new URL(reads[0].target).searchParams.get('reference_id'),row.id)
+ const saved=await h.db.prepare('SELECT * FROM course_paid_orders').get()
+ assert.equal(saved.payment_status,'review');assert.equal(saved.email,'');assert.equal(JSON.parse(saved.delivery).status,'held_private_test')
+ assert.equal((await service.create(owner,body)).alreadyAttempted,true)
+ assert.equal((await service.reconcile(owner,{confirmation:'reconcile-existing-meta-4999-v1'})).alreadyReconciled,true)
+ assert.equal(reads.length,2);assert.equal((await h.db.prepare('SELECT COUNT(*) AS n FROM course_paid_orders').get()).n,1)
+})
+test('recovery refuses ambiguous links, foreign references and different Checkout identities without persisting or retrying creation',async t=>{
+ for(const mode of ['ambiguous','reference','checkout']){
+  const h=await fixture(t);await createPrivateNomodTest({...h.options,fetcher:async()=>{throw Error('unknown')}}).create(owner,body)
+  const row=await h.db.prepare('SELECT * FROM course_paid_orders').get(),reads=[]
+  const service=createPrivateNomodTest({...h.options,fetcher:async(target,options)=>{
+   reads.push(options.method)
+   const match={id:h.id,reference_id:mode==='reference'?randomUUID():row.id,currency:'AED',amount:'49.99',url:'https://pay.nomodapp.com/en/l/synthetic/'}
+   return new Response(JSON.stringify(target.includes('/v1/links?')?{count:mode==='ambiguous'?2:1,results:[match]}:{...match,id:randomUUID(),status:'created'}))
+  }})
+  await assert.rejects(service.reconcile(owner,{confirmation:'reconcile-existing-meta-4999-v1'}),{status:409})
+  const saved=await h.db.prepare('SELECT * FROM course_paid_orders').get();assert.equal(saved.provider_id,null);assert.equal(saved.provider_url,null)
+  assert.ok(reads.every(method=>method==='GET'));assert.equal((await service.create(owner,body)).alreadyAttempted,true)
+ }
+})
+test('recovery retains owner and closed-gate requirements and does not expose provider error bodies',async t=>{
+ const h=await fixture(t);await createPrivateNomodTest({...h.options,fetcher:async()=>{throw Error('unknown')}}).create(owner,body)
+ let calls=0;const service=createPrivateNomodTest({...h.options,fetcher:async()=>{calls++;return new Response('private provider content',{status:403})}}),confirmation={confirmation:'reconcile-existing-meta-4999-v1'}
+ await assert.rejects(service.reconcile({...owner,username:'other'},confirmation),{status:403})
+ await assert.rejects(service.reconcile(owner,{...confirmation,checkoutId:randomUUID()}),{status:400})
+ h.env.ASCORE_ENABLE_PAID_COURSES='1';await assert.rejects(service.reconcile(owner,confirmation),{status:403});h.env.ASCORE_ENABLE_PAID_COURSES='0'
+ assert.equal(calls,0)
+ await assert.rejects(service.reconcile(owner,confirmation),error=>error.status===502&&!error.message.includes('private provider content'))
+ await assert.rejects(service.reconcile(owner,confirmation),{status:429});assert.equal(calls,1)
+})
 test('HTTP owner actions retain auth, origin and CSRF and expose diagnostic/private status through the real orders endpoint',async t=>{
  const db=createSqliteStore();await initializePaymentSchema(db);const activation='synthetic-activation',env={ASCORE_ORIGIN:origin,ASCORE_ALLOW_ADMIN_SETUP:'1',ASCORE_ADMIN_SETUP_GRANTS:JSON.stringify({aswinfrn:{tokenHash:createHash('sha256').update(activation).digest('hex'),expiresAt:new Date(Date.now()+60000).toISOString()}})}
  let requests=0;const app=await createPortalServer({store:db,env,nomodFetch:async()=>{requests++;throw Error('Disabled')},coursePdfReader:async()=>{throw Error('Not installed')}});await new Promise(r=>app.server.listen(0,'127.0.0.1',r));t.after(()=>app.close());const base=`http://127.0.0.1:${app.server.address().port}`
  const call=async(path,body,headers={})=>{const r=await fetch(base+path,{method:body?'POST':'GET',headers:{Origin:origin,'Content-Type':'application/json',...headers},...(body?{body:JSON.stringify(body)}:{})});return {status:r.status,data:await r.json(),cookie:r.headers.get('set-cookie')?.split(';')[0]}}
  const login=await call('/api/auth/admin-setup',{username:'aswinfrn',name:'Fixture owner',password:'Synthetic isolated password',setupToken:activation}),auth={Cookie:login.cookie,'x-csrf-token':login.data.csrf},path='/api/courses/admin/payments/private-test'
  assert.equal((await call(path,body)).status,401);assert.equal((await call(path,body,{Cookie:login.cookie})).status,403);assert.equal((await call(path,body,{...auth,Origin:'https://foreign.test'})).status,403);assert.equal((await call(path,body,auth)).status,403)
+ const recovery=path+'/reconcile',recoveryBody={confirmation:'reconcile-existing-meta-4999-v1'}
+ assert.equal((await call(recovery,recoveryBody)).status,401);assert.equal((await call(recovery,recoveryBody,{Cookie:login.cookie})).status,403);assert.equal((await call(recovery,recoveryBody,{...auth,Origin:'https://foreign.test'})).status,403);assert.equal((await call(recovery,recoveryBody,auth)).status,403)
  const status=(await call('/api/courses/admin/orders',null,auth)).data;assert.equal(status.payments.diagnostic.ownerAllowed,true);assert.equal(status.payments.privateNomodTest.ownerAllowed,true);assert.equal(status.payments.privateNomodTest.allowed,false);assert.equal(requests,0);assert.deepEqual((await call('/api/courses/config')).data,{freeCheckoutReady:false,paidCheckoutEnabled:false})
 })

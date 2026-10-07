@@ -11,7 +11,7 @@ const fail=(status,message)=>{throw Object.assign(Error(message),{status})}
 const hash=value=>createHash('sha256').update(value).digest('hex')
 const uuid=value=>typeof value==='string'&&/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value)
 export function createPrivateNomodTest({db,env,origin,readJson,audit,fetcher=fetch,now=Date.now,isSchemaReady}){
- let flight=null
+ let flight=null,recovery=null,recoveryAt=0
  const closed=()=>['ASCORE_ENABLE_PAID_COURSES','ASCORE_ENABLE_FREE_COURSES','ASCORE_ENABLE_PAID_COURSE_DELIVERY','ASCORE_NOMOD_LIVE_REQUESTS_APPROVED'].every(key=>env[key]!=='1')
  const originReady=()=>{try{const url=new URL(origin);return url.protocol==='https:'&&url.origin===origin}catch{return false}}
  const prerequisites=()=>closed()&&isSchemaReady()&&originReady()&&env.ASCORE_ENABLE_NOMOD_WEBHOOKS==='1'&&/^whsec_[A-Za-z0-9+/=]+$/.test(env.NOMOD_WEBHOOK_SIGNING_SECRET||'')&&!!env.NOMOD_HOSTED_CHECKOUT_API_KEY
@@ -64,11 +64,55 @@ export function createPrivateNomodTest({db,env,origin,readJson,audit,fetcher=fet
   })()
   flight=task;try{return await task}finally{if(flight===task)flight=null}
  }
- return {status,create,close:async()=>{if(flight)await Promise.allSettled([flight])},async handle(req,res,path,user,json){
-  if(path!=='/api/courses/admin/payments/private-test')return false
+ async function reconcile(user,body){
   if(!owner(user))fail(403,'The private Nomod test is restricted to aswinfrn.')
-  if(req.method==='GET'){json(res,200,await status(user));return true}
+  if(!body||Array.isArray(body)||Object.keys(body).length!==1||body.confirmation!=='reconcile-existing-meta-4999-v1')fail(400,'Confirm reconciliation of the existing private test only.')
+  if(!prerequisites())fail(403,'Keep public purchasing and delivery closed, with the saved key and signed notifications configured.')
+  const row=await prior()
+  if(!row||!isPrivateNomodTest(row))fail(409,'No existing private attempt can be reconciled.')
+  if(row.provider_id)return {...view(row),alreadyReconciled:true}
+  if(flight)fail(409,'Wait for the existing creation attempt to finish before reconciling it.')
+  if(recovery)return recovery
+  if(recoveryAt&&now()-recoveryAt<60000)fail(429,'Wait one minute before another read-only recovery check.')
+  recoveryAt=now()
+  const task=(async()=>{
+   const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),12000)
+   const read=async url=>{
+    const response=await fetcher(url,{method:'GET',headers:{'X-API-KEY':env.NOMOD_HOSTED_CHECKOUT_API_KEY,'Content-Type':'application/json'},signal:controller.signal,redirect:'error'})
+    if([401,403].includes(response.status))fail(502,'The saved Hosted Checkout key cannot read this lookup. Review the existing attempt in Nomod Dashboard; do not create another.')
+    if(!response.ok)fail(502,'Nomod could not reconcile this existing attempt. No checkout was created.')
+    const parts=[];let size=0
+    for await(const chunk of response.body||[]){size+=chunk.byteLength;if(size>131072){controller.abort();fail(502,'Nomod returned an oversized reconciliation response.')}parts.push(Buffer.from(chunk))}
+    return JSON.parse(Buffer.concat(parts).toString('utf8'))
+   }
+   try{
+    const links=await read('https://api.nomod.com/v1/links?reference_id='+encodeURIComponent(row.id)+'&page_size=2')
+    if(links.count!==1||!Array.isArray(links.results)||links.results.length!==1)fail(409,'Nomod did not return exactly one matching existing link. Review Dashboard; do not retry creation.')
+    const link=links.results[0]
+    if(!uuid(link.id)||link.reference_id!==row.id||link.currency!=='AED'||!['49.99',49.99].includes(link.amount))fail(409,'The existing link does not match the approved private test.')
+    // A Link ID is not assumed to be a Checkout ID: the Checkout endpoint must
+    // independently authenticate the ID, reference, amount and payment URL.
+    const checkout=await read('https://api.nomod.com/v1/checkout/'+link.id.toLowerCase())
+    if(checkout.id?.toLowerCase()!==link.id.toLowerCase()||checkout.reference_id!==row.id||checkout.currency!=='AED'||!['49.99',49.99].includes(checkout.amount)||!['created','cancelled','expired','paid'].includes(checkout.status)||checkout.url!==link.url)fail(409,'Nomod did not verify the matching Hosted Checkout session.')
+    const target=new URL(checkout.url)
+    if(target.protocol!=='https:'||target.username||target.password||target.port||!nomodOwnedHost(target.hostname))fail(409,'Nomod returned an unverified payment host.')
+    await db.transaction(async()=>{
+     const current=await prior()
+     if(current.provider_id)return
+     await db.prepare('UPDATE course_paid_orders SET provider_id=?,provider_url=?,delivery=? WHERE id=?').run(checkout.id.toLowerCase(),target.href,JSON.stringify({status:'held_private_test',testState:'reconciled'}),row.id)
+     await audit(user.id,'nomod_private_test_reconciled',row.id)
+    })
+    return {...view(await prior()),alreadyReconciled:false}
+   }catch(error){if(error.status)throw error;fail(502,'Existing-checkout recovery failed. No checkout, charge, email or delivery was created.')}finally{clearTimeout(timer)}
+  })()
+  recovery=task;try{return await task}finally{if(recovery===task)recovery=null}
+ }
+ return {status,create,reconcile,close:async()=>{await Promise.allSettled([flight,recovery].filter(Boolean))},async handle(req,res,path,user,json){
+  const recover=path==='/api/courses/admin/payments/private-test/reconcile'
+  if(path!=='/api/courses/admin/payments/private-test'&&!recover)return false
+  if(!owner(user))fail(403,'The private Nomod test is restricted to aswinfrn.')
+  if(req.method==='GET'&&!recover){json(res,200,await status(user));return true}
   if(req.method!=='POST')fail(405,'Method not allowed.')
-  json(res,200,await create(user,await readJson(req)));return true
+  json(res,200,await (recover?reconcile:create)(user,await readJson(req)));return true
  }}
 }

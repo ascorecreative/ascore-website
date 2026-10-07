@@ -26,13 +26,22 @@ sales, zero-payment checkout, paid PDF delivery or advertising spend.
   enabled. Public sales and PDF delivery remain closed.
 - The owner portal now shows its private merchant reference and reconciliation
   guidance. No credentials, buyer details or checkout capabilities are committed.
+- Owner-only recovery reads Nomod's documented Links lookup for the existing
+  merchant reference, then independently verifies any returned ID with the
+  Hosted Checkout endpoint. Ambiguous or mismatched results remain held. This
+  action cannot create another checkout, charge, email, download or sale; a
+  recovered private row stays permanently excluded from fulfilment.
+- The exact redirect host pay.nomodapp.com is saved in Hostinger. The temporary
+  creation flag is off and signed notifications are on. Public sales remain off.
 
-Validation: 101 backend tests pass; lint has three existing warnings; production
+Validation: 104 backend tests pass; lint has three existing warnings; production
 build, course prerender and compression pass. Isolated Chrome checks cover the
 closed and enabled presentations, mobile/desktop layout, unchanged prices,
 review-only checkout and safe provider-error handling. No provider request,
-payment or email can run from the isolated preview. Meta previously processed a
-live PageView in Test Events; the new product/cart events require post-deploy
-receipt verification. Seven unrelated shared-checkout files retain their hashes.
+payment or email can run from the isolated preview. Meta processed live PageView,
+ViewContent and AddToCart after deployment; the cart event carries AED 49.99 and
+the Meta course ID. Purchase is not emitted for the private test. Seven unrelated
+shared-checkout files retain their hashes.
 
 Official host evidence: https://nomod.com/docs/integrations/deep-linking
+Official recovery lookup: https://nomod.com/docs/api-reference/list-link
