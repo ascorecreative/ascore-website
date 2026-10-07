@@ -26,6 +26,14 @@
   const privacySignal = () => navigator.globalPrivacyControl === true || navigator.doNotTrack === '1';
   const granted = () => choice?.value === 'granted' && !privacySignal();
   let loaded = false, attempted = false, initialized = false, lastPage = null, pending = null, settingsOpen = !choice;
+  let courseActions = [];
+  const courseItems = items => Array.isArray(items) && items.length > 0 && items.length <= 2 && new Set(items).size === items.length && items.every(id => ['meta', 'ai'].includes(id));
+  function courseEvent(name, items) {
+    if (!granted() || !eligible() || !courseItems(items)) return false;
+    if (!loaded || !initialized) { courseActions.push({name, items: [...items], path: path()}); courseActions = courseActions.slice(-10); load(); return true; }
+    window.fbq('trackSingle', PIXEL, name, {currency: 'AED', value: items.length * 49.99, content_type: 'product', content_ids: [...items], contents: items.map(id => ({id, quantity: 1, item_price: 49.99})), num_items: items.length});
+    return true;
+  }
   let googleLoaded = false, googleAttempted = false, googleInitialized = false, googleLastPage = null, googlePending = null, googleConsent = false;
   let widget;
   const sentInMemory = new Set(), googleSentInMemory = new Set();
@@ -103,7 +111,13 @@
     }
     window.fbq('consent', 'grant');
     const current = path();
-    if (current !== lastPage) { window.fbq('trackSingle', PIXEL, 'PageView'); lastPage = current; }
+    if (current !== lastPage) {
+      window.fbq('trackSingle', PIXEL, 'PageView'); lastPage = current;
+      const course = {'/courses/meta-ads/': 'meta', '/courses/practical-ai/': 'ai'}[current];
+      if (course) courseEvent('ViewContent', [course]);
+    }
+    const actions = courseActions; courseActions = [];
+    for (const action of actions) if (action.path === current) courseEvent(action.name, action.items);
     flushPurchase();
   }
   function load() {
@@ -138,17 +152,19 @@
     widget.querySelector('[data-marketing-settings]').setAttribute('aria-expanded', String(settingsOpen));
   }
   function sync() {
-    if (!eligible()) { pending = null; googlePending = null; }
+    if (!eligible()) { pending = null; googlePending = null; courseActions = []; }
     if (!eligible()) lastPage = null;
     render(); load();
   }
   function decide(value) {
     choice = {version: 2, value, at: Date.now()}; write(CONSENT, choice);
     settingsOpen = false;
-    if (value !== 'granted') { pending = null; googlePending = null; lastPage = null; revoke(); }
+    if (value !== 'granted') { pending = null; googlePending = null; courseActions = []; lastPage = null; revoke(); }
     sync(); widget?.querySelector('[data-marketing-settings]').focus({preventScroll: true});
   }
   window.AscoreMarketing = Object.freeze({
+    addedToCart(items) { return path().startsWith('/courses/') && courseEvent('AddToCart', items); },
+    startedCheckout(items) { return path() === '/courses/checkout/' && courseEvent('InitiateCheckout', items); },
     verifiedPurchase(receipt) {
       if (path() !== '/courses/checkout/' || !eligible() || !receipt || receipt.paymentStatus !== 'paid' || receipt.currency !== 'AED' || !/^[a-f0-9]{64}$/.test(receipt.paymentEventId) || !Array.isArray(receipt.items) || !receipt.items.length || receipt.items.length > 2 || new Set(receipt.items).size !== receipt.items.length || receipt.items.some(id => !['meta', 'ai'].includes(id)) || receipt.totalMinor !== receipt.items.length * 4999) return false;
       pending = {paymentEventId: receipt.paymentEventId, totalMinor: receipt.totalMinor, items: [...receipt.items]};
@@ -168,6 +184,6 @@
     const original = history[method]; history[method] = function () { const result = original.apply(this, arguments); sync(); return result; };
   }
   for (const event of ['popstate', 'hashchange', 'pageshow']) window.addEventListener(event, sync);
-  window.addEventListener('storage', event => { if (event.key === CONSENT || event.key === null) { choice = consentChoice(); settingsOpen = !choice; if (!granted()) { pending = null; googlePending = null; lastPage = null; } sync(); } });
+  window.addEventListener('storage', event => { if (event.key === CONSENT || event.key === null) { choice = consentChoice(); settingsOpen = !choice; if (!granted()) { pending = null; googlePending = null; courseActions = []; lastPage = null; } sync(); } });
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', mount, {once: true}); else mount();
 })();

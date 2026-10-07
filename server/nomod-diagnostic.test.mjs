@@ -13,6 +13,14 @@ function fixture({details=paid,status=200,event=true,schema=true,env={}}={}){
  const service=createNomodDiagnostic({db,env:config,isSchemaReady:()=>schema,readJson:async r=>r.body,fetcher:async(url,options)=>{calls.push({url,...options});return new Response(JSON.stringify(details),{status})}})
  return {service,calls,sql,env:config,read:(body={checkoutId:id},user=owner)=>service.inspect(user,body)}
 }
+test('the documented pay.nomodapp.com host is accepted exactly, while suffix lookalikes and other subdomains remain untrusted',async()=>{
+ const r=await fixture({details:{...paid,url:'https://pay.nomodapp.com/en/l/synthetic'},env:{NOMOD_CHECKOUT_HOSTS:'pay.nomodapp.com'}}).read()
+ assert.equal(r.nomodOwnedHost,true);assert.equal(r.configuredHostMatches,true);assert.equal(r.paidShapeVerified,true);assert.equal(r.contractApproved,false)
+ for(const host of ['pay.nomodapp.com.evil.test','other.nomodapp.com','nomodapp.com']){
+  const result=await fixture({details:{...paid,url:`https://${host}/synthetic`},env:{NOMOD_CHECKOUT_HOSTS:host}}).read()
+  assert.equal(result.nomodOwnedHost,false);assert.equal(result.configuredHostMatches,false);assert.equal(result.paidShapeVerified,false)
+ }
+})
 test('existing checkout diagnostic GETs only the fixed provider endpoint and redacts customer, keys, references and URL capabilities',async()=>{
  const h=fixture(),r=await h.read();assert.equal(h.calls.length,1);assert.equal(h.calls[0].url,'https://api.nomod.com/v1/checkout/'+id);assert.equal(h.calls[0].method,'GET');assert.equal(h.calls[0].headers['X-API-KEY'],key);assert.equal(h.calls[0].redirect,'error');assert.equal(h.calls[0].body,undefined)
  assert.equal(r.apiAuthenticated,true);assert.equal(r.paidShapeVerified,true);assert.equal(r.signedCompletedEventMatched,true);assert.equal(r.checkoutHost,'checkout.nomod.com');assert.equal(r.configuredHostMatches,true);assert.equal(r.amountMinor,4999);assert.equal(r.contractApproved,false)

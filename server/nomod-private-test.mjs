@@ -1,5 +1,6 @@
 import {createHash,randomBytes,randomUUID} from 'node:crypto'
 import {courseCatalog} from './courses.mjs'
+import {nomodOwnedHost} from './nomod-host.mjs'
 
 // A finite owner action, permanently separate from public course fulfilment.
 export const privateNomodRequestId='6ef0cd61-1c20-4b4b-b639-2040c48e417d'
@@ -15,7 +16,7 @@ export function createPrivateNomodTest({db,env,origin,readJson,audit,fetcher=fet
  const originReady=()=>{try{const url=new URL(origin);return url.protocol==='https:'&&url.origin===origin}catch{return false}}
  const prerequisites=()=>closed()&&isSchemaReady()&&originReady()&&env.ASCORE_ENABLE_NOMOD_WEBHOOKS==='1'&&/^whsec_[A-Za-z0-9+/=]+$/.test(env.NOMOD_WEBHOOK_SIGNING_SECRET||'')&&!!env.NOMOD_HOSTED_CHECKOUT_API_KEY
  const prior=()=>db.prepare('SELECT * FROM course_paid_orders WHERE request_id=?').get(privateNomodRequestId)
- const view=row=>row?{state:JSON.parse(row.delivery).testState||'claimed',checkoutId:row.provider_id||null,url:row.provider_url||null,createdAt:Number(row.created_at)}:{state:'not_created',checkoutId:null,url:null}
+ const view=row=>row?{state:JSON.parse(row.delivery).testState||'claimed',referenceId:row.id,checkoutId:row.provider_id||null,url:row.provider_url||null,createdAt:Number(row.created_at)}:{state:'not_created',checkoutId:null,url:null}
  async function status(user){
   if(!owner(user))return {ownerAllowed:false,allowed:false}
   const row=isSchemaReady()?await prior():null
@@ -52,7 +53,7 @@ export function createPrivateNomodTest({db,env,origin,readJson,audit,fetcher=fet
     result=JSON.parse(Buffer.concat(parts).toString('utf8'))
     if(!uuid(result.id)||result.reference_id!==row.id||result.currency!=='AED'||!['49.99',49.99].includes(result.amount)||result.status!=='created')throw Error('Unverified checkout response')
     const target=new URL(result.url)
-    if(target.protocol!=='https:'||target.username||target.password||target.port||!(target.hostname==='nomod.com'||target.hostname.endsWith('.nomod.com')))throw Error('Unverified payment host')
+    if(target.protocol!=='https:'||target.username||target.password||target.port||!nomodOwnedHost(target.hostname))throw Error('Unverified payment host')
     url=target.href;state='created'
    }catch{/* Never retry a live creation after an unknown response. */}finally{clearTimeout(timer)}
    await db.transaction(async()=>{

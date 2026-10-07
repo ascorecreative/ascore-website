@@ -1,4 +1,5 @@
 import {createHash} from 'node:crypto'
+import {nomodOwnedHost as trustedHost} from './nomod-host.mjs'
 
 const fail=(status,message)=>{throw Object.assign(Error(message),{status})}
 const uuid=value=>typeof value==='string'&&/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value)
@@ -43,7 +44,7 @@ export function createNomodDiagnostic({db,env,readJson,fetcher=fetch,now=Date.no
    const captured=charges.filter(c=>c?.status==='paid'),capturedAmountsValid=captured.length>0&&captured.every(c=>minor(c.amount)!==null)
    const capturedMinor=capturedAmountsValid?captured.reduce((sum,c)=>sum+minor(c.amount),0):null
    let host=null,nomodOwnedHost=false
-   try{const url=new URL(details?.url);if(url.protocol==='https:'&&!url.username&&!url.password&&!url.port&&/^[a-z0-9]+(?:[.-][a-z0-9]+)*\.[a-z]{2,}$/.test(url.hostname)){host=url.hostname;nomodOwnedHost=host==='nomod.com'||host.endsWith('.nomod.com')}}catch{}
+   try{const url=new URL(details?.url);if(url.protocol==='https:'&&!url.username&&!url.password&&!url.port&&/^[a-z0-9]+(?:[.-][a-z0-9]+)*\.[a-z]{2,}$/.test(url.hostname)){host=url.hostname;nomodOwnedHost=trustedHost(host)}}catch{}
    let signedCompletedEventMatched=false
    if(chargeIdsValid&&captured.length){
     const ids=captured.map(c=>c.id.toLowerCase())
