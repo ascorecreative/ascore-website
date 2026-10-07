@@ -35,8 +35,12 @@ export async function createCourseReviews({db,env={},readJson,audit=async()=>{},
  let schemaReady=false,paymentsReady=false,setupFlight=null
  try{await verifyReviewSchema(db);schemaReady=true}catch{}
  try{await verifyPaymentSchema(db);paymentsReady=true}catch{}
- const enabled=env.ASCORE_ENABLE_COURSE_REVIEWS==='1',ready=()=>enabled&&schemaReady&&paymentsReady
- const setup=user=>({allowed:!schemaReady&&user?.username==='aswinfrn'&&env.ASCORE_ALLOW_REVIEW_SCHEMA_SETUP==='1'&&env.ASCORE_ENABLE_PAID_COURSES!=='1'&&env.ASCORE_ENABLE_FREE_COURSES!=='1'&&db.kind==='mariadb'&&db.readiness?.identityVerified===true&&db.readiness?.schemaVersion===1&&paymentsReady,inProgress:!!setupFlight,reason:schemaReady?'already_initialized':!paymentsReady?'payment_schema_required':'owner_and_operator_approval_required'})
+ let activated=false
+ try{activated=!!await db.prepare('SELECT version FROM ascore_schema_versions WHERE application=? AND version=?').get('ascore-course-reviews',2)}catch{}
+ const enabled=()=>env.ASCORE_ENABLE_COURSE_REVIEWS==='1'||activated,ready=()=>enabled()&&schemaReady&&paymentsReady
+ // Owner approval is recorded durably; additive review tables do not alter checkout.
+ const verifiedRuntime=()=>db.kind==='mariadb'?db.readiness?.identityVerified===true&&db.readiness?.schemaVersion===1:db.kind==='sqlite'&&env.NODE_ENV!=='production'
+ const setup=user=>({allowed:user?.role==='admin'&&user.username==='aswinfrn'&&verifiedRuntime()&&paymentsReady,inProgress:!!setupFlight,reason:!paymentsReady?'payment_schema_required':!verifiedRuntime()?'runtime_not_verified':'owner_approval_required'})
  const view=row=>({id:row.id,courseId:row.course_id,author:row.author,rating:Number(row.rating),body:row.body,createdAt:Number(row.created_at)})
  async function buyer(req,id,course){
   if(!uuid(id)||!known(course))fail(403,'A verified course purchase is required.')
@@ -80,12 +84,23 @@ export async function createCourseReviews({db,env={},readJson,audit=async()=>{},
   if(user?.role!=='admin')fail(403,'Agency access is required.')
   if(path==='/api/courses/admin/reviews'&&req.method==='GET'){
    const rows=schemaReady?await db.prepare('SELECT * FROM course_reviews ORDER BY created_at DESC LIMIT 100').all():[]
-   json(res,200,{ready:ready(),schemaReady,enabled,setup:setup(user),reviews:rows.map(r=>({...view(r),state:r.state,moderatedAt:r.moderated_at?Number(r.moderated_at):null}))});return true
+   json(res,200,{ready:ready(),schemaReady,enabled:enabled(),setup:setup(user),reviews:rows.map(r=>({...view(r),state:r.state,moderatedAt:r.moderated_at?Number(r.moderated_at):null}))});return true
   }
   if(path==='/api/courses/admin/reviews/schema'&&req.method==='POST'){
    const body=await readJson(req);fields(body,[])
-   if(!setup(user).allowed)fail(403,'Review setup requires the approved owner, temporary operator flag, verified payment tables and disabled checkout.')
-   if(!setupFlight)setupFlight=(async()=>{await audit(user.id,'course_review_schema_started','ascore-course-reviews');try{await initializeReviewSchema(db,env);await verifyReviewSchema(db);schemaReady=true;await audit(user.id,'course_review_schema_completed','ascore-course-reviews')}catch{await audit(user.id,'course_review_schema_needs_review','ascore-course-reviews');fail(503,'Review setup needs team review.')}finally{setupFlight=null}})()
+   if(!setup(user).allowed)fail(403,'Enabling reviews requires the agency owner and verified application and payment storage.')
+   if(!setupFlight)setupFlight=(async()=>{
+    try{
+     await audit(user.id,'course_review_activation_started','ascore-course-reviews')
+     await initializeReviewSchema(db,{...env,ASCORE_ALLOW_REVIEW_SCHEMA_SETUP:'1'});await verifyReviewSchema(db);schemaReady=true
+     if(db.kind==='sqlite')await db.exec('CREATE TABLE IF NOT EXISTS ascore_schema_versions (application VARCHAR(32) NOT NULL,version INTEGER NOT NULL,applied_at BIGINT NOT NULL,PRIMARY KEY(application,version))')
+     await db.transaction(async()=>{
+      const marker=await db.prepare(db.lock('SELECT version FROM ascore_schema_versions WHERE application=? AND version=?')).get('ascore-course-reviews',2)
+      if(!marker)await db.prepare('INSERT INTO ascore_schema_versions (application,version,applied_at) VALUES (?,?,?)').run('ascore-course-reviews',2,now())
+      await audit(user.id,'course_review_activation_completed','ascore-course-reviews')
+     });activated=true
+    }catch{await audit(user.id,'course_review_activation_needs_review','ascore-course-reviews');fail(503,'Review setup needs team review.')}finally{setupFlight=null}
+   })()
    await setupFlight;json(res,200,{initialized:true,ready:ready()});return true
   }
   const moderate=/^\/api\/courses\/admin\/reviews\/([0-9a-f-]+)$/.exec(path)

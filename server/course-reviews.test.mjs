@@ -3,11 +3,11 @@ import assert from 'node:assert/strict'
 import {createHash,randomUUID} from 'node:crypto'
 import {createSqliteStore} from './sqlite-store.mjs'
 import {initializePaymentSchema} from './payment-schema.mjs'
-import {initializeReviewSchema,courseReviewToken} from './course-reviews.mjs'
+import {initializeReviewSchema,courseReviewToken,createCourseReviews} from './course-reviews.mjs'
 import {createPortalServer} from './app.mjs'
-async function harness(t,{enabled=true,schema=true}={}){
+async function harness(t,{enabled=true,schema=true,paid=false}={}){
  const db=createSqliteStore();await initializePaymentSchema(db);if(schema)await initializeReviewSchema(db)
- const setupToken='isolated-review-test-grant',env={ASCORE_ORIGIN:'http://127.0.0.1:5173',ASCORE_ENABLE_COURSE_REVIEWS:enabled?'1':'0',ASCORE_ALLOW_ADMIN_SETUP:'1',ASCORE_ADMIN_SETUP_GRANTS:JSON.stringify({aswinfrn:{tokenHash:createHash('sha256').update(setupToken).digest('hex'),expiresAt:new Date(Date.now()+60000).toISOString()}})}
+ const setupToken='isolated-review-test-grant',env={ASCORE_ORIGIN:'http://127.0.0.1:5173',ASCORE_ENABLE_PAID_COURSES:paid?'1':'0',ASCORE_ENABLE_COURSE_REVIEWS:enabled?'1':'0',ASCORE_ALLOW_ADMIN_SETUP:'1',ASCORE_ADMIN_SETUP_GRANTS:JSON.stringify({aswinfrn:{tokenHash:createHash('sha256').update(setupToken).digest('hex'),expiresAt:new Date(Date.now()+60000).toISOString()}})}
  let outgoing=0;const app=await createPortalServer({store:db,env,nomodFetch:async()=>{outgoing++;throw Error('No provider call')},courseSender:async()=>{outgoing++;throw Error('No mail')},coursePdfReader:async()=>{throw Error('No private files')},enquiryAdapters:{}});await new Promise(r=>app.server.listen(0,'127.0.0.1',r));t.after(()=>app.close());const base=`http://127.0.0.1:${app.server.address().port}`
  const request=async(path,{body,headers={},session={},method}={})=>{const r=await fetch(base+path,{method:method||(body?'POST':'GET'),headers:{Origin:env.ASCORE_ORIGIN,...(body?{'Content-Type':'application/json'}:{}),...(session.cookie?{Cookie:session.cookie}:{}),...(session.csrf?{'x-csrf-token':session.csrf}:{}),...headers},...(body?{body:JSON.stringify(body)}:{})});return {status:r.status,data:await r.json(),cookie:r.headers.get('set-cookie')?.split(';')[0]}}
  const admin=async()=>{const r=await request('/api/auth/admin-setup',{body:{username:'aswinfrn',name:'Review test owner',password:'synthetic review test password',setupToken}});assert.equal(r.status,201);return {...r.data,cookie:r.cookie}}
@@ -41,4 +41,18 @@ test('persistent submissions are moderated, private fields stay private and refu
  assert.equal((await h.db.prepare("SELECT COUNT(*) AS count FROM audit WHERE action LIKE 'course_review_%'").get()).count,2)
  await h.db.prepare('UPDATE course_paid_orders SET payment_status=? WHERE id=?').run('review',b.id);assert.equal((await h.request('/api/courses/reviews/meta')).data.count,0);assert.equal((await h.request(path,{body:{state:'published'},session:admin,method:'PATCH'})).status,409)
  assert.equal(h.outgoing(),0)
+})
+
+test('owner review activation is authenticated, CSRF protected, durable and independent of public sales',async t=>{
+ const h=await harness(t,{enabled:false,schema:false,paid:true}),admin=await h.admin(),path='/api/courses/admin/reviews/schema'
+ assert.equal((await h.request(path,{body:{}})).status,401)
+ assert.equal((await h.request(path,{body:{},session:{cookie:admin.cookie}})).status,403)
+ const client=await h.request('/api/auth/register',{body:{username:'review_visitor',email:'visitor@example.test',name:'Review visitor',password:'synthetic review test password'}})
+ assert.equal((await h.request(path,{body:{},session:{...client.data,cookie:client.cookie}})).status,403)
+ assert.equal((await h.request(path,{body:{enablePayments:true},session:admin})).status,400)
+ assert.equal((await h.request(path,{body:{},session:admin})).data.ready,true)
+ assert.equal((await h.request(path,{body:{},session:admin})).data.ready,true)
+ const restarted=await createCourseReviews({db:h.db,env:{},readJson:async()=>({})});assert.equal(restarted.ready(),true)
+ const b=await h.buyer();assert.equal((await h.submit(b)).data.state,'pending');assert.equal((await h.request('/api/courses/reviews/meta')).data.count,0)
+ assert.equal((await h.db.prepare('SELECT COUNT(*) AS n FROM ascore_schema_versions WHERE application=? AND version=?').get('ascore-course-reviews',2)).n,1);assert.equal(h.outgoing(),0)
 })

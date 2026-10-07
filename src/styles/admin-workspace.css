@@ -204,7 +204,7 @@
 .admin-traffic-ranges{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px}
 .admin-workspace .admin-traffic-ranges button{min-height:38px;padding:8px 14px;font-size:12px}
 .admin-workspace .admin-traffic-ranges button[aria-pressed=true]{background:#24593f;color:white;border-color:#24593f}
-.admin-traffic-metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px}
+.admin-traffic-metrics{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:16px}
 .admin-traffic-metrics>div{display:grid;gap:8px;padding:16px;background:#f6f9f7;border-radius:8px;min-width:0}
 .admin-traffic-metrics span,.admin-traffic-metrics small{font-size:12px;color:#58675e;line-height:1.5}
 .admin-traffic-metrics strong{font-size:30px;line-height:1.1}
@@ -222,3 +222,5 @@
 @media(max-width:1150px){.commerce-detail-grid{grid-template-columns:minmax(0,1.5fr) minmax(230px,1fr)}.admin-workspace .commerce-customer-preview{grid-template-columns:minmax(0,2fr) auto auto;gap:16px}.analytics-donut-layout{grid-template-columns:130px minmax(0,1fr)}}
 @media(max-width:750px){.commerce-detail-grid{grid-template-columns:minmax(0,1fr)}.commerce-detail-aside{grid-row:1}.analytics-charts{grid-template-columns:minmax(0,1fr)}.analytics-trend{grid-column:auto}.commerce-customer-metrics>div{padding:14px}.commerce-customer-metrics strong{font-size:22px}.admin-workspace .orders-workspace .course-order-controls{grid-template-columns:1fr}.commerce-setup{display:grid}.admin-workspace .commerce-customer-orders button{grid-template-columns:1fr auto}.commerce-detail-heading{flex-wrap:wrap}.analytics-chart-card{padding:16px}}
 @media(max-width:450px){.admin-workspace .commerce-customer-preview{grid-template-columns:minmax(0,1fr) auto}.commerce-customer-preview>div:first-child{grid-column:1/-1}.commerce-customer-preview>small{grid-column:1/-1}.analytics-donut-layout{grid-template-columns:minmax(0,1fr)}.analytics-donut{justify-self:center;max-width:150px}.commerce-customer-metrics{grid-template-columns:1fr}.commerce-detail .admin-card{padding:18px}.commerce-detail .workspace-table{min-width:0}.commerce-detail .workspace-table th,.commerce-detail .workspace-table td{padding:12px 7px;font-size:12px}}
+
+.admin-traffic-metrics>div:first-child{background:#eaf6ed;border:1px solid #c2dfcc}.admin-traffic-metrics>div:first-child>span::before{content:"";display:inline-block;width:7px;height:7px;border-radius:50%;background:#27764c;margin-right:6px}.traffic-locations{margin:24px 0}.traffic-locations h4{margin-bottom:8px}

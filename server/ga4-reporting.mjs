@@ -57,7 +57,10 @@ export function createGA4Reporting({env={},fetcher=fetch,now=Date.now}){
     const value=await report('runRealtimeReport',{metrics:[{name:'activeUsers'}],minuteRanges:[{startMinutesAgo:29,endMinutesAgo:0}],returnPropertyQuota:true})
     validReport(value,['activeUsers'],[],'analyticsData#runRealtimeReport')
     if(value.rows?.length>1)fail(502,'Google returned an unexpected realtime report.')
-    return {activeUsers:value.rows?.length?number(value.rows[0].metricValues?.[0]?.value):0,windowMinutes:30,fetchedAt:now(),scope:'GA4 property'}
+    const current=await report('runRealtimeReport',{metrics:[{name:'activeUsers'}],minuteRanges:[{startMinutesAgo:4,endMinutesAgo:0}],returnPropertyQuota:true})
+    validReport(current,['activeUsers'],[],'analyticsData#runRealtimeReport')
+    if(current.rows?.length>1)fail(502,'Google returned an unexpected realtime report.')
+    return {activeUsers:value.rows?.length?number(value.rows[0].metricValues?.[0]?.value):0,activeUsersNow:current.rows?.length?number(current.rows[0].metricValues?.[0]?.value):0,nowWindowMinutes:5,windowMinutes:30,fetchedAt:now(),scope:'GA4 property'}
    }),
    cached(range,120000,async()=>{
     const base={dateRanges:[ranges[range]],dimensionFilter:{filter:{fieldName:'hostName',stringFilter:{matchType:'EXACT',value:'ascore.ae',caseSensitive:false}}},returnPropertyQuota:true}
@@ -81,8 +84,15 @@ export function createGA4Reporting({env={},fetcher=fetch,now=Date.now}){
      const rows=report=>(report.rows||[]).map(row=>({label:label(row.dimensionValues?.[0]?.value)||'(not set)',sessions:number(row.metricValues?.[0]?.value)}))
      charts={daily:dailyRows,devices:rows(devices),countries:rows(countries),available:true,thresholded:[daily,devices,countries].some(r=>r.metadata?.subjectToThresholding===true),otherRow:[devices,countries].some(r=>r.metadata?.dataLossFromOtherRow===true)}
     }catch{charts.error='Detailed Google charts are temporarily unavailable. Refresh to try again.'}
+    let locations={locations:[],locationsAvailable:false}
+    try{
+     const value=await report('runReport',{...base,dimensions:[{name:'country'},{name:'region'},{name:'city'}],metrics:[{name:'sessions'},{name:'activeUsers'}],orderBys:[{metric:{metricName:'sessions'},desc:true}],limit:25})
+     validReport(value,['sessions','activeUsers'],['country','region','city'])
+     if(value.rows?.length>25)fail(502,'Google returned an unexpected location report.')
+     locations={locations:(value.rows||[]).map(r=>({country:label(r.dimensionValues?.[0]?.value),region:label(r.dimensionValues?.[1]?.value),city:label(r.dimensionValues?.[2]?.value),sessions:number(r.metricValues?.[0]?.value),activeUsers:number(r.metricValues?.[1]?.value)})),locationsAvailable:true,locationsThresholded:value.metadata?.subjectToThresholding===true,locationsOtherRow:value.metadata?.dataLossFromOtherRow===true}
+    }catch{locations.locationError='Google location reports are temporarily unavailable. Refresh to try again.'}
     const values=totals.rows?.[0]?.metricValues
-    return {...charts,activeUsers:values?number(values[0]?.value):0,sessions:values?number(values[1]?.value):0,pageViews:values?number(values[2]?.value):0,sources:(sources.rows||[]).map(row=>({source:label(row.dimensionValues?.[0]?.value),medium:label(row.dimensionValues?.[1]?.value),sessions:number(row.metricValues?.[0]?.value)})),sourceRowCount:Number.isSafeInteger(sources.rowCount)?sources.rowCount:0,timeZone:label(totals.metadata?.timeZone)||'GA4 property timezone',thresholded:totals.metadata?.subjectToThresholding===true||sources.metadata?.subjectToThresholding===true,otherRow: sources.metadata?.dataLossFromOtherRow===true,fetchedAt:now(),hostname:'ascore.ae',dateRange:ranges[range]}
+    return {...charts,...locations,activeUsers:values?number(values[0]?.value):0,sessions:values?number(values[1]?.value):0,pageViews:values?number(values[2]?.value):0,sources:(sources.rows||[]).map(row=>({source:label(row.dimensionValues?.[0]?.value),medium:label(row.dimensionValues?.[1]?.value),sessions:number(row.metricValues?.[0]?.value)})),sourceRowCount:Number.isSafeInteger(sources.rowCount)?sources.rowCount:0,timeZone:label(totals.metadata?.timeZone)||'GA4 property timezone',thresholded:charts.thresholded===true||totals.metadata?.subjectToThresholding===true||sources.metadata?.subjectToThresholding===true,otherRow:charts.otherRow===true||sources.metadata?.dataLossFromOtherRow===true,fetchedAt:now(),hostname:'ascore.ae',dateRange:ranges[range]}
    })
   ])
   return {...status(),connected:true,range,realtime,history}
