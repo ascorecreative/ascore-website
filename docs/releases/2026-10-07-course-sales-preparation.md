@@ -122,3 +122,10 @@ reason only. Bodies, signatures, credentials and buyer data are never retained
 in this diagnostic. It resets on deployment; stored signed events stay durable.
 115 backend tests pass, plus production build and lint with existing warnings.
 Public activation still awaits the real signed AED 2 completion notification.
+
+The cart availability paragraph now follows server readiness on every course
+route, preventing stale disabled copy after launch. Friday joining copy reflects
+the owner's confirmed email arrangement; automated weekly delivery still needs
+the reusable Meet link and separate setup. Safe isolated browser checks verify
+the enabled cart and review screen at AED 49.99, at 390px and 1440px widths,
+without creating a provider checkout, sending email or exposing a paid PDF.
