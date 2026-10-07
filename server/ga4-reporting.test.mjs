@@ -54,3 +54,23 @@ test('real HTTP reports require agency session and accept only a whitelisted dat
  const owner=await request('/api/auth/admin-setup',{username:'aswinfrn',name:'Fixture owner',password:'Synthetic isolated password',setupToken:activation});assert.equal((await request('/api/analytics/ga4?range=invalid',null,owner.cookie)).status,400);assert.equal((await request('/api/analytics/ga4?range=today&key=injected',null,owner.cookie)).status,400);assert.equal(h.calls.length,0)
  const r=await request('/api/analytics/ga4?range=today',null,owner.cookie);assert.equal(r.status,200);assert.equal(r.data.connected,true);assert.equal(r.data.realtime.activeUsers,1)
 })
+test('Google headerless empty aggregates are accepted only with the expected method and no data',async()=>{
+ const token=()=>Response.json({access_token:'synthetic-secret-token',expires_in:3600})
+ const fetcher=totals=>async(url,options)=>{
+  if(url.includes('/token'))return token()
+  const q=JSON.parse(options.body)
+  if(url.endsWith(':runRealtimeReport'))return Response.json(report(['activeUsers'],[1]))
+  if(q.dimensions)return Response.json({metricHeaders:[{name:'sessions',type:'TYPE_INTEGER'}],dimensionHeaders:[{name:'sessionSource'},{name:'sessionMedium'}],kind:'analyticsData#runReport',metadata:{timeZone:'Asia/Dubai'}})
+  return Response.json(totals)
+ }
+ const empty={kind:'analyticsData#runReport',metadata:{currencyCode:'USD',timeZone:'Asia/Dubai'},propertyQuota:{}}
+ for(const totals of [empty,{...empty,metricHeaders:[],dimensionHeaders:[],rows:[],rowCount:0}]){
+  const r=await fixture({fetcher:fetcher(totals)}).service.read()
+  assert.equal(r.connected,true);assert.equal(r.realtime.activeUsers,1);assert.equal(r.history.activeUsers,0);assert.equal(r.history.sessions,0);assert.equal(r.history.pageViews,0);assert.equal(r.history.timeZone,'Asia/Dubai');assert.deepEqual(r.history.sources,[])
+ }
+ for(const bad of [{},{...empty,kind:'analyticsData#runRealtimeReport'},{...empty,rowCount:1},{...empty,rows:[{metricValues:[{value:'1'}]}]},{...empty,rows:{}},{...empty,metricHeaders:[{name:'wrong'}]}])await assert.rejects(fixture({fetcher:fetcher(bad)}).service.read(),{status:502})
+ const allEmpty=fixture({fetcher:async(url)=>url.includes('/token')?token():Response.json({kind:url.endsWith(':runRealtimeReport')?'analyticsData#runRealtimeReport':'analyticsData#runReport'})})
+ assert.equal((await allEmpty.service.read()).realtime.activeUsers,0)
+ const wrongRealtime=fixture({fetcher:async(url)=>url.includes('/token')?token():Response.json(empty)})
+ await assert.rejects(wrongRealtime.service.read(),{status:502})
+})

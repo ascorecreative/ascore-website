@@ -7,7 +7,11 @@ const fail=(status,message)=>{throw Object.assign(Error(message),{status})}
 const encoded=value=>Buffer.from(JSON.stringify(value)).toString('base64url')
 const number=value=>{if(typeof value!=='string'||!/^\d+$/.test(value)||!Number.isSafeInteger(Number(value)))fail(502,'Google returned an invalid report metric.');return Number(value)}
 const label=value=>typeof value==='string'?value.replace(/[\u0000-\u001f\u007f]/g,'').slice(0,160):''
-function validReport(value,metrics,dimensions=[]){
+function validReport(value,metrics,dimensions=[],kind='analyticsData#runReport'){
+ // Google omits default-valued fields, including headers, for some empty reports.
+ // Require the provider's method marker and no data before accepting that shape.
+ const empty=field=>field===undefined||Array.isArray(field)&&field.length===0
+ if(value?.kind===kind&&empty(value.metricHeaders)&&empty(value.dimensionHeaders)&&empty(value.rows)&&(value.rowCount===undefined||value.rowCount===0))return
  if(!value||!Array.isArray(value.metricHeaders)||value.metricHeaders.map(header=>header.name).join(',')!==metrics.join(',')||dimensions.length&&(!Array.isArray(value.dimensionHeaders)||value.dimensionHeaders.map(header=>header.name).join(',')!==dimensions.join(','))||value.rows!==undefined&&!Array.isArray(value.rows))fail(502,'Google returned an invalid report shape.')
 }
 
@@ -51,7 +55,7 @@ export function createGA4Reporting({env={},fetcher=fetch,now=Date.now}){
   const [realtime,history]=await Promise.all([
    cached('realtime',30000,async()=>{
     const value=await report('runRealtimeReport',{metrics:[{name:'activeUsers'}],minuteRanges:[{startMinutesAgo:29,endMinutesAgo:0}],returnPropertyQuota:true})
-    validReport(value,['activeUsers'])
+    validReport(value,['activeUsers'],[],'analyticsData#runRealtimeReport')
     if(value.rows?.length>1)fail(502,'Google returned an unexpected realtime report.')
     return {activeUsers:value.rows?.length?number(value.rows[0].metricValues?.[0]?.value):0,windowMinutes:30,fetchedAt:now(),scope:'GA4 property'}
    }),
