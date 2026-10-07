@@ -20,7 +20,7 @@ for(const [page,path] of [['home',''],['meta','meta-ads/'],['ai','practical-ai/'
  html=html.replace(/styles\.css\?v=[^" ]+/g,`styles.css?v=${version(css)}`).replace(/app\.js\?v=[^" ]+/g,`app.js?v=${version(script)}`)
  if(page==='meta'||page==='ai'){
   const p=vm.runInContext(`PRODUCTS.${page}`,context)
-  const product={'@context':'https://schema.org','@type':'Product',name:p.name,description:p.description,image:'https://ascore.ae'+p.image,brand:{'@type':'Brand',name:'Ascore Creative'},offers:{'@type':'Offer',url:'https://ascore.ae'+p.path,price:p.price.toFixed(2),priceCurrency:'AED',availability:'https://schema.org/OutOfStock'}}
+  const product={'@context':'https://schema.org','@type':'Product',name:p.name,description:p.description,image:'https://ascore.ae'+p.image,brand:{'@type':'Brand',name:'Ascore Creative'},offers:{'@type':'Offer',url:'https://ascore.ae'+p.path,price:p.price.toFixed(2),priceCurrency:'AED',availability:'https://schema.org/InStock'}}
   html=html.replace('</head>',`<script type="application/ld+json">${JSON.stringify(product).replace(/</g,'\\u003c')}</script></head>`)
  }
  html=html.replace('</head>','<link rel="preload" as="font" type="font/woff2" crossorigin href="/courses/assets/fonts/inter-latin.woff2"></head>')
