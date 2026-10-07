@@ -3,8 +3,8 @@ import { createReadStream } from 'node:fs'
 import { stat } from 'node:fs/promises'
 import { resolve,sep,extname } from 'node:path'
 
-const types={'.html':'text/html; charset=utf-8','.js':'text/javascript; charset=utf-8','.css':'text/css; charset=utf-8','.json':'application/json','.svg':'image/svg+xml','.png':'image/png','.webp':'image/webp','.jpg':'image/jpeg','.mp4':'video/mp4','.glb':'model/gltf-binary','.woff2':'font/woff2','.txt':'text/plain; charset=utf-8','.xml':'application/xml'}
-const compressible=new Set(['.html','.js','.css','.json','.svg','.glb','.txt','.xml'])
+const types={'.html':'text/html; charset=utf-8','.js':'text/javascript; charset=utf-8','.mjs':'text/javascript; charset=utf-8','.css':'text/css; charset=utf-8','.json':'application/json','.svg':'image/svg+xml','.png':'image/png','.webp':'image/webp','.jpg':'image/jpeg','.mp4':'video/mp4','.glb':'model/gltf-binary','.woff2':'font/woff2','.txt':'text/plain; charset=utf-8','.xml':'application/xml'}
+const compressible=new Set(['.html','.js','.mjs','.css','.json','.svg','.glb','.txt','.xml'])
 function preferredEncodings(header=''){
  const options=new Map(header.split(',').map(part=>{const [name,...params]=part.trim().toLowerCase().split(';');const q=params.find(p=>p.trim().startsWith('q='));const quality=q?Number(q.trim().slice(2)):1;return [name,Number.isFinite(quality)&&quality>=0&&quality<=1?quality:0]}))
  return ['br','gzip'].map(name=>[name,options.get(name)??options.get('*')??0]).filter(([,q])=>q>0).sort((a,b)=>b[1]-a[1]).map(([name])=>name)

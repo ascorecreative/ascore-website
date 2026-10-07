@@ -1,3 +1,4 @@
+import {courseOrderHistory} from './course-order-history.mjs'
 import {createGA4Reporting} from './ga4-reporting.mjs'
 import {createPrivateCourseTest} from './private-course-test.mjs'
 import {createPdfStore} from './pdf-store.mjs'
@@ -237,6 +238,7 @@ export async function createPortalServer(options = {}) {
       }
       if (request.method === 'GET' && path === '/api/workspace') return responseJson(response, 200, await workspace(user))
       if (user.role !== 'admin') fail(403, 'Agency access is required.')
+      if(request.method==='GET'&&path==='/api/courses/admin/order-history')return responseJson(response,200,await courseOrderHistory(db,user,new URL(request.url,'http://local').searchParams.get('cursor')))
       if(await ga4.handle(request,response,path,user,responseJson))return
       if (await enquiries.adminHandle(request,response,path,responseJson)) return
       if(await courseReviews.adminHandle(request,response,path,user,responseJson))return

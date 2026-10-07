@@ -29,10 +29,11 @@ function minor(value){
  return Number.isSafeInteger(result)?result:null
 }
 function selection(body){
- if(Object.keys(body).some(key=>!['requestId','email','items'].includes(key)))fail(400,'Checkout totals are calculated by the server.')
+ if(Object.keys(body).some(key=>!['requestId','email','items','customerName'].includes(key)))fail(400,'Checkout totals are calculated by the server.')
  if(!uuid(body.requestId)||!Array.isArray(body.items)||!body.items.length||body.items.length>2||body.items.some(id=>typeof id!=='string'||!Object.hasOwn(courseCatalog,id))||new Set(body.items).size!==body.items.length)fail(400,'Choose one or both courses and a valid checkout reference.')
  if(typeof body.email!=='string'||body.email.length>254||/[\u0000-\u001f\u007f]/.test(body.email)||! /^[^\s@<>]+@[^\s@<>]+\.[^\s@<>]+$/.test(body.email.trim()))fail(400,'Enter a valid email address.')
- return {requestId:body.requestId.toLowerCase(),items:[...body.items].sort(),email:body.email.trim().toLowerCase(),totalMinor:body.items.reduce((n,id)=>n+courseCatalog[id].priceMinor,0)}
+ if(body.customerName!==undefined&&(typeof body.customerName!=='string'||body.customerName.trim().length>100||/[\u0000-\u001f\u007f<>]/.test(body.customerName)))fail(400,'Enter a valid customer name.')
+ return {requestId:body.requestId.toLowerCase(),items:[...body.items].sort(),email:body.email.trim().toLowerCase(),customerName:body.customerName?.trim()||'',totalMinor:body.items.reduce((n,id)=>n+courseCatalog[id].priceMinor,0)}
 }
 export function nomodReturnURLs(origin,id){
  return Object.fromEntries(['success','failure','cancelled'].map(state=>[state+'_url',`${origin}/courses/checkout/?payment=${state}&order=${id}`]))
@@ -62,7 +63,7 @@ export async function createNomodCourses({db,env={},origin,readJson,fetcher=fetc
  const ready=()=>Object.values(requirements).every(Boolean)
  const mail=sendEmail||(requirements.senderConfigured?sender(env):null),flights=new Map(),eventFlights=new Map()
  const rowFor=id=>db.prepare('SELECT * FROM course_paid_orders WHERE id=?').get(id)
- const receipt=row=>({id:row.id,currency:'AED',totalMinor:Number(row.total_minor),paymentStatus:row.payment_status,delivery:JSON.parse(row.delivery).status,expiresAt:Number(row.expires_at),...(row.payment_status==='paid'?{items:JSON.parse(row.items),paymentEventId:coursePurchaseEventId(row),reviewToken:courseReviewToken(row)}:{})})
+ const receipt=row=>({id:row.id,currency:'AED',totalMinor:Number(row.total_minor),paymentStatus:row.payment_status,delivery:JSON.parse(row.delivery).status,expiresAt:Number(row.expires_at),...(row.payment_status==='paid'?{email:row.email,customerName:JSON.parse(row.delivery).customerName||'',createdAt:Number(row.created_at),items:JSON.parse(row.items),downloads:JSON.parse(row.items).map(id=>({courseId:id,url:`/api/courses/paid/download/${row.id}/${id}?token=${downloadToken(row,id)}`})),paymentEventId:coursePurchaseEventId(row),reviewToken:courseReviewToken(row)}:{})})
  async function limit(key,max,window){
   const r=await db.prepare(db.lock('SELECT count,expires FROM course_payment_limits WHERE `key`=?')).get(key),time=now()
   if(r&&Number(r.expires)>time){if(Number(r.count)>=max)fail(429,'Too many checkout requests. Try again later.');await db.prepare('UPDATE course_payment_limits SET count=count+1 WHERE `key`=?').run(key)}
@@ -141,7 +142,7 @@ export async function createNomodCourses({db,env={},origin,readJson,fetcher=fetc
   if(user?.role!=='admin')fail(403,'Agency access is required.')
   if(!schemaReady)return {schemaReady:false,summary:null,orders:[]}
   const filter="request_id NOT IN (?,?) AND COALESCE(review_reason,'') NOT IN (?,?)",args=[privateNomodRequestId,replacementNomodRequestId,privateNomodReason,replacementNomodReason]
-  const totals=await db.prepare(`SELECT COUNT(*) AS checkoutAttempts,COALESCE(SUM(CASE WHEN payment_status='paid' THEN 1 ELSE 0 END),0) AS paidOrders,COALESCE(SUM(CASE WHEN payment_status='paid' THEN total_minor ELSE 0 END),0) AS paidRevenueMinor,COALESCE(SUM(CASE WHEN payment_status='review' THEN 1 ELSE 0 END),0) AS needsReview FROM course_paid_orders WHERE ${filter}`).get(...args)
+  const totals=await db.prepare(`SELECT COUNT(*) AS checkoutAttempts,COALESCE(SUM(CASE WHEN payment_status='paid' THEN 1 ELSE 0 END),0) AS paidOrders,COALESCE(SUM(CASE WHEN payment_status='paid' THEN total_minor ELSE 0 END),0) AS paidRevenueMinor,COALESCE(SUM(CASE WHEN payment_status IN ('review','uncertain') THEN 1 ELSE 0 END),0) AS needsReview FROM course_paid_orders WHERE ${filter}`).get(...args)
   const rows=await db.prepare(`SELECT id,email,items,total_minor,currency,payment_status,created_at,expires_at,delivery,review_reason FROM course_paid_orders WHERE ${filter} ORDER BY created_at DESC,id DESC LIMIT 50`).all(...args)
   return {schemaReady:true,summary:Object.fromEntries(Object.entries(totals).map(([key,value])=>[key,Number(value)])),orders:rows.map(row=>({id:row.id,email:row.email,items:JSON.parse(row.items),totalMinor:Number(row.total_minor),currency:row.currency,paymentStatus:row.payment_status,createdAt:Number(row.created_at),expiresAt:Number(row.expires_at),delivery:JSON.parse(row.delivery).status,reason:row.review_reason||null}))}
  }
@@ -169,13 +170,13 @@ export async function createNomodCourses({db,env={},origin,readJson,fetcher=fetc
    }
    if(path==='/api/courses/paid/orders'&&req.method==='POST'){
     if(!ready())fail(503,'Purchasing and PDF delivery are unavailable.')
-    const q=selection(await readJson(req)),fingerprint=hash(JSON.stringify({items:q.items,email:q.email,totalMinor:q.totalMinor}));let row,created=false
+    const q=selection(await readJson(req)),fingerprint=hash(JSON.stringify({items:q.items,email:q.email,totalMinor:q.totalMinor,...(q.customerName?{customerName:q.customerName}:{})}));let row,created=false
     try{await db.transaction(async()=>{
      await limit('ip:'+hash(req.socket.remoteAddress||'local'),30,3600000)
      row=await db.prepare(db.lock('SELECT * FROM course_paid_orders WHERE request_id=?')).get(q.requestId)
      if(row){if(row.payload_hash!==fingerprint)fail(409,'This checkout reference belongs to a different selection.');return}
      await limit('email:'+hash(q.email),5,3600000);await limit('global',100,86400000)
-     const id=randomUUID(),time=now(),delivery=JSON.stringify({status:'pending',...(apiLinksMode?{providerMode:'api-links'}:{})})
+     const id=randomUUID(),time=now(),delivery=JSON.stringify({status:'pending',...(q.customerName?{customerName:q.customerName}:{}),...(apiLinksMode?{providerMode:'api-links'}:{})})
      await db.prepare('INSERT INTO course_paid_orders (id,request_id,payload_hash,email,items,total_minor,currency,secret,provider_id,provider_url,payment_status,created_at,expires_at,provider_checked_at,delivery,review_reason) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)').run(id,q.requestId,fingerprint,q.email,JSON.stringify(q.items),q.totalMinor,'AED',randomBytes(32).toString('hex'),null,null,'creating',time,time+86400000,0,delivery,null)
      row=await rowFor(id);created=true
     })}catch(error){if(!uniqueConflict(error)&&!['ER_LOCK_DEADLOCK','ER_LOCK_WAIT_TIMEOUT'].includes(error.code))throw error;row=await db.prepare('SELECT * FROM course_paid_orders WHERE request_id=?').get(q.requestId);if(!row||row.payload_hash!==fingerprint)fail(409,'Checkout is busy or changed. Retry the same selection.')}

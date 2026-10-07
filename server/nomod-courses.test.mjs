@@ -117,7 +117,7 @@ test('Purchase identity is absent before captured payment and stable without exp
  const first=await get(),second=await get()
  assert.equal(first.paymentStatus,'paid');assert.equal(first.totalMinor,200);assert.equal(first.currency,'AED');assert.deepEqual(first.items,['meta'])
  assert.match(first.paymentEventId,/^[a-f0-9]{64}$/);assert.equal(first.paymentEventId,second.paymentEventId);assert.notEqual(first.paymentEventId,a.order.receiptToken)
- assert.equal(first.email,undefined);assert.equal(first.secret,undefined)
+ assert.equal(first.email,'learner@example.com');assert.equal(first.secret,undefined);assert.notEqual(first.downloads[0].url.split('token=')[1],first.paymentEventId)
  const wrong=await h.request(`/api/courses/paid/orders/${a.order.id}`,{headers:{'x-course-receipt':first.paymentEventId}});assert.equal(wrong.status,404)
  const other=await h.buy(['ai'],'other@example.com');h.paid(other.order);await h.payments.confirm(other.order.id)
  const b=await(await h.request(`/api/courses/paid/orders/${other.order.id}`,{headers:{'x-course-receipt':other.order.receiptToken}})).json();assert.notEqual(first.paymentEventId,b.paymentEventId)
@@ -216,4 +216,18 @@ test('production API trial requires both operator approvals and delivers only af
  const download=new URL(mails[0].text.match(/https:\/\/ascore.test\/api\/courses\/paid\/download\/[^\s]+/)[0])
  assert.equal((await fetch(app.base+download.pathname+download.search)).status,200)
  assert.equal((await fetch(app.base+download.pathname+'?token='+order.receiptToken)).status,404)
+})
+
+test('authenticated paid receipt exposes matching protected downloads only after capture, preserving buyer name and once-only mail',async t=>{
+ const h=await harness(t,{apiLinks:true}),requestId=randomUUID()
+ const created=await h.request('/api/courses/paid/orders',{body:{requestId,items:['meta','ai'],email:'buyer@example.test',customerName:'Course Buyer'}}),order=await created.json()
+ assert.equal(created.status,200);assert.equal(order.downloads,undefined)
+ assert.equal((await h.request('/api/courses/paid/orders/'+order.id)).status,404)
+ const pending=await(await h.request('/api/courses/paid/orders/'+order.id,{headers:{'x-course-receipt':order.receiptToken}})).json();assert.equal(pending.downloads,undefined)
+ h.paid(order);await h.db.prepare('UPDATE course_paid_orders SET provider_checked_at=0 WHERE id=?').run(order.id)
+ const receipt=await(await h.request('/api/courses/paid/orders/'+order.id,{headers:{'x-course-receipt':order.receiptToken}})).json()
+ assert.equal(receipt.customerName,'Course Buyer');assert.equal(receipt.email,'buyer@example.test');assert.equal(receipt.downloads.length,2);assert.equal(receipt.paymentStatus,'paid')
+ for(const item of receipt.downloads){assert.ok(item.url.includes('/'+order.id+'/'+item.courseId+'?token='));assert.equal((await h.request(item.url,{method:'HEAD'})).status,200)}
+ assert.equal((await h.db.prepare('SELECT SUM(uses) AS uses FROM course_paid_downloads WHERE order_id=?').get(order.id)).uses,0)
+ await h.request('/api/courses/paid/orders/'+order.id,{headers:{'x-course-receipt':order.receiptToken}});assert.equal(h.mails.length,1)
 })

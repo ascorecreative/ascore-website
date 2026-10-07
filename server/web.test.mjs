@@ -24,6 +24,8 @@ test('Hostinger entry serves public/private pages, API, errors and bounded video
  assert.equal((await fetch(base+'/clip.mp4',{headers:{Range:'bytes=15-20'}})).status,416)
  assert.match((await fetch(base+'/assets/test.js')).headers.get('cache-control'),/immutable/)
  mkdirSync(join(dist,'courses/assets/previews'),{recursive:true});writeFileSync(join(dist,'courses/assets/previews/meta-p10.webp'),'preview-fixture')
+ writeFileSync(join(dist,'courses/order-confirmation.mjs'),'export const ready=true')
+ const module=await fetch(base+'/courses/order-confirmation.mjs');assert.equal(module.status,200);assert.equal(module.headers.get('content-type'),'text/javascript; charset=utf-8');assert.equal(module.headers.get('cache-control'),'no-cache');assert.equal(await module.text(),'export const ready=true')
  const preview=await fetch(base+'/courses/assets/previews/meta-p10.webp?v=abcdef123456');assert.match(preview.headers.get('cache-control'),/immutable/);assert.equal(preview.headers.get('content-type'),'image/webp')
  const cachedPreview=await fetch(base+'/courses/assets/previews/meta-p10.webp?v=abcdef123456',{headers:{'If-None-Match':preview.headers.get('etag')}});assert.equal(cachedPreview.status,304)
  assert.doesNotMatch((await fetch(base+'/courses/assets/previews/meta-p10.webp')).headers.get('cache-control'),/immutable/)
