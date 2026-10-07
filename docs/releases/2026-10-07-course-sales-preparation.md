@@ -50,8 +50,11 @@ sales, zero-payment checkout, paid PDF delivery or advertising spend.
   owner, so a response mismatch can be diagnosed without another creation.
 - Exactly one approved replacement was attempted. Nomod phone shows a new
   active AED 49.99 link at 6:30 AM UAE with zero charges. Creation and subsequent
-  GET verification remain uncertain; no further checkout is authorized. The
-  owner provided its payment link. Payment is pending verification and handoff.
+  GET verification initially rejected the live unpaid `enabled` state, although
+  ID, merchant reference, AED 49.99 and payment URL all matched. Recovery now
+  recognizes `enabled` as unpaid, retaining permanent private quarantine. No
+  further checkout is authorized. The owner attempted manual payment but reported
+  insufficient balance; successful captured payment remains unverified.
 - Nomod's existing Hosted Checkout webhook is active at the exact app receiver
   URL, with payment completion, failure, cancellation and refund subscriptions.
   No events were captured at the time of this check; its signing secret remains
@@ -59,7 +62,12 @@ sales, zero-payment checkout, paid PDF delivery or advertising spend.
 - The exact redirect host pay.nomodapp.com is saved in Hostinger. The temporary
   creation flag is off and signed notifications are on. Public sales remain off.
 
-Validation: 108 backend tests pass; lint has three existing warnings; production
+Paid customer orders now have a separate administrator overview, with confirmed
+revenue and payment/delivery states. Private tests are excluded by both durable
+request IDs and private reasons; no receipt, payment or download capability is
+exposed in this overview. Public gates remain closed.
+
+Validation: 109 backend tests pass; lint has three existing warnings; production
 build, course prerender and compression pass. Isolated Chrome checks cover the
 closed and enabled presentations, mobile/desktop layout, unchanged prices,
 review-only checkout and safe provider-error handling. No provider request,

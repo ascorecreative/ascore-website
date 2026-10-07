@@ -56,7 +56,9 @@ export function createPrivateNomodTest({db,env,origin,readJson,audit,fetcher=fet
     const parts=[];let size=0
     for await(const part of response.body||[]){size+=part.byteLength;if(size>131072){controller.abort();throw Error('Oversized response')}parts.push(Buffer.from(part))}
     result=JSON.parse(Buffer.concat(parts).toString('utf8'))
-    if(!uuid(result.id)||result.reference_id!==row.id||result.currency!=='AED'||!['49.99',49.99].includes(result.amount)||result.status!=='created')throw Error('Unverified checkout response')
+    // The verified live Hosted Checkout returns `enabled` for its unpaid
+    // session, while the reference documents `created`. Neither proves payment.
+    if(!uuid(result.id)||result.reference_id!==row.id||result.currency!=='AED'||!['49.99',49.99].includes(result.amount)||!['created','enabled'].includes(result.status))throw Error('Unverified checkout response')
     const target=new URL(result.url)
     if(target.protocol!=='https:'||target.username||target.password||target.port||!nomodOwnedHost(target.hostname))throw Error('Unverified payment host')
     url=target.href;state='created'
@@ -116,7 +118,7 @@ export function createPrivateNomodTest({db,env,origin,readJson,audit,fetcher=fet
     // A Link ID is not assumed to be a Checkout ID: the Checkout endpoint must
     // independently authenticate the ID, reference, amount and payment URL.
     checkout=checkout||await read('https://api.nomod.com/v1/checkout/'+link.id.toLowerCase())
-    const verification={idMatches:typeof checkout.id==='string'&&checkout.id.toLowerCase()===link.id.toLowerCase(),referenceMatches:checkout.reference_id===row.id,currencyMatches:checkout.currency==='AED',currencyValue:typeof checkout.currency==='string'&&/^[A-Za-z]{3}$/.test(checkout.currency)?checkout.currency:null,amountMatches:['49.99',49.99].includes(checkout.amount),statusKnown:['created','cancelled','expired','paid'].includes(checkout.status),urlMatches:checkout.url===link.url,statusType:typeof checkout.status,statusValue:typeof checkout.status==='string'&&/^[A-Za-z_ -]{1,32}$/.test(checkout.status)?checkout.status:null,amountValue:['number','string'].includes(typeof checkout.amount)&&/^\d+(?:\.\d{1,12})?$/.test(String(checkout.amount))?String(checkout.amount):null,responseFields:Object.keys(checkout).filter(key=>/^[A-Za-z_]{1,40}$/.test(key)).slice(0,30)}
+    const verification={idMatches:typeof checkout.id==='string'&&checkout.id.toLowerCase()===link.id.toLowerCase(),referenceMatches:checkout.reference_id===row.id,currencyMatches:checkout.currency==='AED',currencyValue:typeof checkout.currency==='string'&&/^[A-Za-z]{3}$/.test(checkout.currency)?checkout.currency:null,amountMatches:['49.99',49.99].includes(checkout.amount),statusKnown:['created','enabled','cancelled','expired','paid'].includes(checkout.status),urlMatches:checkout.url===link.url,statusType:typeof checkout.status,statusValue:typeof checkout.status==='string'&&/^[A-Za-z_ -]{1,32}$/.test(checkout.status)?checkout.status:null,amountValue:['number','string'].includes(typeof checkout.amount)&&/^\d+(?:\.\d{1,12})?$/.test(String(checkout.amount))?String(checkout.amount):null,responseFields:Object.keys(checkout).filter(key=>/^[A-Za-z_]{1,40}$/.test(key)).slice(0,30)}
     if(!['idMatches','referenceMatches','currencyMatches','amountMatches','statusKnown','urlMatches'].every(key=>verification[key])){
      await db.transaction(async()=>{const current=await prior();await db.prepare('UPDATE course_paid_orders SET delivery=? WHERE id=?').run(JSON.stringify({...JSON.parse(current.delivery),verification}),row.id)})
      fail(409,'Nomod did not verify the matching Hosted Checkout session. Refresh orders to see its non-secret response checks.')

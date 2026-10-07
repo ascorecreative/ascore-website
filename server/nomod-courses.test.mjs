@@ -7,6 +7,7 @@ import {createSqliteStore} from './sqlite-store.mjs'
 import {initializePaymentSchema} from './payment-schema.mjs'
 import {createNomodCourses,nomodWebhookPath} from './nomod-courses.mjs'
 import {createPortalServer} from './app.mjs'
+import {privateNomodRequestId,replacementNomodReason} from './nomod-private-test.mjs'
 
 const origin='https://ascore.test',secret='whsec_'+randomBytes(32).toString('base64')
 const configured={ASCORE_ENABLE_PAID_COURSES:'1',ASCORE_ENABLE_PAID_COURSE_DELIVERY:'1',ASCORE_ENABLE_NOMOD_WEBHOOKS:'1',ASCORE_PAID_COURSE_TERMS_APPROVED:'1',ASCORE_NOMOD_LIVE_REQUESTS_APPROVED:'1',NOMOD_HOSTED_CHECKOUT_API_KEY:'mock-key-not-a-real-credential',NOMOD_WEBHOOK_SIGNING_SECRET:secret,NOMOD_CHECKOUT_HOSTS:'checkout.nomod.example'}
@@ -33,6 +34,21 @@ test('Nomod defaults closed even with keys: no schema writes, provider requests 
  const h=await harness(t,{contractVerified:false});assert.equal(h.payments.ready(),false)
  assert.equal((await h.buy()).response.status,503);assert.equal(h.calls.length,0);assert.equal(h.mails.length,0)
  for(const field of ['ASCORE_ENABLE_PAID_COURSES','ASCORE_ENABLE_PAID_COURSE_DELIVERY','ASCORE_NOMOD_LIVE_REQUESTS_APPROVED','ASCORE_PAID_COURSE_TERMS_APPROVED']){const p=await createNomodCourses({...h.services,env:{...h.services.env,[field]:'0'}});assert.equal(p.ready(),false);await p.close()}
+})
+test('paid sales overview counts confirmed revenue, excludes private tests and exposes no payment or download capabilities',async t=>{
+ const h=await harness(t),paid=await h.buy(),pending=await h.buy(['ai']),original=await h.buy(),replacement=await h.buy()
+ h.paid(paid.order);await h.payments.confirm(paid.order.id);await h.payments.deliver(paid.order.id)
+ await h.db.prepare('UPDATE course_paid_orders SET request_id=?,payment_status=? WHERE id=?').run(privateNomodRequestId,'paid',original.order.id)
+ await h.db.prepare('UPDATE course_paid_orders SET review_reason=?,payment_status=? WHERE id=?').run(replacementNomodReason,'paid',replacement.order.id)
+ await assert.rejects(h.payments.salesOverview({role:'client'}),{status:403})
+ const overview=await h.payments.salesOverview({role:'admin'})
+ assert.deepEqual(overview.summary,{checkoutAttempts:2,paidOrders:1,paidRevenueMinor:4999,needsReview:0})
+ assert.deepEqual(new Set(overview.orders.map(row=>row.id)),new Set([paid.order.id,pending.order.id]))
+ assert.equal(overview.orders.find(row=>row.id===paid.order.id).delivery,'accepted')
+ assert.equal(overview.orders.find(row=>row.id===pending.order.id).paymentStatus,'pending')
+ const serialized=JSON.stringify(overview),stored=await h.db.prepare('SELECT secret,provider_url FROM course_paid_orders WHERE id=?').get(paid.order.id)
+ assert.ok(!serialized.includes(stored.secret));assert.ok(!serialized.includes(stored.provider_url));assert.ok(!serialized.includes(paid.order.receiptToken))
+ assert.equal(h.calls.filter(call=>call.method==='POST').length,4);assert.equal(h.mails.length,1)
 })
 test('Nomod checkout is server-priced, retry-idempotent and stores its mapping before redirect',async t=>{
  const h=await harness(t),a=await h.buy(['meta','ai']);assert.equal(a.response.status,200);assert.equal(a.order.totalMinor,9998);assert.equal(h.calls.length,1)

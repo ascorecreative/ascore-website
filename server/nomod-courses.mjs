@@ -1,6 +1,6 @@
 import {createPaymentSetup} from './payment-setup.mjs'
 import {createNomodDiagnostic} from './nomod-diagnostic.mjs'
-import {createPrivateNomodTest,isPrivateNomodTest,privateNomodRequestId,replacementNomodRequestId} from './nomod-private-test.mjs'
+import {createPrivateNomodTest,isPrivateNomodTest,privateNomodRequestId,replacementNomodRequestId,privateNomodReason,replacementNomodReason} from './nomod-private-test.mjs'
 import {courseReviewToken} from './course-reviews.mjs'
 import {createHash,randomBytes,randomUUID,timingSafeEqual} from 'node:crypto'
 import {Webhook} from 'svix'
@@ -127,7 +127,15 @@ export async function createNomodCourses({db,env={},origin,readJson,fetcher=fetc
   const rows=await db.prepare("SELECT id FROM course_paid_orders WHERE payment_status='paid' AND expires_at>? ORDER BY created_at LIMIT 100").all(now());for(const row of rows)await deliver(row.id)
  }
  const interval=ready()?setInterval(()=>{tick().catch(()=>{})},workerInterval):null;interval?.unref()
- return {requirements,ready,confirm,deliver,tick,setupState:paymentSetup.state,diagnosticState:diagnostic.state,privateTestState:privateTest.status,replacementTestState:replacementTest.status,async adminHandle(req,res,path,user,json){return await privateTest.handle(req,res,path,user,json)||await replacementTest.handle(req,res,path,user,json)||await diagnostic.handle(req,res,path,user,json)||await paymentSetup.handle(req,res,path,user,json)},
+ async function salesOverview(user){
+  if(user?.role!=='admin')fail(403,'Agency access is required.')
+  if(!schemaReady)return {schemaReady:false,summary:null,orders:[]}
+  const filter="request_id NOT IN (?,?) AND COALESCE(review_reason,'') NOT IN (?,?)",args=[privateNomodRequestId,replacementNomodRequestId,privateNomodReason,replacementNomodReason]
+  const totals=await db.prepare(`SELECT COUNT(*) AS checkoutAttempts,COALESCE(SUM(CASE WHEN payment_status='paid' THEN 1 ELSE 0 END),0) AS paidOrders,COALESCE(SUM(CASE WHEN payment_status='paid' THEN total_minor ELSE 0 END),0) AS paidRevenueMinor,COALESCE(SUM(CASE WHEN payment_status='review' THEN 1 ELSE 0 END),0) AS needsReview FROM course_paid_orders WHERE ${filter}`).get(...args)
+  const rows=await db.prepare(`SELECT id,email,items,total_minor,currency,payment_status,created_at,expires_at,delivery,review_reason FROM course_paid_orders WHERE ${filter} ORDER BY created_at DESC,id DESC LIMIT 50`).all(...args)
+  return {schemaReady:true,summary:Object.fromEntries(Object.entries(totals).map(([key,value])=>[key,Number(value)])),orders:rows.map(row=>({id:row.id,email:row.email,items:JSON.parse(row.items),totalMinor:Number(row.total_minor),currency:row.currency,paymentStatus:row.payment_status,createdAt:Number(row.created_at),expiresAt:Number(row.expires_at),delivery:JSON.parse(row.delivery).status,reason:row.review_reason||null}))}
+ }
+ return {requirements,ready,confirm,deliver,tick,salesOverview,setupState:paymentSetup.state,diagnosticState:diagnostic.state,privateTestState:privateTest.status,replacementTestState:replacementTest.status,async adminHandle(req,res,path,user,json){return await privateTest.handle(req,res,path,user,json)||await replacementTest.handle(req,res,path,user,json)||await diagnostic.handle(req,res,path,user,json)||await paymentSetup.handle(req,res,path,user,json)},
   async close(){await Promise.all([privateTest.close(),replacementTest.close()]);if(interval)clearInterval(interval);await Promise.allSettled([...flights.values(),...eventFlights.values()])},
   async publicHandle(req,res,path,json){
    if(path===nomodWebhookPath&&req.method==='POST'){

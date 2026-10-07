@@ -126,7 +126,7 @@ test('an uncertain response preserves only a candidate ID, which requires indepe
  const h=await fixture(t);let posts=0,gets=0,reference
  const service=createPrivateNomodTest({...h.options,fetcher:async(target,options)=>{
   if(options.method==='POST'){posts++;reference=JSON.parse(options.body).reference_id}else{gets++;assert.equal(target,'https://api.nomod.com/v1/checkout/'+h.id)}
-  return new Response(JSON.stringify({id:h.id,reference_id:reference,currency:'AED',amount:'49.99',url:'https://pay.nomodapp.com/en/l/0123456789abcdef/',status:options.method==='POST'?'unverified':'created'}))
+  return new Response(JSON.stringify({id:h.id,reference_id:reference,currency:'AED',amount:'49.99',url:'https://pay.nomodapp.com/en/l/0123456789abcdef/',status:options.method==='POST'?'unverified':'enabled'}))
  }})
  assert.equal((await service.create(owner,body)).state,'uncertain')
  const row=await h.db.prepare('SELECT * FROM course_paid_orders').get()
