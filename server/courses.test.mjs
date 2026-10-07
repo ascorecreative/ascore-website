@@ -70,13 +70,14 @@ test('team analytics enforce existing role and CSRF checks, report genuine zero 
  assert.equal((await a.call('/api/courses/admin/orders/'+order.id+'/retry',{}, {Cookie:admin.Cookie})).status,403);assert.equal((await a.call('/api/courses/admin/orders/'+order.id+'/retry',{},admin)).status,409)
 })
 test('private payment configuration is boolean-only and role-protected without enabling checkout or making provider requests',async t=>{
- for(const configured of [false,true]){
+ for(const mode of [null,'hosted-checkout','api-links']){
+  const configured=mode!==null
   const privateKey='fixture-private-nomod-key',privateSecret='whsec_'+Buffer.alloc(32,7).toString('base64');let calls=0
-  const a=await start({env:{ASCORE_ENABLE_FREE_COURSES:'0',ASCORE_ENABLE_PAID_COURSES:'0',ASCORE_ENABLE_PAID_COURSE_DELIVERY:'0',ASCORE_ENABLE_NOMOD_WEBHOOKS:'0',...(configured?{NOMOD_HOSTED_CHECKOUT_API_KEY:privateKey,NOMOD_WEBHOOK_SIGNING_SECRET:privateSecret,NOMOD_CHECKOUT_HOSTS:'checkout.nomod.example'}:{})},nomodFetch:async()=>{calls++;throw Error('No provider request is authorized')}});t.after(()=>a.portal.close())
+  const a=await start({env:{ASCORE_ENABLE_FREE_COURSES:'0',ASCORE_ENABLE_PAID_COURSES:'0',ASCORE_ENABLE_PAID_COURSE_DELIVERY:'0',ASCORE_ENABLE_NOMOD_WEBHOOKS:'0',...(configured?{NOMOD_CHECKOUT_HOSTS:'checkout.nomod.example',...(mode==='api-links'?{NOMOD_PAYMENT_MODE:'api-links',NOMOD_API_KEY:privateKey,NOMOD_API_WEBHOOK_SIGNING_SECRET:privateSecret}:{NOMOD_HOSTED_CHECKOUT_API_KEY:privateKey,NOMOD_WEBHOOK_SIGNING_SECRET:privateSecret})}:{})},nomodFetch:async()=>{calls++;throw Error('No provider request is authorized')}});t.after(()=>a.portal.close())
   assert.equal((await a.call('/api/courses/admin/orders')).status,401)
   const client=await a.auth();assert.equal((await a.call('/api/courses/admin/orders',null,client)).status,403)
   const admin=await a.auth(true),result=await a.call('/api/courses/admin/orders',null,admin);assert.equal(result.status,200)
-  const status=result.data.payments;assert.equal(status.ready,false);assert.equal(status.webhooksEnabled,false)
+  const status=result.data.payments;assert.equal(status.ready,false);assert.equal(status.webhooksEnabled,false);assert.equal(status.paymentMode,mode||'hosted-checkout')
   assert.equal(status.requirements.apiKeyConfigured,configured);assert.equal(status.requirements.webhookSecretConfigured,configured);assert.equal(status.requirements.checkoutHostsConfigured,configured)
   for(const field of ['enabled','deliveryEnabled','liveRequestsApproved','termsApproved','contractVerified','schemaReady'])assert.equal(status.requirements[field],false)
   for(const value of Object.values(status.requirements))assert.equal(typeof value,'boolean')
