@@ -62,7 +62,7 @@ test('paid sales overview counts confirmed revenue, excludes private tests and e
  await h.db.prepare('UPDATE course_paid_orders SET review_reason=?,payment_status=? WHERE id=?').run(replacementNomodReason,'paid',replacement.order.id)
  await assert.rejects(h.payments.salesOverview({role:'client'}),{status:403})
  const overview=await h.payments.salesOverview({role:'admin'})
- assert.deepEqual(overview.summary,{checkoutAttempts:2,paidOrders:1,paidRevenueMinor:4999,needsReview:0})
+ assert.deepEqual(overview.summary,{checkoutAttempts:2,paidOrders:1,paidRevenueMinor:200,needsReview:0})
  assert.deepEqual(new Set(overview.orders.map(row=>row.id)),new Set([paid.order.id,pending.order.id]))
  assert.equal(overview.orders.find(row=>row.id===paid.order.id).delivery,'accepted')
  assert.equal(overview.orders.find(row=>row.id===pending.order.id).paymentStatus,'pending')
@@ -71,8 +71,8 @@ test('paid sales overview counts confirmed revenue, excludes private tests and e
  assert.equal(h.calls.filter(call=>call.method==='POST').length,4);assert.equal(h.mails.length,1)
 })
 test('Nomod checkout is server-priced, retry-idempotent and stores its mapping before redirect',async t=>{
- const h=await harness(t),a=await h.buy(['meta','ai']);assert.equal(a.response.status,200);assert.equal(a.order.totalMinor,9998);assert.equal(h.calls.length,1)
- const call=h.calls[0];assert.equal(call.headers['X-API-KEY'],configured.NOMOD_HOSTED_CHECKOUT_API_KEY);assert.equal(call.body.amount,'99.98');assert.equal(call.body.currency,'AED');assert.equal(call.body.reference_id,a.order.id);assert.notEqual(a.order.id,a.requestId);assert.deepEqual(call.body.items.map(i=>[i.item_id,i.quantity,i.unit_amount]),[['ai',1,'49.99'],['meta',1,'49.99']]);assert.equal(call.body.success_url,`${origin}/courses/checkout/?payment=success&order=${a.order.id}`);assert.equal(call.body.failure_url,`${origin}/courses/checkout/?payment=failure&order=${a.order.id}`);assert.equal(call.body.cancelled_url,`${origin}/courses/checkout/?payment=cancelled&order=${a.order.id}`)
+ const h=await harness(t),a=await h.buy(['meta','ai']);assert.equal(a.response.status,200);assert.equal(a.order.totalMinor,400);assert.equal(h.calls.length,1)
+ const call=h.calls[0];assert.equal(call.headers['X-API-KEY'],configured.NOMOD_HOSTED_CHECKOUT_API_KEY);assert.equal(call.body.amount,'4.00');assert.equal(call.body.currency,'AED');assert.equal(call.body.reference_id,a.order.id);assert.notEqual(a.order.id,a.requestId);assert.deepEqual(call.body.items.map(i=>[i.item_id,i.quantity,i.unit_amount]),[['ai',1,'2.00'],['meta',1,'2.00']]);assert.equal(call.body.success_url,`${origin}/courses/checkout/?payment=success&order=${a.order.id}`);assert.equal(call.body.failure_url,`${origin}/courses/checkout/?payment=failure&order=${a.order.id}`);assert.equal(call.body.cancelled_url,`${origin}/courses/checkout/?payment=cancelled&order=${a.order.id}`)
  const retry=await h.buy(['meta','ai'],'learner@example.com',a.requestId);assert.equal(retry.order.id,a.order.id);assert.equal(h.calls.length,1)
  assert.equal((await h.buy(['meta'],'learner@example.com',a.requestId)).response.status,409)
  const malicious=await h.request('/api/courses/paid/orders',{body:{requestId:randomUUID(),items:['meta'],email:'learner@example.com',amount:'1.00'}});assert.equal(malicious.status,400)
@@ -115,7 +115,7 @@ test('Purchase identity is absent before captured payment and stable without exp
  h.paid(a.order);await h.payments.confirm(a.order.id)
  const get=async()=>{const r=await h.request(`/api/courses/paid/orders/${a.order.id}`,{headers:{'x-course-receipt':a.order.receiptToken}});assert.equal(r.status,200);return r.json()}
  const first=await get(),second=await get()
- assert.equal(first.paymentStatus,'paid');assert.equal(first.totalMinor,4999);assert.equal(first.currency,'AED');assert.deepEqual(first.items,['meta'])
+ assert.equal(first.paymentStatus,'paid');assert.equal(first.totalMinor,200);assert.equal(first.currency,'AED');assert.deepEqual(first.items,['meta'])
  assert.match(first.paymentEventId,/^[a-f0-9]{64}$/);assert.equal(first.paymentEventId,second.paymentEventId);assert.notEqual(first.paymentEventId,a.order.receiptToken)
  assert.equal(first.email,undefined);assert.equal(first.secret,undefined)
  const wrong=await h.request(`/api/courses/paid/orders/${a.order.id}`,{headers:{'x-course-receipt':first.paymentEventId}});assert.equal(wrong.status,404)
@@ -195,4 +195,25 @@ test('a missing body eventId uses the signed message ID, deduplicates retries an
  for(const value of [null,'',{},'invalid!'])assert.equal((await h.webhook({...event,eventId:value})).status,400)
  await h.payments.tick();await h.payments.tick();assert.equal(h.mails.length,1)
  assert.equal((await h.db.prepare('SELECT state FROM course_payment_events WHERE event_id=?').get(expected)).state,'processed')
+})
+
+test('production API trial requires both operator approvals and delivers only after exact capture',async t=>{
+ const h=await harness(t,{apiLinks:true}),mails=[]
+ async function start(extra={}){
+  const db=createSqliteStore();await initializePaymentSchema(db)
+  const app=await createPortalServer({store:db,origin,env:{...h.services.env,ASCORE_ENABLE_FREE_COURSES:'0',...extra},nomodFetch:h.services.fetcher,courseSender:async m=>{mails.push(m);return {reference:'fixture'}},coursePdfReader:async()=>Buffer.from('%PDF-private-fixture'),courseWorkerInterval:3600000})
+  t.after(()=>app.close());await new Promise(r=>app.server.listen(0,'127.0.0.1',r));const base=`http://127.0.0.1:${app.server.address().port}`
+  return {base,db,config:async()=>await(await fetch(base+'/api/courses/config')).json()}
+ }
+ for(const extra of [{},{ASCORE_NOMOD_API_CONTRACT_VERIFIED:'1'},{ASCORE_ENABLE_PUBLIC_COURSE_TRIAL:'1'}])assert.equal((await(await start(extra)).config()).paidCheckoutEnabled,false)
+ const app=await start({ASCORE_NOMOD_API_CONTRACT_VERIFIED:'1',ASCORE_ENABLE_PUBLIC_COURSE_TRIAL:'1'})
+ assert.deepEqual(await app.config(),{freeCheckoutReady:false,paidCheckoutEnabled:true})
+ const response=await fetch(app.base+'/api/courses/paid/orders',{method:'POST',headers:{Origin:origin,'Content-Type':'application/json'},body:JSON.stringify({requestId:randomUUID(),items:['meta'],email:'learner@example.com'})}),order=await response.json()
+ assert.equal(response.status,200);assert.equal(order.totalMinor,200);assert.equal(order.paymentStatus,'pending');assert.equal(mails.length,0)
+ h.paid(order)
+ const receipt=await(await fetch(app.base+'/api/courses/paid/orders/'+order.id,{headers:{'x-course-receipt':order.receiptToken}})).json()
+ assert.equal(receipt.paymentStatus,'paid');assert.equal(mails.length,1);assert.match(receipt.paymentEventId,/^[a-f0-9]{64}$/)
+ const download=new URL(mails[0].text.match(/https:\/\/ascore.test\/api\/courses\/paid\/download\/[^\s]+/)[0])
+ assert.equal((await fetch(app.base+download.pathname+download.search)).status,200)
+ assert.equal((await fetch(app.base+download.pathname+'?token='+order.receiptToken)).status,404)
 })

@@ -7,7 +7,7 @@ import {courseReviewToken} from './course-reviews.mjs'
 import {createHash,randomBytes,randomUUID,timingSafeEqual} from 'node:crypto'
 import {Webhook} from 'svix'
 import {courseCatalog,privateCoursePdf,smtpConfigured,sender} from './courses.mjs'
-import {verifyPaymentSchema} from './payment-schema.mjs'
+import {verifyPaymentSchema,enablePublicTrialAmounts} from './payment-schema.mjs'
 import {uniqueConflict} from './persistence.mjs'
 
 export const nomodWebhookPath='/api/courses/payments/nomod/webhook'
@@ -46,7 +46,7 @@ export function paidCourseEmail(row,origin){
 export async function createNomodCourses({db,env={},origin,readJson,fetcher=fetch,sendEmail,pdfReader=privateCoursePdf,contractVerified=false,audit=async()=>{},webhookReporter=()=>{},now=Date.now,workerInterval=60000}){
  const apiLinksMode=env.NOMOD_PAYMENT_MODE==='api-links',links=createNomodLinks({env,origin,fetcher})
  const enabled=env.ASCORE_ENABLE_PAID_COURSES==='1',hosts=(env.NOMOD_CHECKOUT_HOSTS||'').split(',').map(s=>s.trim()).filter(Boolean)
- let schemaReady=false;try{await verifyPaymentSchema(db);schemaReady=true}catch{}
+ let schemaReady=false;try{await verifyPaymentSchema(db);if(env.ASCORE_ENABLE_PUBLIC_COURSE_TRIAL==='1')await enablePublicTrialAmounts(db);schemaReady=true}catch{}
  const requirements={enabled,schemaReady,contractVerified:contractVerified===true,apiKeyConfigured:apiLinksMode?typeof env.NOMOD_API_KEY==='string'&&!!env.NOMOD_API_KEY:typeof env.NOMOD_HOSTED_CHECKOUT_API_KEY==='string'&&!!env.NOMOD_HOSTED_CHECKOUT_API_KEY,webhookSecretConfigured:apiLinksMode?typeof env.NOMOD_API_WEBHOOK_SIGNING_SECRET==='string'&&/^whsec_[A-Za-z0-9+/=]+$/.test(env.NOMOD_API_WEBHOOK_SIGNING_SECRET):typeof env.NOMOD_WEBHOOK_SIGNING_SECRET==='string'&&/^whsec_[A-Za-z0-9+/=]+$/.test(env.NOMOD_WEBHOOK_SIGNING_SECRET),checkoutHostsConfigured:hosts.length>0&&hosts.every(h=>/^[a-z0-9]+(?:[.-][a-z0-9]+)*\.[a-z]{2,}$/.test(h)),liveRequestsApproved:env.ASCORE_NOMOD_LIVE_REQUESTS_APPROVED==='1',deliveryEnabled:env.ASCORE_ENABLE_PAID_COURSE_DELIVERY==='1',termsApproved:env.ASCORE_PAID_COURSE_TERMS_APPROVED==='1',senderConfigured:!!sendEmail||smtpConfigured(env),privatePdfsReady:false,originReady:(()=>{try{const u=new URL(origin);return u.protocol==='https:'&&!u.username&&!u.password&&!u.search&&!u.hash&&u.pathname==='/'&&u.origin===origin}catch{return false}})()}
  if(enabled){try{await Promise.all(Object.keys(courseCatalog).map(id=>pdfReader(env,id)));requirements.privatePdfsReady=true}catch{}}
  const paymentSetup=createPaymentSetup({db,env,readJson,audit,isSchemaReady:()=>schemaReady,onReady:value=>{schemaReady=value;requirements.schemaReady=value}})
@@ -208,7 +208,7 @@ export async function createNomodCourses({db,env={},origin,readJson,fetcher=fetc
    const download=/^\/api\/courses\/paid\/download\/([0-9a-f-]+)\/(meta|ai)$/i.exec(path)
    if(download&&['GET','HEAD'].includes(req.method)){
     if(!ready())fail(503,'Course delivery is unavailable.');const [,id,item]=download,row=await rowFor(id),provided=new URL(req.url,'http://local.invalid').searchParams.get('token')
-    if(!row||isPrivateNomodTest(row)||row.payment_status!=='paid'||row.currency!=='AED'||![4999,9998,5000,10000].includes(Number(row.total_minor))||!JSON.parse(row.items).includes(item)||!constantEqual(provided,downloadToken(row,item)))fail(404,'Download not found.')
+    if(!row||isPrivateNomodTest(row)||row.payment_status!=='paid'||row.currency!=='AED'||![200,400,4999,9998,5000,10000].includes(Number(row.total_minor))||!JSON.parse(row.items).includes(item)||!constantEqual(provided,downloadToken(row,item)))fail(404,'Download not found.')
     if(Number(row.expires_at)<=now())fail(410,'This download has expired. Contact info@ascore.ae.')
     let bytes;try{bytes=await pdfReader(env,item)}catch{fail(503,'Your course file is temporarily unavailable.')}
     await db.transaction(async()=>{await limit('download:'+hash(req.socket.remoteAddress||'local'),100,3600000);const current=await db.prepare(db.lock('SELECT * FROM course_paid_orders WHERE id=?')).get(id);if(isPrivateNomodTest(current)||current.payment_status!=='paid')fail(404,'Download not found.');if(req.method==='GET'){const d=await db.prepare(db.lock('SELECT uses FROM course_paid_downloads WHERE order_id=? AND course_id=?')).get(id,item);if(!d||Number(d.uses)>=10)fail(410,'This download limit has been reached.');await db.prepare('UPDATE course_paid_downloads SET uses=uses+1 WHERE order_id=? AND course_id=?').run(id,item)}})

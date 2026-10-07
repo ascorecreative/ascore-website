@@ -21,8 +21,8 @@ async function start(options={}){
 }
 test('FREE quote is server-priced, deduplicated and refuses client-controlled totals or paid checkout',async t=>{
  const a=await start();t.after(()=>a.portal.close())
- const one=await a.call('/api/courses/quote',{items:['meta'],coupon:' free '});assert.equal(one.status,200);assert.deepEqual([one.data.subtotalMinor,one.data.discountMinor,one.data.totalMinor],[4999,4999,0])
- const both=await a.call('/api/courses/quote',{items:['ai','meta'],coupon:'FREE'});assert.equal(both.data.subtotalMinor,9998)
+ const one=await a.call('/api/courses/quote',{items:['meta'],coupon:' free '});assert.equal(one.status,200);assert.deepEqual([one.data.subtotalMinor,one.data.discountMinor,one.data.totalMinor],[200,200,0])
+ const both=await a.call('/api/courses/quote',{items:['ai','meta'],coupon:'FREE'});assert.equal(both.data.subtotalMinor,400)
  for(const payload of [{items:['meta','meta'],coupon:'FREE'},{items:['unknown'],coupon:'FREE'},{items:[],coupon:'FREE'},{items:['meta'],coupon:''},{items:['meta'],coupon:'FREE',total:0}])assert.equal((await a.call('/api/courses/quote',payload)).status,400)
  assert.equal((await a.post({...a.body(),coupon:''})).status,400);assert.equal((await a.post({...a.body(),totalMinor:0})).status,400);assert.equal(a.messages.length,0)
 })
