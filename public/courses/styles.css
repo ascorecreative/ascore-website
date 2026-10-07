@@ -93,3 +93,5 @@ body{--page:#fff;--line:#dce3e0;--radius:12px}
 @media(prefers-reduced-motion:no-preference){.button[data-add]:not(:disabled){animation:course-cart-wiggle 7s ease-in-out 3s infinite}.button[data-add]:hover,.button[data-add]:focus-visible,.button[data-add].is-added{animation:none}}
 
 .published-review .review-rating{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;color:var(--muted);font-size:13px}.published-review .review-stars svg{width:22px;height:22px}
+/* Give the complete five-star summary its own row at every size. */
+.course-stats{grid-template-columns:repeat(2,minmax(0,1fr))}.course-stats .review-score{grid-column:1/-1;border:0;border-bottom:1px solid #d9dce3;margin:0 0 12px;padding:0 5px 14px;gap:8px;min-height:84px;text-decoration:none}.course-stats .review-score .review-stars svg{width:24px;height:24px}.course-stats .review-score>span:last-child{font-size:17px;font-weight:650}.course-stats>div:nth-child(2){border-left:0}
