@@ -67,7 +67,7 @@ revenue and payment/delivery states. Private tests are excluded by both durable
 request IDs and private reasons; no receipt, payment or download capability is
 exposed in this overview. Public gates remain closed.
 
-Validation: 111 backend tests pass; lint has three existing warnings; production
+Validation: 112 backend tests pass; lint has three existing warnings; production
 build, course prerender and compression pass. Isolated Chrome checks cover the
 closed and enabled presentations, mobile/desktop layout, unchanged prices,
 review-only checkout and safe provider-error handling. No provider request,
@@ -88,3 +88,12 @@ Setup uses the verified existing database and adds one owned table without
 altering customer payment tables. Creation and manual payment are pending.
 The live unpaid `enabled` state is accepted as pending in customer checkout
 parsing, while production contract verification and public gates stay closed.
+
+The AED 2 test was created once and independently authenticated at the exact
+merchant reference, amount and currency. The owner reports the charge succeeded.
+Its success return displayed HTTP 503: startup rejected the newly owned private
+test table because the main database ownership inventory did not include it.
+The production verifier now recognizes that one table only with its ownership
+marker; unmarked tables and unrelated databases still fail closed. A regression
+test covers actual production inventory verification after private test setup.
+Fresh HTTP health and signed payment confirmation remain required before sales.

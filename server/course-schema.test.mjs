@@ -13,6 +13,13 @@ test('normal production verification accepts owned course tables and refuses unm
  const owned=fixture({owned:true});await verifyMariaDbSchema(owned.db);assert.deepEqual(owned.writes,[])
  const foreign=fixture({foreign:true});await assert.rejects(verifyMariaDbSchema(foreign.db),/ownership/);assert.deepEqual(foreign.writes,[])
 })
+test('production startup accepts the owned private AED 2 ledger and still refuses foreign or unmarked tables',async()=>{
+ const owned=fixture({owned:true});owned.names.add('course_private_nomod_tests');owned.markers.add('ascore-nomod-small-test:1')
+ assert.deepEqual(await verifyMariaDbSchema(owned.db),{version:1});assert.deepEqual(owned.writes,[])
+ owned.markers.delete('ascore-nomod-small-test:1');await assert.rejects(verifyMariaDbSchema(owned.db),/private test table.*ownership/)
+ owned.markers.add('ascore-nomod-small-test:1');owned.names.add('foreign_payments');await assert.rejects(verifyMariaDbSchema(owned.db),/dedicated/)
+ assert.deepEqual(owned.writes,[])
+})
 test('course migration needs explicit approval and refuses a conflicting unowned inventory',async()=>{
  const initial=fixture();await assert.rejects(initializeCourseSchema(initial.db,{}),/approval/);assert.deepEqual(initial.writes,[])
  const foreign=fixture({foreign:true});await assert.rejects(initializeCourseSchema(foreign.db,{ASCORE_ALLOW_COURSE_SCHEMA_SETUP:'1'}),/ownership/);assert.deepEqual(foreign.writes,[])
