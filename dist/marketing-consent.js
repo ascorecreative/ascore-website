@@ -3,7 +3,7 @@
   if (window.AscoreMarketing) return;
   const PIXEL = '1058485446949199';
   const GA4 = 'G-MX800C01N9';
-  const COURSE_PRICE = 2; // Owner-approved public AED 2 trial.
+  const COURSE_PRICE = 49.99; // Owner-confirmed public price in AED.
   // Owner confirmed Enhanced Measurement OFF for this stream on 2026-10-06.
   // Keep it off in GA Admin; send_page_view:false alone cannot disable history events.
   const GA4_READY = true;

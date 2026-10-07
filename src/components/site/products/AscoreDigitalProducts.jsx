@@ -9,7 +9,7 @@ export default function AscoreDigitalProducts({ courseUrl = '/courses/' }) {
           <h2 id="asdp-title">Explore our<br /><span>digital products.</span></h2>
           <p className="asdp-description">Build your business skills, one clear step at a time. Discover our practical guides to Meta advertising and AI.</p>
           <div className="asdp-topics"><span>Mastering Facebook Ads</span><span>ChatGPT, Codex & Claude</span></div>
-          <div className="asdp-action-row"><a className="asdp-cta" href={courseUrl}>Explore the courses</a><p className="asdp-price">PDF courses<br /><strong>AED 2.00 each</strong></p></div>
+          <div className="asdp-action-row"><a className="asdp-cta" href={courseUrl}>Explore the courses</a><p className="asdp-price">PDF courses<br /><strong>AED 49.99 each</strong></p></div>
         </div>
         <a className="asdp-art" href={courseUrl} aria-label="Explore Ascore Meta Ads and Practical AI courses">
           <div className="asdp-books">

@@ -18,13 +18,13 @@ function browser({path='/courses/meta-ads/',consent='granted',privacy=false,refe
 test('consented course views and actual cart additions have exact course values, without fake purchases',()=>{
  const b=browser();b.context.AscoreMarketing.addedToCart(['meta']);b.load()
  assert.equal(b.events('PageView').length,1);assert.equal(b.events('ViewContent').length,1);assert.equal(b.events('AddToCart').length,1)
- const data=b.events('AddToCart')[0][3];assert.equal(data.currency,'AED');assert.equal(data.value,2);assert.deepEqual([...data.content_ids],['meta']);assert.equal(data.email,undefined)
+ const data=b.events('AddToCart')[0][3];assert.equal(data.currency,'AED');assert.equal(data.value,49.99);assert.deepEqual([...data.content_ids],['meta']);assert.equal(data.email,undefined)
  b.sync();assert.equal(b.events('ViewContent').length,1)
  b.context.history.pushState({},'','/courses/practical-ai/');assert.equal(b.events('ViewContent').length,2)
  assert.equal(b.context.AscoreMarketing.addedToCart(['meta','meta']),false);assert.equal(b.context.AscoreMarketing.addedToCart(['unknown']),false)
  assert.equal(b.context.AscoreMarketing.startedCheckout(['ai']),false)
  b.context.history.pushState({},'','/courses/checkout/');assert.equal(b.context.AscoreMarketing.startedCheckout(['meta','ai']),true)
- assert.equal(b.events('InitiateCheckout')[0][3].value,4);assert.equal(b.events('Purchase').length,0)
+ assert.equal(b.events('InitiateCheckout')[0][3].value,99.98);assert.equal(b.events('Purchase').length,0)
 })
 test('denied consent, privacy signals, sensitive URLs and private routes send no course events',()=>{
  for(const options of [{consent:'denied'},{consent:null},{privacy:true},{path:'/courses/checkout/?payment=success&order=private'},{path:'/portal/'},{referrer:'https://ascore.test/portal/'}]){
