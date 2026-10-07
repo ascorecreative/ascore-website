@@ -67,7 +67,7 @@ revenue and payment/delivery states. Private tests are excluded by both durable
 request IDs and private reasons; no receipt, payment or download capability is
 exposed in this overview. Public gates remain closed.
 
-Validation: 109 backend tests pass; lint has three existing warnings; production
+Validation: 111 backend tests pass; lint has three existing warnings; production
 build, course prerender and compression pass. Isolated Chrome checks cover the
 closed and enabled presentations, mobile/desktop layout, unchanged prices,
 review-only checkout and safe provider-error handling. No provider request,
@@ -78,3 +78,13 @@ shared-checkout files retain their hashes.
 
 Official host evidence: https://nomod.com/docs/integrations/deep-linking
 Official recovery lookup: https://nomod.com/docs/api-reference/list-link
+
+The owner subsequently authorized one AED 2 test after insufficient balance on
+the AED 49.99 replacement. Nomod offers no edit action for that existing link.
+A separate finite AED 2 private ledger and owner action are prepared, protected
+by ASCORE_ALLOW_NOMOD_SMALL_TEST. Its immutable amount, empty customer email and
+held status cannot become customer sales, PDF fulfilment or Purchase analytics.
+Setup uses the verified existing database and adds one owned table without
+altering customer payment tables. Creation and manual payment are pending.
+The live unpaid `enabled` state is accepted as pending in customer checkout
+parsing, while production contract verification and public gates stay closed.

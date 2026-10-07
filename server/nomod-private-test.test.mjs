@@ -4,7 +4,8 @@ import {createHash,randomUUID} from 'node:crypto'
 import {Webhook} from 'svix'
 import {createSqliteStore} from './sqlite-store.mjs'
 import {initializePaymentSchema} from './payment-schema.mjs'
-import {createPrivateNomodTest,privateNomodRequestId,replacementNomodRequestId,isPrivateNomodTest} from './nomod-private-test.mjs'
+import {createPrivateNomodTest,privateNomodRequestId,replacementNomodRequestId,smallNomodRequestId,isPrivateNomodTest} from './nomod-private-test.mjs'
+import {initializeSmallTestSchema} from './nomod-small-test-schema.mjs'
 import {createNomodCourses} from './nomod-courses.mjs'
 import {createPortalServer} from './app.mjs'
 const owner={id:'fixture-owner',username:'aswinfrn',role:'admin'},origin='https://ascore.test',key='synthetic-key',secret='whsec_'+Buffer.from('synthetic-signing-secret').toString('base64'),body={confirmation:'meta-4999-v1'}
@@ -149,6 +150,25 @@ test('a mismatched candidate GET records only response checks and never persists
  assert.ok(!row.delivery.includes('private-provider-data'));assert.ok(!row.delivery.includes('private@example.test'))
  assert.equal((await service.status({...owner,username:'other_admin'})).candidateCheckoutId,undefined)
 })
+test('the separately approved AED 2 test has one immutable claim, fixed amount and no customer fulfilment',async t=>{
+ const h=await fixture(t);await h.service.create(owner,body);await initializeSmallTestSchema(h.db)
+ let posts=0;const id=randomUUID(),options={...h.options,small:true,fetcher:async(url,request)=>{
+  assert.equal(request.method,'POST');posts++;const sent=JSON.parse(request.body)
+  assert.equal(sent.amount,'2.00');assert.equal(sent.items[0].unit_amount,'2.00');assert.equal(sent.items[0].total_amount,'2.00');assert.equal(sent.items[0].net_amount,'2.00');assert.equal(sent.customer,undefined)
+  return new Response(JSON.stringify({id,reference_id:sent.reference_id,amount:2,currency:'AED',status:'enabled',url:'https://pay.nomodapp.com/en/l/0123456789abcdef/'}))
+ }},service=createPrivateNomodTest(options),approval={confirmation:'meta-200-v1'}
+ assert.equal((await service.status(owner)).amountMinor,200)
+ await assert.rejects(service.create(owner,approval),{status:403});h.env.ASCORE_ALLOW_NOMOD_SMALL_TEST='1'
+ await assert.rejects(service.create(owner,body),{status:400});await assert.rejects(service.create({...owner,username:'other'},approval),{status:403})
+ await Promise.all([service.create(owner,approval),createPrivateNomodTest(options).create(owner,approval)])
+ assert.equal(posts,1);h.env.ASCORE_ALLOW_NOMOD_SMALL_TEST='0';assert.equal((await createPrivateNomodTest(options).create(owner,approval)).alreadyAttempted,true)
+ const row=await h.db.prepare('SELECT * FROM course_private_nomod_tests').get()
+ assert.equal(row.request_id,smallNomodRequestId);assert.equal(row.total_minor,200);assert.equal(row.payment_status,'review');assert.equal(isPrivateNomodTest(row),true)
+ assert.equal((await h.db.prepare('SELECT COUNT(*) AS n FROM course_paid_orders').get()).n,1)
+ const payments=await createNomodCourses({db:h.db,env:h.env,origin,readJson:h.options.readJson,contractVerified:true,sendEmail:async()=>assert.fail('No private test email'),fetcher:async()=>assert.fail('No private test fulfilment lookup')});t.after(()=>payments.close())
+ assert.equal((await payments.salesOverview(owner)).summary.checkoutAttempts,0)
+ await payments.confirm(row.id);await payments.deliver(row.id);await payments.tick();assert.equal((await h.db.prepare('SELECT COUNT(*) AS n FROM course_paid_downloads').get()).n,0)
+})
 test('HTTP owner actions retain auth, origin and CSRF and expose diagnostic/private status through the real orders endpoint',async t=>{
  const db=createSqliteStore();await initializePaymentSchema(db);const activation='synthetic-activation',env={ASCORE_ORIGIN:origin,ASCORE_ALLOW_ADMIN_SETUP:'1',ASCORE_ADMIN_SETUP_GRANTS:JSON.stringify({aswinfrn:{tokenHash:createHash('sha256').update(activation).digest('hex'),expiresAt:new Date(Date.now()+60000).toISOString()}})}
  let requests=0;const app=await createPortalServer({store:db,env,nomodFetch:async()=>{requests++;throw Error('Disabled')},coursePdfReader:async()=>{throw Error('Not installed')}});await new Promise(r=>app.server.listen(0,'127.0.0.1',r));t.after(()=>app.close());const base=`http://127.0.0.1:${app.server.address().port}`
@@ -160,4 +180,9 @@ test('HTTP owner actions retain auth, origin and CSRF and expose diagnostic/priv
  const replacementPath='/api/courses/admin/payments/replacement-test',replacementBody={confirmation:'meta-4999-replacement-v1'}
  assert.equal((await call(replacementPath,replacementBody)).status,401);assert.equal((await call(replacementPath,replacementBody,{Cookie:login.cookie})).status,403);assert.equal((await call(replacementPath,replacementBody,{...auth,Origin:'https://foreign.test'})).status,403);assert.equal((await call(replacementPath,replacementBody,auth)).status,403)
  const status=(await call('/api/courses/admin/orders',null,auth)).data;assert.equal(status.payments.diagnostic.ownerAllowed,true);assert.equal(status.payments.privateNomodTest.ownerAllowed,true);assert.equal(status.payments.privateNomodTest.allowed,false);assert.equal(status.payments.replacementNomodTest.ownerAllowed,true);assert.equal(status.payments.replacementNomodTest.allowed,false);assert.equal(requests,0);assert.deepEqual((await call('/api/courses/config')).data,{freeCheckoutReady:false,paidCheckoutEnabled:false})
+ assert.equal(status.payments.sales.summary.paidOrders,0);assert.equal(status.payments.smallNomodTest.amountMinor,200);assert.equal(status.payments.smallNomodTest.allowed,false)
+ for(const endpoint of ['/api/courses/admin/payments/small-test','/api/courses/admin/payments/small-test/setup']){
+  const payload=endpoint.endsWith('/setup')?{}:{confirmation:'meta-200-v1'}
+  assert.equal((await call(endpoint,payload)).status,401);assert.equal((await call(endpoint,payload,{Cookie:login.cookie})).status,403);assert.equal((await call(endpoint,payload,auth)).status,endpoint.endsWith('/setup')?403:503)
+ }
 })

@@ -1,3 +1,4 @@
+import {initializeSmallTestSchema,verifySmallTestSchema} from './nomod-small-test-schema.mjs'
 import {createPaymentSetup} from './payment-setup.mjs'
 import {createNomodDiagnostic} from './nomod-diagnostic.mjs'
 import {createPrivateNomodTest,isPrivateNomodTest,privateNomodRequestId,replacementNomodRequestId,privateNomodReason,replacementNomodReason} from './nomod-private-test.mjs'
@@ -48,9 +49,12 @@ export async function createNomodCourses({db,env={},origin,readJson,fetcher=fetc
  const requirements={enabled,schemaReady,contractVerified:contractVerified===true,apiKeyConfigured:typeof env.NOMOD_HOSTED_CHECKOUT_API_KEY==='string'&&!!env.NOMOD_HOSTED_CHECKOUT_API_KEY,webhookSecretConfigured:typeof env.NOMOD_WEBHOOK_SIGNING_SECRET==='string'&&/^whsec_[A-Za-z0-9+/=]+$/.test(env.NOMOD_WEBHOOK_SIGNING_SECRET),checkoutHostsConfigured:hosts.length>0&&hosts.every(h=>/^[a-z0-9]+(?:[.-][a-z0-9]+)*\.[a-z]{2,}$/.test(h)),liveRequestsApproved:env.ASCORE_NOMOD_LIVE_REQUESTS_APPROVED==='1',deliveryEnabled:env.ASCORE_ENABLE_PAID_COURSE_DELIVERY==='1',termsApproved:env.ASCORE_PAID_COURSE_TERMS_APPROVED==='1',senderConfigured:!!sendEmail||smtpConfigured(env),privatePdfsReady:false,originReady:(()=>{try{const u=new URL(origin);return u.protocol==='https:'&&!u.username&&!u.password&&!u.search&&!u.hash&&u.pathname==='/'&&u.origin===origin}catch{return false}})()}
  if(enabled){try{await Promise.all(Object.keys(courseCatalog).map(id=>pdfReader(env,id)));requirements.privatePdfsReady=true}catch{}}
  const paymentSetup=createPaymentSetup({db,env,readJson,audit,isSchemaReady:()=>schemaReady,onReady:value=>{schemaReady=value;requirements.schemaReady=value}})
- const diagnostic=createNomodDiagnostic({db,env,readJson,fetcher,now,isSchemaReady:()=>schemaReady,expectedCheckout:id=>db.prepare('SELECT id,total_minor,currency FROM course_paid_orders WHERE request_id IN (?,?) AND provider_id=?').get(privateNomodRequestId,replacementNomodRequestId,id)})
+ let smallSchemaReady=false;try{await verifySmallTestSchema(db);smallSchemaReady=true}catch{}
+ const smallSetup=createPaymentSetup({db,env,readJson,audit,isSchemaReady:()=>smallSchemaReady,onReady:value=>{smallSchemaReady=value},flag:'ASCORE_ALLOW_NOMOD_SMALL_TEST',application:'ascore-nomod-small-test',endpoint:'/api/courses/admin/payments/small-test/setup',initialize:initializeSmallTestSchema,verify:verifySmallTestSchema})
+ const diagnostic=createNomodDiagnostic({db,env,readJson,fetcher,now,isSchemaReady:()=>schemaReady,expectedCheckout:async id=>await db.prepare('SELECT id,total_minor,currency FROM course_paid_orders WHERE request_id IN (?,?) AND provider_id=?').get(privateNomodRequestId,replacementNomodRequestId,id)||(smallSchemaReady?await db.prepare('SELECT id,total_minor,currency FROM course_private_nomod_tests WHERE provider_id=?').get(id):null)})
  const privateTest=createPrivateNomodTest({db,env,origin,readJson,audit,fetcher,now,isSchemaReady:()=>schemaReady})
  const replacementTest=createPrivateNomodTest({db,env,origin,readJson,audit,fetcher,now,isSchemaReady:()=>schemaReady,replacement:true})
+ const smallTest=createPrivateNomodTest({db,env,origin,readJson,audit,fetcher,now,isSchemaReady:()=>smallSchemaReady,small:true})
  const ready=()=>Object.values(requirements).every(Boolean)
  const mail=sendEmail||(requirements.senderConfigured?sender(env):null),flights=new Map(),eventFlights=new Map()
  const rowFor=id=>db.prepare('SELECT * FROM course_paid_orders WHERE id=?').get(id)
@@ -90,7 +94,7 @@ export async function createNomodCourses({db,env={},origin,readJson,fetcher=fetc
    if(!captured.length||captured.some(c=>!uuid(c.id)||minor(c.amount)===null)||new Set(captured.map(c=>c.id)).size!==captured.length||captured.reduce((n,c)=>n+minor(c.amount),0)!==Number(claim.total_minor)||chargeId&&!captured.some(c=>c.id===chargeId)){await hold(id,'Captured charge evidence requires team review.');return {matched:true}}
    await db.transaction(async()=>{const row=await db.prepare(db.lock('SELECT * FROM course_paid_orders WHERE id=?')).get(id);if(isPrivateNomodTest(row)||row.payment_status==='review')return;await db.prepare('UPDATE course_paid_orders SET payment_status=? WHERE id=?').run('paid',id);for(const item of JSON.parse(row.items)){if(!await db.prepare('SELECT uses FROM course_paid_downloads WHERE order_id=? AND course_id=?').get(id,item))await db.prepare('INSERT INTO course_paid_downloads VALUES (?,?,?)').run(id,item,0)}})
   }else if(['cancelled','expired'].includes(details.status))await db.prepare("UPDATE course_paid_orders SET payment_status=? WHERE id=? AND payment_status<>'paid' AND payment_status<>'review'").run(details.status,id)
-  else if(!['created','paid'].includes(details.status))await hold(id,'Provider payment state requires team review.')
+  else if(!['created','enabled','paid'].includes(details.status))await hold(id,'Provider payment state requires team review.')
   return {matched:true}
  }
  async function deliver(id){
@@ -135,8 +139,8 @@ export async function createNomodCourses({db,env={},origin,readJson,fetcher=fetc
   const rows=await db.prepare(`SELECT id,email,items,total_minor,currency,payment_status,created_at,expires_at,delivery,review_reason FROM course_paid_orders WHERE ${filter} ORDER BY created_at DESC,id DESC LIMIT 50`).all(...args)
   return {schemaReady:true,summary:Object.fromEntries(Object.entries(totals).map(([key,value])=>[key,Number(value)])),orders:rows.map(row=>({id:row.id,email:row.email,items:JSON.parse(row.items),totalMinor:Number(row.total_minor),currency:row.currency,paymentStatus:row.payment_status,createdAt:Number(row.created_at),expiresAt:Number(row.expires_at),delivery:JSON.parse(row.delivery).status,reason:row.review_reason||null}))}
  }
- return {requirements,ready,confirm,deliver,tick,salesOverview,setupState:paymentSetup.state,diagnosticState:diagnostic.state,privateTestState:privateTest.status,replacementTestState:replacementTest.status,async adminHandle(req,res,path,user,json){return await privateTest.handle(req,res,path,user,json)||await replacementTest.handle(req,res,path,user,json)||await diagnostic.handle(req,res,path,user,json)||await paymentSetup.handle(req,res,path,user,json)},
-  async close(){await Promise.all([privateTest.close(),replacementTest.close()]);if(interval)clearInterval(interval);await Promise.allSettled([...flights.values(),...eventFlights.values()])},
+ return {requirements,ready,confirm,deliver,tick,salesOverview,setupState:paymentSetup.state,diagnosticState:diagnostic.state,privateTestState:privateTest.status,replacementTestState:replacementTest.status,smallTestState:async user=>({...await smallTest.status(user),setup:smallSetup.state(user)}),async adminHandle(req,res,path,user,json){return await smallSetup.handle(req,res,path,user,json)||await smallTest.handle(req,res,path,user,json)||await privateTest.handle(req,res,path,user,json)||await replacementTest.handle(req,res,path,user,json)||await diagnostic.handle(req,res,path,user,json)||await paymentSetup.handle(req,res,path,user,json)},
+  async close(){await Promise.all([privateTest.close(),replacementTest.close(),smallTest.close()]);if(interval)clearInterval(interval);await Promise.allSettled([...flights.values(),...eventFlights.values()])},
   async publicHandle(req,res,path,json){
    if(path===nomodWebhookPath&&req.method==='POST'){
     if(!schemaReady||!requirements.webhookSecretConfigured||env.ASCORE_ENABLE_NOMOD_WEBHOOKS!=='1')fail(503,'Payment notifications are not configured.')
@@ -165,7 +169,7 @@ export async function createNomodCourses({db,env={},origin,readJson,fetcher=fetc
      const amount=(q.totalMinor/100).toFixed(2),items=q.items.map(id=>({item_id:id,name:courseCatalog[id].name,quantity:1,unit_amount:(courseCatalog[id].priceMinor/100).toFixed(2),discount_type:'flat',discount_amount:'0.00',total_amount:(courseCatalog[id].priceMinor/100).toFixed(2),net_amount:(courseCatalog[id].priceMinor/100).toFixed(2)}))
      try{
       const result=await providerRequest('POST','',{reference_id:row.id,amount,currency:'AED',items,discount:'0.00',customer:{email:row.email},...nomodReturnURLs(origin,row.id)})
-      if(!uuid(result.id)||!detailsMatch(result,{...row,provider_id:result.id})||!['created','paid','cancelled','expired'].includes(result.status))throw Error('Provider checkout does not match')
+      if(!uuid(result.id)||!detailsMatch(result,{...row,provider_id:result.id})||!['created','enabled','paid','cancelled','expired'].includes(result.status))throw Error('Provider checkout does not match')
       const url=checkoutURL(result.url)
       await db.prepare('UPDATE course_paid_orders SET provider_id=?,provider_url=?,payment_status=? WHERE id=?').run(result.id,url,'pending',row.id)
      }catch{await db.prepare('UPDATE course_paid_orders SET payment_status=?,review_reason=? WHERE id=?').run('uncertain','Checkout creation outcome needs team review.',row.id);fail(502,'Checkout creation needs team review. Do not start another payment attempt.')}

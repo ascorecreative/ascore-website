@@ -7,41 +7,44 @@ export const privateNomodRequestId='6ef0cd61-1c20-4b4b-b639-2040c48e417d'
 export const privateNomodReason='Owner-only Nomod test v1; no fulfilment.'
 export const replacementNomodRequestId='8cdff02b-9743-4cda-96da-9fd9a3c89cf0'
 export const replacementNomodReason='Owner-only Nomod replacement test v1; no fulfilment.'
-export const isPrivateNomodTest=row=>[privateNomodRequestId,replacementNomodRequestId].includes(row?.request_id)||[privateNomodReason,replacementNomodReason].includes(row?.review_reason)
+export const smallNomodRequestId='9b7f8c21-676c-4a86-93f2-fb0b4f039dd9'
+export const smallNomodReason='Owner-only AED 2 Nomod test v1; no fulfilment.'
+export const isPrivateNomodTest=row=>[privateNomodRequestId,replacementNomodRequestId,smallNomodRequestId].includes(row?.request_id)||[privateNomodReason,replacementNomodReason,smallNomodReason].includes(row?.review_reason)
 const owner=user=>user?.role==='admin'&&user.username==='aswinfrn'
 const fail=(status,message)=>{throw Object.assign(Error(message),{status})}
 const hash=value=>createHash('sha256').update(value).digest('hex')
 const uuid=value=>typeof value==='string'&&/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value)
-export function createPrivateNomodTest({db,env,origin,readJson,audit,fetcher=fetch,now=Date.now,isSchemaReady,replacement=false}){
- const requestId=replacement?replacementNomodRequestId:privateNomodRequestId,reason=replacement?replacementNomodReason:privateNomodReason,creationFlag=replacement?'ASCORE_ALLOW_NOMOD_REPLACEMENT_TEST':'ASCORE_ALLOW_NOMOD_PRIVATE_TEST',confirmation=replacement?'meta-4999-replacement-v1':'meta-4999-v1'
+export function createPrivateNomodTest({db,env,origin,readJson,audit,fetcher=fetch,now=Date.now,isSchemaReady,replacement=false,small=false}){
+ const requestId=small?smallNomodRequestId:replacement?replacementNomodRequestId:privateNomodRequestId,reason=small?smallNomodReason:replacement?replacementNomodReason:privateNomodReason,creationFlag=small?'ASCORE_ALLOW_NOMOD_SMALL_TEST':replacement?'ASCORE_ALLOW_NOMOD_REPLACEMENT_TEST':'ASCORE_ALLOW_NOMOD_PRIVATE_TEST',confirmation=small?'meta-200-v1':replacement?'meta-4999-replacement-v1':'meta-4999-v1'
+ const amountMinor=small?200:4999,amount=(amountMinor/100).toFixed(2),table=small?'course_private_nomod_tests':'course_paid_orders',prepare=sql=>db.prepare(sql.replaceAll('course_paid_orders',table)),amountMatches=value=>[amount,amountMinor/100].includes(value)
  let flight=null,recovery=null,recoveryAt=0
  const closed=()=>['ASCORE_ENABLE_PAID_COURSES','ASCORE_ENABLE_FREE_COURSES','ASCORE_ENABLE_PAID_COURSE_DELIVERY','ASCORE_NOMOD_LIVE_REQUESTS_APPROVED'].every(key=>env[key]!=='1')
  const originReady=()=>{try{const url=new URL(origin);return url.protocol==='https:'&&url.origin===origin}catch{return false}}
  const prerequisites=()=>closed()&&isSchemaReady()&&originReady()&&env.ASCORE_ENABLE_NOMOD_WEBHOOKS==='1'&&/^whsec_[A-Za-z0-9+/=]+$/.test(env.NOMOD_WEBHOOK_SIGNING_SECRET||'')&&!!env.NOMOD_HOSTED_CHECKOUT_API_KEY
- const prior=()=>db.prepare('SELECT * FROM course_paid_orders WHERE request_id=?').get(requestId)
+ const prior=()=>prepare('SELECT * FROM course_paid_orders WHERE request_id=?').get(requestId)
  const original=()=>db.prepare('SELECT id FROM course_paid_orders WHERE request_id=?').get(privateNomodRequestId)
  const view=row=>row?{state:JSON.parse(row.delivery).testState||'claimed',referenceId:row.id,checkoutId:row.provider_id||null,candidateCheckoutId:JSON.parse(row.delivery).candidateCheckoutId||null,verification:JSON.parse(row.delivery).verification||null,url:row.provider_url||null,createdAt:Number(row.created_at)}:{state:'not_created',checkoutId:null,url:null}
  async function status(user){
   if(!owner(user))return {ownerAllowed:false,allowed:false}
   const row=isSchemaReady()?await prior():null
-  return {ownerAllowed:true,allowed:env[creationFlag]==='1'&&prerequisites()&&!row&&(!replacement||!!await original()),operatorEnabled:env[creationFlag]==='1',prerequisitesReady:prerequisites(),inProgress:!!flight,amountMinor:4999,currency:'AED',...view(row)}
+  return {ownerAllowed:true,allowed:env[creationFlag]==='1'&&prerequisites()&&!row&&(!(replacement||small)||!!await original()),operatorEnabled:env[creationFlag]==='1',prerequisitesReady:prerequisites(),inProgress:!!flight,amountMinor,currency:'AED',...view(row)}
  }
  async function create(user,body){
   if(!owner(user))fail(403,'The private Nomod test is restricted to aswinfrn.')
-  if(!body||Array.isArray(body)||typeof body!=='object'||Object.keys(body).length!==1||body.confirmation!==confirmation)fail(400,'Confirm only the approved one-time AED 49.99 Meta test.')
+  if(!body||Array.isArray(body)||typeof body!=='object'||Object.keys(body).length!==1||body.confirmation!==confirmation)fail(400,`Confirm only the approved one-time AED ${amount} Meta test.`)
   if(!isSchemaReady())fail(503,'Verify the payment tables first.')
   // Retrieval of the durable claim is allowed after the temporary flag is off.
   const existing=await prior();if(existing)return {...view(existing),alreadyAttempted:true}
   if(env[creationFlag]!=='1'||!prerequisites())fail(403,'Private test creation is disabled. Approval, signed notifications and closed public checkout/delivery are required.')
-  if(replacement&&!await original())fail(409,'Record the original private attempt before its one approved replacement.')
+  if((replacement||small)&&!await original())fail(409,'Record the original private attempt before its one approved replacement.')
   if(flight)return flight
   const task=(async()=>{
    const claim=await db.transaction(async()=>{
-    const account=await db.prepare(db.lock('SELECT id,username,role FROM users WHERE id=?')).get(user.id)
+    const account=await prepare(db.lock('SELECT id,username,role FROM users WHERE id=?')).get(user.id)
     if(!owner(account))fail(403,'The existing approved owner account is required.')
     const row=await prior();if(row)return {row,created:false}
     const id=randomUUID(),time=now()
-    await db.prepare('INSERT INTO course_paid_orders (id,request_id,payload_hash,email,items,total_minor,currency,secret,provider_id,provider_url,payment_status,created_at,expires_at,provider_checked_at,delivery,review_reason) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)').run(id,requestId,hash(confirmation),'','["meta"]',4999,'AED',randomBytes(32).toString('hex'),null,null,'review',time,time+86400000,0,JSON.stringify({status:'held_private_test',testState:'claimed'}),reason)
+    await prepare('INSERT INTO course_paid_orders (id,request_id,payload_hash,email,items,total_minor,currency,secret,provider_id,provider_url,payment_status,created_at,expires_at,provider_checked_at,delivery,review_reason) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)').run(id,requestId,hash(confirmation),'','["meta"]',amountMinor,'AED',randomBytes(32).toString('hex'),null,null,'review',time,time+86400000,0,JSON.stringify({status:'held_private_test',testState:'claimed'}),reason)
     await audit(user.id,'nomod_private_test_claimed',id)
     return {row:await prior(),created:true}
    })
@@ -50,7 +53,7 @@ export function createPrivateNomodTest({db,env,origin,readJson,audit,fetcher=fet
    let result,url,state='uncertain'
    try{
     const returns=Object.fromEntries(['success','failure','cancelled'].map(value=>[value+'_url',`${origin}/portal/?view=courses&nomod_test=${row.id}&result=${value}`]))
-    const payload={reference_id:row.id,amount:'49.99',currency:'AED',discount:'0.00',items:[{item_id:'meta',name:courseCatalog.meta.name,quantity:1,unit_amount:'49.99',discount_type:'flat',discount_amount:'0.00',total_amount:'49.99',net_amount:'49.99'}],...returns}
+    const payload={reference_id:row.id,amount,currency:'AED',discount:'0.00',items:[{item_id:'meta',name:courseCatalog.meta.name,quantity:1,unit_amount:amount,discount_type:'flat',discount_amount:'0.00',total_amount:amount,net_amount:amount}],...returns}
     const response=await fetcher('https://api.nomod.com/v1/checkout',{method:'POST',headers:{'X-API-KEY':env.NOMOD_HOSTED_CHECKOUT_API_KEY,'Content-Type':'application/json'},body:JSON.stringify(payload),signal:controller.signal,redirect:'error'})
     if(!response.ok)throw Error('Provider rejected creation')
     const parts=[];let size=0
@@ -58,13 +61,13 @@ export function createPrivateNomodTest({db,env,origin,readJson,audit,fetcher=fet
     result=JSON.parse(Buffer.concat(parts).toString('utf8'))
     // The verified live Hosted Checkout returns `enabled` for its unpaid
     // session, while the reference documents `created`. Neither proves payment.
-    if(!uuid(result.id)||result.reference_id!==row.id||result.currency!=='AED'||!['49.99',49.99].includes(result.amount)||!['created','enabled'].includes(result.status))throw Error('Unverified checkout response')
+    if(!uuid(result.id)||result.reference_id!==row.id||result.currency!=='AED'||!amountMatches(result.amount)||!['created','enabled'].includes(result.status))throw Error('Unverified checkout response')
     const target=new URL(result.url)
     if(target.protocol!=='https:'||target.username||target.password||target.port||!nomodOwnedHost(target.hostname))throw Error('Unverified payment host')
     url=target.href;state='created'
    }catch{/* Never retry a live creation after an unknown response. */}finally{clearTimeout(timer)}
    await db.transaction(async()=>{
-    await db.prepare('UPDATE course_paid_orders SET provider_id=?,provider_url=?,delivery=? WHERE id=?').run(state==='created'?result.id:null,state==='created'?url:null,JSON.stringify({status:'held_private_test',testState:state,...(state==='uncertain'&&uuid(result?.id)?{candidateCheckoutId:result.id.toLowerCase()}:{})}),row.id)
+    await prepare('UPDATE course_paid_orders SET provider_id=?,provider_url=?,delivery=? WHERE id=?').run(state==='created'?result.id:null,state==='created'?url:null,JSON.stringify({status:'held_private_test',testState:state,...(state==='uncertain'&&uuid(result?.id)?{candidateCheckoutId:result.id.toLowerCase()}:{})}),row.id)
     await audit(user.id,'nomod_private_test_'+state,row.id)
    })
    return {...view(await prior()),alreadyAttempted:false}
@@ -73,7 +76,7 @@ export function createPrivateNomodTest({db,env,origin,readJson,audit,fetcher=fet
  }
  async function reconcile(user,body){
   if(!owner(user))fail(403,'The private Nomod test is restricted to aswinfrn.')
-  if(!body||typeof body!=='object'||Array.isArray(body)||Object.keys(body).some(key=>!['confirmation','checkoutUrl'].includes(key))||body.confirmation!=='reconcile-existing-meta-4999-v1')fail(400,'Confirm reconciliation of the existing private test only.')
+  if(!body||typeof body!=='object'||Array.isArray(body)||Object.keys(body).some(key=>!['confirmation','checkoutUrl'].includes(key))||body.confirmation!==(small?'reconcile-existing-meta-200-v1':'reconcile-existing-meta-4999-v1'))fail(400,'Confirm reconciliation of the existing private test only.')
   let knownUrl=null
   if(body.checkoutUrl!==undefined){
    try{const url=new URL(body.checkoutUrl);if(url.origin!=='https://pay.nomodapp.com'||!/^\/en\/l\/[a-f0-9]{16}\/?$/.test(url.pathname)||url.search||url.hash||url.username||url.password)throw Error();knownUrl=url.href.replace(/\/$/,'')}catch{fail(400,'Enter only the existing Nomod payment link copied from the approved private attempt.')}
@@ -114,13 +117,13 @@ export function createPrivateNomodTest({db,env,origin,readJson,audit,fetcher=fet
     }
     }
     if(!link)fail(409,'Nomod did not return one matching existing link. Use its copied payment URL or review Dashboard; do not retry creation.')
-    if(!uuid(link.id)||!uuid(candidate)&&(link.currency!=='AED'||!['49.99',49.99].includes(link.amount))||(knownUrl&&String(link.url).replace(/\/$/,'')!==knownUrl))fail(409,'The existing link does not match the approved private test.')
+    if(!uuid(link.id)||!uuid(candidate)&&(link.currency!=='AED'||!amountMatches(link.amount))||(knownUrl&&String(link.url).replace(/\/$/,'')!==knownUrl))fail(409,'The existing link does not match the approved private test.')
     // A Link ID is not assumed to be a Checkout ID: the Checkout endpoint must
     // independently authenticate the ID, reference, amount and payment URL.
     checkout=checkout||await read('https://api.nomod.com/v1/checkout/'+link.id.toLowerCase())
-    const verification={idMatches:typeof checkout.id==='string'&&checkout.id.toLowerCase()===link.id.toLowerCase(),referenceMatches:checkout.reference_id===row.id,currencyMatches:checkout.currency==='AED',currencyValue:typeof checkout.currency==='string'&&/^[A-Za-z]{3}$/.test(checkout.currency)?checkout.currency:null,amountMatches:['49.99',49.99].includes(checkout.amount),statusKnown:['created','enabled','cancelled','expired','paid'].includes(checkout.status),urlMatches:checkout.url===link.url,statusType:typeof checkout.status,statusValue:typeof checkout.status==='string'&&/^[A-Za-z_ -]{1,32}$/.test(checkout.status)?checkout.status:null,amountValue:['number','string'].includes(typeof checkout.amount)&&/^\d+(?:\.\d{1,12})?$/.test(String(checkout.amount))?String(checkout.amount):null,responseFields:Object.keys(checkout).filter(key=>/^[A-Za-z_]{1,40}$/.test(key)).slice(0,30)}
+    const verification={idMatches:typeof checkout.id==='string'&&checkout.id.toLowerCase()===link.id.toLowerCase(),referenceMatches:checkout.reference_id===row.id,currencyMatches:checkout.currency==='AED',currencyValue:typeof checkout.currency==='string'&&/^[A-Za-z]{3}$/.test(checkout.currency)?checkout.currency:null,amountMatches:amountMatches(checkout.amount),statusKnown:['created','enabled','cancelled','expired','paid'].includes(checkout.status),urlMatches:checkout.url===link.url,statusType:typeof checkout.status,statusValue:typeof checkout.status==='string'&&/^[A-Za-z_ -]{1,32}$/.test(checkout.status)?checkout.status:null,amountValue:['number','string'].includes(typeof checkout.amount)&&/^\d+(?:\.\d{1,12})?$/.test(String(checkout.amount))?String(checkout.amount):null,responseFields:Object.keys(checkout).filter(key=>/^[A-Za-z_]{1,40}$/.test(key)).slice(0,30)}
     if(!['idMatches','referenceMatches','currencyMatches','amountMatches','statusKnown','urlMatches'].every(key=>verification[key])){
-     await db.transaction(async()=>{const current=await prior();await db.prepare('UPDATE course_paid_orders SET delivery=? WHERE id=?').run(JSON.stringify({...JSON.parse(current.delivery),verification}),row.id)})
+     await db.transaction(async()=>{const current=await prior();await prepare('UPDATE course_paid_orders SET delivery=? WHERE id=?').run(JSON.stringify({...JSON.parse(current.delivery),verification}),row.id)})
      fail(409,'Nomod did not verify the matching Hosted Checkout session. Refresh orders to see its non-secret response checks.')
     }
     const target=new URL(checkout.url)
@@ -128,7 +131,7 @@ export function createPrivateNomodTest({db,env,origin,readJson,audit,fetcher=fet
     await db.transaction(async()=>{
      const current=await prior()
      if(current.provider_id)return
-     await db.prepare('UPDATE course_paid_orders SET provider_id=?,provider_url=?,delivery=? WHERE id=?').run(checkout.id.toLowerCase(),target.href,JSON.stringify({status:'held_private_test',testState:'reconciled'}),row.id)
+     await prepare('UPDATE course_paid_orders SET provider_id=?,provider_url=?,delivery=? WHERE id=?').run(checkout.id.toLowerCase(),target.href,JSON.stringify({status:'held_private_test',testState:'reconciled'}),row.id)
      await audit(user.id,'nomod_private_test_reconciled',row.id)
     })
     return {...view(await prior()),alreadyReconciled:false}
@@ -137,7 +140,7 @@ export function createPrivateNomodTest({db,env,origin,readJson,audit,fetcher=fet
   recovery=task;try{return await task}finally{if(recovery===task)recovery=null}
  }
  return {status,create,reconcile,close:async()=>{await Promise.allSettled([flight,recovery].filter(Boolean))},async handle(req,res,path,user,json){
-  const endpoint='/api/courses/admin/payments/'+(replacement?'replacement-test':'private-test'),recover=path===endpoint+'/reconcile'
+  const endpoint='/api/courses/admin/payments/'+(small?'small-test':replacement?'replacement-test':'private-test'),recover=path===endpoint+'/reconcile'
   if(path!==endpoint&&!recover)return false
   if(!owner(user))fail(403,'The private Nomod test is restricted to aswinfrn.')
   if(req.method==='GET'&&!recover){json(res,200,await status(user));return true}

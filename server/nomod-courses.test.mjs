@@ -12,12 +12,12 @@ import {privateNomodRequestId,replacementNomodReason} from './nomod-private-test
 const origin='https://ascore.test',secret='whsec_'+randomBytes(32).toString('base64')
 const configured={ASCORE_ENABLE_PAID_COURSES:'1',ASCORE_ENABLE_PAID_COURSE_DELIVERY:'1',ASCORE_ENABLE_NOMOD_WEBHOOKS:'1',ASCORE_PAID_COURSE_TERMS_APPROVED:'1',ASCORE_NOMOD_LIVE_REQUESTS_APPROVED:'1',NOMOD_HOSTED_CHECKOUT_API_KEY:'mock-key-not-a-real-credential',NOMOD_WEBHOOK_SIGNING_SECRET:secret,NOMOD_CHECKOUT_HOSTS:'checkout.nomod.example'}
 async function readJson(req){const parts=[];for await(const c of req)parts.push(c);return JSON.parse(Buffer.concat(parts))}
-async function harness(t,{contractVerified=true,env={},fetchFailure=false,mailFailure=false}={}){
+async function harness(t,{contractVerified=true,env={},fetchFailure=false,mailFailure=false,checkoutState='created'}={}){
  const db=createSqliteStore();await initializePaymentSchema(db);const calls=[],mails=[],checkouts=new Map()
  const fetcher=async(url,options)=>{
   assert.ok(url.startsWith('https://api.nomod.com/v1/checkout'));calls.push({url,method:options.method,headers:options.headers,body:options.body&&JSON.parse(options.body)})
   if(fetchFailure)throw Error('Mock connection interrupted')
-  if(options.method==='POST'){const body=JSON.parse(options.body),id=randomUUID(),row={id,url:`https://checkout.nomod.example/${id}`,status:'created',amount:Number(body.amount),currency:body.currency,reference_id:body.reference_id,charges:[]};checkouts.set(id,row);return new Response(JSON.stringify(row))}
+  if(options.method==='POST'){const body=JSON.parse(options.body),id=randomUUID(),row={id,url:`https://checkout.nomod.example/${id}`,status:checkoutState,amount:Number(body.amount),currency:body.currency,reference_id:body.reference_id,charges:[]};checkouts.set(id,row);return new Response(JSON.stringify(row))}
   return new Response(JSON.stringify(checkouts.get(url.split('/').at(-1))),{status:200})
  }
  const services={db,env:{...configured,...env},origin,readJson,fetcher,sendEmail:async m=>{mails.push(m);if(mailFailure)throw Error('Mock uncertain mail result');return {reference:'mock-mail'}},pdfReader:async()=>Buffer.from('%PDF-mock-private-fixture'),contractVerified,workerInterval:3600000}
@@ -34,6 +34,13 @@ test('Nomod defaults closed even with keys: no schema writes, provider requests 
  const h=await harness(t,{contractVerified:false});assert.equal(h.payments.ready(),false)
  assert.equal((await h.buy()).response.status,503);assert.equal(h.calls.length,0);assert.equal(h.mails.length,0)
  for(const field of ['ASCORE_ENABLE_PAID_COURSES','ASCORE_ENABLE_PAID_COURSE_DELIVERY','ASCORE_NOMOD_LIVE_REQUESTS_APPROVED','ASCORE_PAID_COURSE_TERMS_APPROVED']){const p=await createNomodCourses({...h.services,env:{...h.services.env,[field]:'0'}});assert.equal(p.ready(),false);await p.close()}
+})
+test('the observed enabled state remains unpaid and cannot trigger fulfilment or purchase identity',async t=>{
+ const h=await harness(t,{checkoutState:'enabled'}),a=await h.buy()
+ assert.equal(a.response.status,200);assert.equal(a.order.paymentStatus,'pending')
+ const receipt=await (await h.request('/api/courses/paid/orders/'+a.order.id,{headers:{'x-course-receipt':a.order.receiptToken}})).json()
+ assert.equal(receipt.paymentStatus,'pending');assert.equal(receipt.paymentEventId,undefined)
+ await h.payments.tick();assert.equal(h.mails.length,0);assert.equal((await h.db.prepare('SELECT COUNT(*) AS n FROM course_paid_downloads').get()).n,0)
 })
 test('paid sales overview counts confirmed revenue, excludes private tests and exposes no payment or download capabilities',async t=>{
  const h=await harness(t),paid=await h.buy(),pending=await h.buy(['ai']),original=await h.buy(),replacement=await h.buy()
