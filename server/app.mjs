@@ -166,7 +166,7 @@ export async function createPortalServer(options = {}) {
   const coursePdfReader=options.coursePdfReader||(pdfStorage.mode==='mariadb'?(_env,id)=>pdfStorage.read(id):undefined)
   const privateCourseTest=createPrivateCourseTest({db,env,readJson,audit,pdfReader:coursePdfReader,sendEmail:options.courseSender})
   let nomod
-  const courses = await createCourses({db,env,readJson,origin,audit,sendEmail:options.courseSender,pdfReader:coursePdfReader,now:options.now||Date.now,workerInterval:options.courseWorkerInterval,pdfStorage,privateTestStatus:user=>privateCourseTest.status(user),paidReady:()=>nomod?.ready()===true,paymentReadiness:async user=>({sales:await nomod?.salesOverview(user),privateNomodTest:await nomod?.privateTestState(user),replacementNomodTest:await nomod?.replacementTestState(user),smallNomodTest:await nomod?.smallTestState(user),setup:nomod?.setupState(user),diagnostic:nomod?.diagnosticState(user),ready:nomod?.ready()===true,requirements:nomod?.requirements,webhooksEnabled:env.ASCORE_ENABLE_NOMOD_WEBHOOKS==='1'})})
+  const courses = await createCourses({db,env,readJson,origin,audit,sendEmail:options.courseSender,pdfReader:coursePdfReader,now:options.now||Date.now,workerInterval:options.courseWorkerInterval,pdfStorage,privateTestStatus:user=>privateCourseTest.status(user),paidReady:()=>nomod?.ready()===true,paymentReadiness:async user=>({sales:await nomod?.salesOverview(user),privateNomodTest:await nomod?.privateTestState(user),replacementNomodTest:await nomod?.replacementTestState(user),smallNomodTest:await nomod?.smallTestState(user),setup:nomod?.setupState(user),diagnostic:nomod?.diagnosticState(user),ready:nomod?.ready()===true,requirements:nomod?.requirements,webhooksEnabled:env.ASCORE_ENABLE_NOMOD_WEBHOOKS==='1',webhookDelivery:nomod?.webhookDeliveryState()})})
   // Production remains closed until Hosted Checkout event correlation is
   // independently verified and a reviewed contract implementation replaces false.
   nomod=await createNomodCourses({db,env,readJson,origin,audit,contractVerified:false,fetcher:options.nomodFetch||fetch,sendEmail:options.courseSender,pdfReader:coursePdfReader,now:options.now||Date.now,workerInterval:options.courseWorkerInterval})
@@ -328,6 +328,7 @@ export async function createPortalServer(options = {}) {
       fail(404,'Not found.')
     } catch (error) {
       // Do not log request bodies, passwords, cookies, OAuth tokens, or setup grants.
+      if(path===nomodWebhookPath&&request.method==='POST')nomod.recordWebhookFailure(error)
       const status = error.status || 500
       if (status === 500) console.error('Portal request failed:', error.code || error.name)
       responseJson(response,status,{error:status === 500 ? 'The request could not be completed.' : error.message})

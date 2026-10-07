@@ -12,7 +12,7 @@ import {privateNomodRequestId,replacementNomodReason} from './nomod-private-test
 const origin='https://ascore.test',secret='whsec_'+randomBytes(32).toString('base64')
 const configured={ASCORE_ENABLE_PAID_COURSES:'1',ASCORE_ENABLE_PAID_COURSE_DELIVERY:'1',ASCORE_ENABLE_NOMOD_WEBHOOKS:'1',ASCORE_PAID_COURSE_TERMS_APPROVED:'1',ASCORE_NOMOD_LIVE_REQUESTS_APPROVED:'1',NOMOD_HOSTED_CHECKOUT_API_KEY:'mock-key-not-a-real-credential',NOMOD_WEBHOOK_SIGNING_SECRET:secret,NOMOD_CHECKOUT_HOSTS:'checkout.nomod.example'}
 async function readJson(req){const parts=[];for await(const c of req)parts.push(c);return JSON.parse(Buffer.concat(parts))}
-async function harness(t,{contractVerified=true,env={},fetchFailure=false,mailFailure=false,checkoutState='created'}={}){
+async function harness(t,{contractVerified=true,env={},fetchFailure=false,mailFailure=false,checkoutState='created',now=Date.now}={}){
  const db=createSqliteStore();await initializePaymentSchema(db);const calls=[],mails=[],checkouts=new Map()
  const fetcher=async(url,options)=>{
   assert.ok(url.startsWith('https://api.nomod.com/v1/checkout'));calls.push({url,method:options.method,headers:options.headers,body:options.body&&JSON.parse(options.body)})
@@ -20,7 +20,7 @@ async function harness(t,{contractVerified=true,env={},fetchFailure=false,mailFa
   if(options.method==='POST'){const body=JSON.parse(options.body),id=randomUUID(),row={id,url:`https://checkout.nomod.example/${id}`,status:checkoutState,amount:Number(body.amount),currency:body.currency,reference_id:body.reference_id,charges:[]};checkouts.set(id,row);return new Response(JSON.stringify(row))}
   return new Response(JSON.stringify(checkouts.get(url.split('/').at(-1))),{status:200})
  }
- const services={db,env:{...configured,...env},origin,readJson,fetcher,sendEmail:async m=>{mails.push(m);if(mailFailure)throw Error('Mock uncertain mail result');return {reference:'mock-mail'}},pdfReader:async()=>Buffer.from('%PDF-mock-private-fixture'),contractVerified,workerInterval:3600000}
+ const services={db,now,env:{...configured,...env},origin,readJson,fetcher,sendEmail:async m=>{mails.push(m);if(mailFailure)throw Error('Mock uncertain mail result');return {reference:'mock-mail'}},pdfReader:async()=>Buffer.from('%PDF-mock-private-fixture'),contractVerified,workerInterval:3600000}
  const payments=await createNomodCourses(services),server=createServer(async(req,res)=>{res.setHeader('Cache-Control','no-store');const json=(r,s,b)=>{r.writeHead(s,{'Content-Type':'application/json'});r.end(JSON.stringify(b))};try{if(!await payments.publicHandle(req,res,new URL(req.url,'http://local').pathname,json))json(res,404,{error:'Not found'})}catch(e){json(res,e.status||500,{error:e.status?e.message:'Server error'})}})
  await new Promise(r=>server.listen(0,'127.0.0.1',r));const base=`http://127.0.0.1:${server.address().port}`
  t.after(async()=>{await new Promise(r=>server.close(r));await payments.close();await db.close()})
@@ -65,6 +65,23 @@ test('Nomod checkout is server-priced, retry-idempotent and stores its mapping b
  const malicious=await h.request('/api/courses/paid/orders',{body:{requestId:randomUUID(),items:['meta'],email:'learner@example.com',amount:'1.00'}});assert.equal(malicious.status,400)
  assert.equal((await h.buy(['meta','meta'])).response.status,400);assert.equal(h.mails.length,0)
  const stored=await h.db.prepare('SELECT * FROM course_paid_orders WHERE id=?').get(a.order.id);assert.equal(stored.provider_id,a.order.url.split('/').at(-1));assert.equal(stored.payment_status,'pending')
+})
+test('a delayed captured payment receives a fresh 24-hour download window, which later reads cannot extend',async t=>{
+ let time=Date.now();const h=await harness(t,{now:()=>time}),a=await h.buy(),firstExpiry=a.order.expiresAt
+ time+=86400000+1000;const provider=h.paid(a.order)
+ await h.webhook({type:'charge.completed',eventId:randomUUID(),data:{id:provider.charges[0].id}});await h.payments.tick()
+ const stored=await h.db.prepare('SELECT payment_status,expires_at FROM course_paid_orders WHERE id=?').get(a.order.id)
+ assert.equal(stored.payment_status,'paid');assert.equal(stored.expires_at,time+86400000);assert.ok(stored.expires_at>firstExpiry);assert.equal(h.mails.length,1)
+ const path='/api/courses/paid/orders/'+a.order.id,headers={'x-course-receipt':a.order.receiptToken}
+ time+=20000;assert.equal((await h.request(path,{headers})).status,200)
+ assert.equal((await h.db.prepare('SELECT expires_at FROM course_paid_orders WHERE id=?').get(a.order.id)).expires_at,stored.expires_at)
+ time=stored.expires_at+1;assert.equal((await h.request(path,{headers})).status,410);assert.equal(h.mails.length,1)
+})
+test('a delayed success return can confirm an exact captured payment when its webhook has not arrived',async t=>{
+ let time=Date.now();const h=await harness(t,{now:()=>time}),a=await h.buy()
+ time+=86400000+1000;h.paid(a.order)
+ const response=await h.request('/api/courses/paid/orders/'+a.order.id,{headers:{'x-course-receipt':a.order.receiptToken}})
+ assert.equal(response.status,200);const result=await response.json();assert.equal(result.paymentStatus,'paid');assert.equal(result.expiresAt,time+86400000);assert.equal(h.mails.length,1)
 })
 test('unknown checkout creation is never automatically retried, including concurrent calls',async t=>{
  const h=await harness(t,{fetchFailure:true}),id=randomUUID();const result=await Promise.all([h.buy(['meta'],'retry@example.com',id),h.buy(['meta'],'retry@example.com',id)]);assert.ok(result.some(r=>r.response.status===502));assert.equal(h.calls.filter(c=>c.method==='POST').length,1);assert.equal((await h.buy(['meta'],'retry@example.com',id)).response.status,409);assert.equal(h.mails.length,0)

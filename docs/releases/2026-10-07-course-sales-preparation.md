@@ -111,3 +111,14 @@ Customer download emails include the owner's Friday 2 PM UAE Google Meet support
 arrangement and WhatsApp/call contact. The reusable joining link remains pending;
 weekly emails remain disabled. The targeted 17 payment/diagnostic tests pass;
 production build and lint pass with the same three existing warnings.
+
+Launch hardening: the protected 24-hour download window begins with the first
+independently verified captured payment. A delayed payment or return remains
+confirmable; repeated receipt checks cannot extend expiry or resend email.
+Optional reviews and weekly-session tables are recognized by production inventory
+only with their own ownership markers; this release does not create them.
+The administrator sees the latest webhook attempt's time, HTTP status and fixed
+reason only. Bodies, signatures, credentials and buyer data are never retained
+in this diagnostic. It resets on deployment; stored signed events stay durable.
+115 backend tests pass, plus production build and lint with existing warnings.
+Public activation still awaits the real signed AED 2 completion notification.

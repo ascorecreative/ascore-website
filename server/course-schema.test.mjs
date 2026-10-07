@@ -27,3 +27,13 @@ test('course migration needs explicit approval and refuses a conflicting unowned
 test('course migration creates only its three tables and ownership markers; reruns perform no writes',async()=>{
  const state=fixture(),env={ASCORE_ALLOW_COURSE_SCHEMA_SETUP:'1'};await initializeCourseSchema(state.db,env);assert.ok(courseTables.every(n=>state.names.has(n)));assert.equal(state.writes.filter(s=>s.startsWith('CREATE TABLE')).length,3);assert.ok(state.markers.has('ascore-courses:1'));await verifyMariaDbSchema(state.db);state.writes.length=0;await initializeCourseSchema(state.db,env);assert.deepEqual(state.writes,[])
 })
+
+test('optional review and session tables survive production startup only with their own verified ownership markers',async()=>{
+ for(const [application,tables] of [['ascore-course-reviews',['course_reviews','course_review_limits']],['ascore-course-sessions',['course_session_emails']]]){
+  const owned=fixture({owned:true});tables.forEach(name=>owned.names.add(name))
+  await assert.rejects(verifyMariaDbSchema(owned.db),/optional course tables.*ownership/)
+  for(const version of [0,1]){owned.markers.add(application+':'+version);assert.deepEqual(await verifyMariaDbSchema(owned.db),{version:1});owned.markers.delete(application+':'+version)}
+  owned.markers.add(application+':1');owned.names.add('unrelated_client_data');await assert.rejects(verifyMariaDbSchema(owned.db),/dedicated/)
+  assert.deepEqual(owned.writes,[])
+ }
+})

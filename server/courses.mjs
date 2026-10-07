@@ -92,7 +92,7 @@ export async function createCourses({db,env={},readJson,origin,sendEmail,pdfRead
  async function paymentStatus(user){
   const status=await paymentReadiness(user);if(!status)return null
   const fields=['enabled','schemaReady','contractVerified','apiKeyConfigured','webhookSecretConfigured','checkoutHostsConfigured','liveRequestsApproved','deliveryEnabled','termsApproved','senderConfigured','privatePdfsReady','originReady']
-  return {sales:status.sales,smallNomodTest:status.smallNomodTest,setup:status.setup,diagnostic:status.diagnostic,privateNomodTest:status.privateNomodTest,replacementNomodTest:status.replacementNomodTest,ready:status.ready===true,webhooksEnabled:status.webhooksEnabled===true,requirements:Object.fromEntries(fields.map(field=>[field,status.requirements?.[field]===true]))}
+  return {sales:status.sales,smallNomodTest:status.smallNomodTest,setup:status.setup,diagnostic:status.diagnostic,privateNomodTest:status.privateNomodTest,replacementNomodTest:status.replacementNomodTest,ready:status.ready===true,webhooksEnabled:status.webhooksEnabled===true,webhookDelivery:status.webhookDelivery,requirements:Object.fromEntries(fields.map(field=>[field,status.requirements?.[field]===true]))}
  }
 
  const mail=sendEmail||(requirements.senderConfigured?sender(env):null),flights=new Map()
