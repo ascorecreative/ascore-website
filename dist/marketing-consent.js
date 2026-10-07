@@ -59,8 +59,10 @@
   function googlePage() {
     const current = path();
     const titles = {'/': 'Ascore', '/courses/': 'Ascore courses', '/courses/meta-ads/': 'Ascore Meta Ads course', '/courses/practical-ai/': 'Ascore Practical AI course', '/courses/checkout/': 'Ascore course checkout'};
-    // Never read a customer-controlled title, query, fragment or referrer.
-    return {page_location: location.origin + current, page_title: titles[current] || 'Ascore ' + current.split('/').filter(Boolean).join(' ').replaceAll('-', ' '), page_referrer: ''};
+    // Eligibility rejects unknown/sensitive query fields. Share only validated
+    // UTM campaign tags with Google; never cross-share Meta's click identifier.
+    const campaign = new URLSearchParams([...new URLSearchParams(location.search)].filter(([key]) => /^utm_(?:source|medium|campaign|content|term|id)$/.test(key))).toString();
+    return {page_location: location.origin + current + (campaign ? '?' + campaign : ''), page_title: titles[current] || 'Ascore ' + current.split('/').filter(Boolean).join(' ').replaceAll('-', ' '), page_referrer: ''};
   }
   function flushGooglePurchase() {
     if (!googlePending || !googleLoaded || !googleInitialized || !granted() || !eligible() || !GA4_READY) return;

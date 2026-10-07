@@ -129,3 +129,9 @@ the owner's confirmed email arrangement; automated weekly delivery still needs
 the reusable Meet link and separate setup. Safe isolated browser checks verify
 the enabled cart and review screen at AED 49.99, at 390px and 1440px widths,
 without creating a provider checkout, sending email or exposing a paid PDF.
+
+Consented GA4 page locations retain only the existing validated UTM allowlist;
+Meta click identifiers, referrers and private query fields remain excluded.
+Denied consent, browser privacy signals and sensitive URLs still load no tags.
+The attribution regression passes with the existing consent/Purchase protections.
+Live GA4 reporting after restart returned actual connected property metrics.

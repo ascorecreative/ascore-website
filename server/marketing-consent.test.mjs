@@ -40,3 +40,11 @@ test('Purchase remains limited to exact paid receipts and stable opaque event de
  assert.equal(b.events('Purchase').length,0);assert.equal(b.context.AscoreMarketing.verifiedPurchase(receipt),true);b.context.AscoreMarketing.verifiedPurchase(receipt);assert.equal(b.events('Purchase').length,1)
  b.withdraw();assert.equal(b.context.AscoreMarketing.verifiedPurchase({...receipt,paymentEventId:'b'.repeat(64)}),true);assert.equal(b.events('Purchase').length,1)
 })
+
+test('GA4 keeps validated campaign attribution after consent without sharing Meta click IDs, referrers or private queries',()=>{
+ const b=browser({path:'/courses/meta-ads/?utm_source=facebook&utm_medium=paid_social&utm_campaign=meta-course&utm_content=creative-1&fbclid=private-meta-click',referrer:'https://facebook.com/private-route?private=query'});b.load()
+ const calls=b.context.dataLayer.map(args=>[...args]),page=calls.find(call=>call[0]==='event'&&call[1]==='page_view')[2]
+ assert.equal(page.page_location,'https://ascore.test/courses/meta-ads/?utm_source=facebook&utm_medium=paid_social&utm_campaign=meta-course&utm_content=creative-1')
+ assert.equal(page.page_referrer,'');assert.ok(!JSON.stringify(calls).includes('private-meta-click'));assert.ok(!JSON.stringify(calls).includes('private-route'))
+ for(const options of [{consent:'denied',path:'/courses/?utm_source=facebook'},{privacy:true,path:'/courses/?utm_source=facebook'},{path:'/courses/?utm_source=facebook&token=private-secret'},{path:'/courses/?utm_content=buyer%40example.test'}]){const blocked=browser(options);assert.equal(blocked.scripts.length,0);assert.equal(blocked.context.dataLayer,undefined)}
+})
