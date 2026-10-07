@@ -7,20 +7,29 @@ import {createSqliteStore} from './sqlite-store.mjs'
 import {initializePaymentSchema} from './payment-schema.mjs'
 import {createNomodCourses,nomodWebhookPath} from './nomod-courses.mjs'
 import {createPortalServer} from './app.mjs'
+import {courseCatalog} from './courses.mjs'
 import {privateNomodRequestId,replacementNomodReason} from './nomod-private-test.mjs'
 
 const origin='https://ascore.test',secret='whsec_'+randomBytes(32).toString('base64')
 const configured={ASCORE_ENABLE_PAID_COURSES:'1',ASCORE_ENABLE_PAID_COURSE_DELIVERY:'1',ASCORE_ENABLE_NOMOD_WEBHOOKS:'1',ASCORE_PAID_COURSE_TERMS_APPROVED:'1',ASCORE_NOMOD_LIVE_REQUESTS_APPROVED:'1',NOMOD_HOSTED_CHECKOUT_API_KEY:'mock-key-not-a-real-credential',NOMOD_WEBHOOK_SIGNING_SECRET:secret,NOMOD_CHECKOUT_HOSTS:'checkout.nomod.example'}
 async function readJson(req){const parts=[];for await(const c of req)parts.push(c);return JSON.parse(Buffer.concat(parts))}
-async function harness(t,{contractVerified=true,env={},fetchFailure=false,mailFailure=false,checkoutState='created',now=Date.now}={}){
+async function harness(t,{contractVerified=true,env={},fetchFailure=false,mailFailure=false,checkoutState='created',readCheckoutState,apiLinks=false,now=Date.now}={}){
  const db=createSqliteStore();await initializePaymentSchema(db);const calls=[],mails=[],checkouts=new Map(),reports=[]
  const fetcher=async(url,options)=>{
+  if(apiLinks){
+   assert.equal(options.headers['X-API-KEY'],'mock-general-key');calls.push({url,method:options.method,headers:options.headers,body:options.body&&JSON.parse(options.body)})
+   const u=new URL(url)
+   if(options.method==='POST'){const body=JSON.parse(options.body),id=randomUUID(),row={id,url:`https://checkout.nomod.example/${id}`,status:'enabled',reference_id:'link-'+id,currency:body.currency,amount:body.items.reduce((n,i)=>n+Number(i.amount)*i.quantity,0).toFixed(2),items:body.items,note:body.note,success_url:body.success_url,allow_tip:false,allow_service_fee:false,shipping_address_required:false,payment_expiry_limit:1,payment_block_reason:null,discount:'0.00',tax:'0.00',tip:'0.00',service_fee:'0.00',charges:[]};checkouts.set(id,row);return new Response(JSON.stringify(row),{status:201})}
+   if(u.pathname==='/v1/charges'){const row=checkouts.get(u.searchParams.get('link_id'));assert.equal(u.searchParams.get('type'),'link');return new Response(JSON.stringify({count:row.charges.length,next:null,results:row.charges}))}
+   if(u.pathname.startsWith('/v1/charges/')){const id=u.pathname.split('/').at(-1),row=[...checkouts.values()].find(r=>r.charges.some(c=>c.id===id)),charge=row.charges.find(c=>c.id===id);return new Response(JSON.stringify({...charge,currency:row.currency,total:charge.amount,refund_total:charge.status==='refunded'?charge.amount:'0.00',note:row.note,success_url:row.success_url,discount:'0.00',tax:'0.00',tip:'0.00',service_fee:'0.00'}))}
+   const row=checkouts.get(u.pathname.split('/').at(-1));return new Response(JSON.stringify({...row,status:row.status==='paid'?'disabled':row.status}))
+  }
   assert.ok(url.startsWith('https://api.nomod.com/v1/checkout'));calls.push({url,method:options.method,headers:options.headers,body:options.body&&JSON.parse(options.body)})
   if(fetchFailure)throw Error('Mock connection interrupted')
   if(options.method==='POST'){const body=JSON.parse(options.body),id=randomUUID(),row={id,url:`https://checkout.nomod.example/${id}`,status:checkoutState,amount:Number(body.amount),currency:body.currency,reference_id:body.reference_id,charges:[]};checkouts.set(id,row);return new Response(JSON.stringify(row))}
-  return new Response(JSON.stringify(checkouts.get(url.split('/').at(-1))),{status:200})
+  const row=checkouts.get(url.split('/').at(-1));if(readCheckoutState)row.status=readCheckoutState;return new Response(JSON.stringify(row),{status:200})
  }
- const services={db,now,webhookReporter:value=>reports.push(value),env:{...configured,...env},origin,readJson,fetcher,sendEmail:async m=>{mails.push(m);if(mailFailure)throw Error('Mock uncertain mail result');return {reference:'mock-mail'}},pdfReader:async()=>Buffer.from('%PDF-mock-private-fixture'),contractVerified,workerInterval:3600000}
+ const services={db,now,webhookReporter:value=>reports.push(value),env:{...configured,...(apiLinks?{NOMOD_PAYMENT_MODE:'api-links',NOMOD_API_KEY:'mock-general-key',NOMOD_API_WEBHOOK_SIGNING_SECRET:secret}:{}),...env},origin,readJson,fetcher,sendEmail:async m=>{mails.push(m);if(mailFailure)throw Error('Mock uncertain mail result');return {reference:'mock-mail'}},pdfReader:async()=>Buffer.from('%PDF-mock-private-fixture'),contractVerified,workerInterval:3600000}
  const payments=await createNomodCourses(services),server=createServer(async(req,res)=>{res.setHeader('Cache-Control','no-store');const json=(r,s,b)=>{r.writeHead(s,{'Content-Type':'application/json'});r.end(JSON.stringify(b))};try{if(!await payments.publicHandle(req,res,new URL(req.url,'http://local').pathname,json))json(res,404,{error:'Not found'})}catch(e){payments.recordWebhookFailure(e);json(res,e.status||500,{error:e.status?e.message:'Server error'})}})
  await new Promise(r=>server.listen(0,'127.0.0.1',r));const base=`http://127.0.0.1:${server.address().port}`
  t.after(async()=>{await new Promise(r=>server.close(r));await payments.close();await db.close()})
@@ -34,6 +43,10 @@ test('Nomod defaults closed even with keys: no schema writes, provider requests 
  const h=await harness(t,{contractVerified:false});assert.equal(h.payments.ready(),false)
  assert.equal((await h.buy()).response.status,503);assert.equal(h.calls.length,0);assert.equal(h.mails.length,0)
  for(const field of ['ASCORE_ENABLE_PAID_COURSES','ASCORE_ENABLE_PAID_COURSE_DELIVERY','ASCORE_NOMOD_LIVE_REQUESTS_APPROVED','ASCORE_PAID_COURSE_TERMS_APPROVED']){const p=await createNomodCourses({...h.services,env:{...h.services.env,[field]:'0'}});assert.equal(p.ready(),false);await p.close()}
+})
+test('an observed unverified creation is independently read as enabled before redirect and stays unpaid',async t=>{
+ const h=await harness(t,{checkoutState:'unverified',readCheckoutState:'enabled'}),a=await h.buy()
+ assert.equal(a.response.status,200);assert.equal(a.order.paymentStatus,'pending');assert.deepEqual(h.calls.map(c=>c.method),['POST','GET']);assert.equal(h.mails.length,0)
 })
 test('the observed enabled state remains unpaid and cannot trigger fulfilment or purchase identity',async t=>{
  const h=await harness(t,{checkoutState:'enabled'}),a=await h.buy()
@@ -145,4 +158,25 @@ test('production application keeps Nomod closed and only the signed webhook path
  assert.equal((await fetch(base+'/api/courses/paid/orders',{method:'POST',body:'{}'})).status,403)
  assert.equal((await fetch(base+nomodWebhookPath,{method:'POST',body:'{}'})).status,400)
  assert.equal((await fetch(base+'/api/courses/admin/assets/meta',{method:'PUT',body:'%PDF-test'})).status,403);assert.equal(calls,0)
+})
+
+
+test('general API flow persists link mapping, confirms capture without a webhook, delivers once and holds refunds',async t=>{
+ const h=await harness(t,{apiLinks:true})
+ assert.equal(h.payments.paymentMode,'api-links');assert.equal(h.payments.ready(),true)
+ const a=await h.buy(),stored=await h.db.prepare('SELECT * FROM course_paid_orders WHERE id=?').get(a.order.id)
+ assert.equal(a.response.status,200);assert.equal(a.order.paymentStatus,'pending')
+ assert.equal(JSON.parse(stored.delivery).providerMode,'api-links');assert.equal(JSON.parse(stored.delivery).providerReference,'link-'+stored.provider_id)
+ assert.equal((await h.buy(['meta'],'learner@example.com',a.requestId)).order.id,a.order.id)
+ assert.equal(h.calls.filter(c=>c.method==='POST').length,1)
+ await h.payments.tick();assert.equal(h.mails.length,0)
+ const provider=h.paid(a.order);await h.db.prepare('UPDATE course_paid_orders SET provider_checked_at=0 WHERE id=?').run(a.order.id)
+ await h.payments.tick();await h.payments.tick();assert.equal(h.mails.length,1)
+ const receipt=await(await h.request('/api/courses/paid/orders/'+a.order.id,{headers:{'x-course-receipt':a.order.receiptToken}})).json()
+ assert.equal(receipt.paymentStatus,'paid');assert.match(receipt.paymentEventId,/^[a-f0-9]{64}$/)
+ const url=new URL(h.mails[0].text.match(/https:\/\/ascore.test\/api\/courses\/paid\/download\/[^\s]+/)[0])
+ assert.equal((await h.request(url.pathname+url.search)).status,200)
+ provider.charges[0].status='refunded';await h.db.prepare('UPDATE course_paid_orders SET provider_checked_at=0 WHERE id=?').run(a.order.id)
+ await h.payments.confirm(a.order.id)
+ assert.equal((await h.request(url.pathname+url.search)).status,404);assert.equal(h.mails.length,1)
 })
