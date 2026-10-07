@@ -11,17 +11,27 @@ export async function enablePublicTrialAmounts(db){
  await verifyPaymentSchema(db)
  if(db.kind!=='mariadb')return
  await verifyPaymentOwnership(db)
- const checks=await db.prepare("SELECT CONSTRAINT_NAME AS name,CHECK_CLAUSE AS clause FROM information_schema.CHECK_CONSTRAINTS WHERE CONSTRAINT_SCHEMA=DATABASE() AND TABLE_NAME='course_paid_orders'").all()
+ const checkSql="SELECT CONSTRAINT_NAME AS name,CHECK_CLAUSE AS clause,LEVEL AS level FROM information_schema.CHECK_CONSTRAINTS WHERE CONSTRAINT_SCHEMA=DATABASE() AND TABLE_NAME='course_paid_orders'"
+ const checks=await db.prepare(checkSql).all()
  const normalize=s=>s.toLowerCase().replace(/[\s`()]/g,'')
  const existing=checks.filter(c=>normalize(c.clause).startsWith('total_minorin'))
  if(existing.length!==1)throw Error('The course price constraint requires review.')
  const check=existing[0],clause=normalize(check.clause)
  if(clause==='total_minorin200,400,4999,9998,5000,10000')return
  if(clause!=='total_minorin4999,9998,5000,10000'||!/^\w{1,64}$/.test(check.name))throw Error('The course price constraint requires review.')
- try{await db.exec(`ALTER TABLE course_paid_orders DROP CONSTRAINT \`${check.name}\`, ADD CONSTRAINT ascore_paid_amount CHECK(total_minor IN (200,400,4999,9998,5000,10000))`)}catch(error){
-  const current=await db.prepare("SELECT CHECK_CLAUSE AS clause FROM information_schema.CHECK_CONSTRAINTS WHERE CONSTRAINT_SCHEMA=DATABASE() AND TABLE_NAME='course_paid_orders' AND CONSTRAINT_NAME='ascore_paid_amount'").all()
-  if(current.length!==1||normalize(current[0].clause)!=='total_minorin200,400,4999,9998,5000,10000')throw error
- }
+ let ddl
+ if(check.level==='Column'&&check.name==='total_minor'){
+  // MariaDB cannot DROP CONSTRAINT for this inline column check (MDEV-30899).
+  // Keep the independently inspected column type, nullability and default.
+  const column=await db.prepare("SELECT COLUMN_TYPE AS type,IS_NULLABLE AS nullable,COLUMN_DEFAULT AS defaultValue,EXTRA AS extra,COLUMN_COMMENT AS comment FROM information_schema.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='course_paid_orders' AND COLUMN_NAME='total_minor'").get()
+  if(!column||!/^int(?:\(11\))?$/.test(column.type)||column.nullable!=='NO'||column.defaultValue!==null||column.extra!==''||column.comment!=='')throw Error('The course amount column requires review.')
+  ddl='ALTER TABLE course_paid_orders MODIFY COLUMN total_minor INTEGER NOT NULL CHECK(total_minor IN (200,400,4999,9998,5000,10000))'
+ }else if(check.level==='Table'){
+  ddl=`ALTER TABLE course_paid_orders DROP CONSTRAINT \`${check.name}\`, ADD CONSTRAINT ascore_paid_amount CHECK(total_minor IN (200,400,4999,9998,5000,10000))`
+ }else throw Error('The course price constraint requires review.')
+ let failure;try{await db.exec(ddl)}catch(error){failure=error}
+ const current=(await db.prepare(checkSql).all()).filter(c=>normalize(c.clause).startsWith('total_minorin'))
+ if(current.length!==1||normalize(current[0].clause)!=='total_minorin200,400,4999,9998,5000,10000')throw failure||Error('The course price update was not verified.')
 }
 export async function verifyPaymentOwnership(db){
  const initializing=await db.prepare('SELECT application,version FROM ascore_schema_versions WHERE application=? AND version=?').get('ascore-payments',0)
