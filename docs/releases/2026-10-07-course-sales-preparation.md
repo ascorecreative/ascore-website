@@ -46,10 +46,20 @@ sales, zero-payment checkout, paid PDF delivery or advertising spend.
 - If creation returns a UUID but fails the remaining validation, only that
   candidate ID is kept privately. Independent GET verification must establish
   its exact merchant reference, amount, currency and HTTPS URL before recovery.
+  Failed independent verification retains only non-secret field checks for the
+  owner, so a response mismatch can be diagnosed without another creation.
+- Exactly one approved replacement was attempted. Nomod phone shows a new
+  active AED 49.99 link at 6:30 AM UAE with zero charges. Creation and subsequent
+  GET verification remain uncertain; no further checkout is authorized. The
+  owner provided its payment link. Payment is pending verification and handoff.
+- Nomod's existing Hosted Checkout webhook is active at the exact app receiver
+  URL, with payment completion, failure, cancellation and refund subscriptions.
+  No events were captured at the time of this check; its signing secret remains
+  masked and was not rotated or copied.
 - The exact redirect host pay.nomodapp.com is saved in Hostinger. The temporary
   creation flag is off and signed notifications are on. Public sales remain off.
 
-Validation: 107 backend tests pass; lint has three existing warnings; production
+Validation: 108 backend tests pass; lint has three existing warnings; production
 build, course prerender and compression pass. Isolated Chrome checks cover the
 closed and enabled presentations, mobile/desktop layout, unchanged prices,
 review-only checkout and safe provider-error handling. No provider request,

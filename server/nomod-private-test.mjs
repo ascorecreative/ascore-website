@@ -20,7 +20,7 @@ export function createPrivateNomodTest({db,env,origin,readJson,audit,fetcher=fet
  const prerequisites=()=>closed()&&isSchemaReady()&&originReady()&&env.ASCORE_ENABLE_NOMOD_WEBHOOKS==='1'&&/^whsec_[A-Za-z0-9+/=]+$/.test(env.NOMOD_WEBHOOK_SIGNING_SECRET||'')&&!!env.NOMOD_HOSTED_CHECKOUT_API_KEY
  const prior=()=>db.prepare('SELECT * FROM course_paid_orders WHERE request_id=?').get(requestId)
  const original=()=>db.prepare('SELECT id FROM course_paid_orders WHERE request_id=?').get(privateNomodRequestId)
- const view=row=>row?{state:JSON.parse(row.delivery).testState||'claimed',referenceId:row.id,checkoutId:row.provider_id||null,url:row.provider_url||null,createdAt:Number(row.created_at)}:{state:'not_created',checkoutId:null,url:null}
+ const view=row=>row?{state:JSON.parse(row.delivery).testState||'claimed',referenceId:row.id,checkoutId:row.provider_id||null,candidateCheckoutId:JSON.parse(row.delivery).candidateCheckoutId||null,verification:JSON.parse(row.delivery).verification||null,url:row.provider_url||null,createdAt:Number(row.created_at)}:{state:'not_created',checkoutId:null,url:null}
  async function status(user){
   if(!owner(user))return {ownerAllowed:false,allowed:false}
   const row=isSchemaReady()?await prior():null
@@ -74,7 +74,7 @@ export function createPrivateNomodTest({db,env,origin,readJson,audit,fetcher=fet
   if(!body||typeof body!=='object'||Array.isArray(body)||Object.keys(body).some(key=>!['confirmation','checkoutUrl'].includes(key))||body.confirmation!=='reconcile-existing-meta-4999-v1')fail(400,'Confirm reconciliation of the existing private test only.')
   let knownUrl=null
   if(body.checkoutUrl!==undefined){
-   try{const url=new URL(body.checkoutUrl);if(url.origin!=='https://pay.nomodapp.com'||!/^\/en\/l\/[a-f0-9]{16}\/$/.test(url.pathname)||url.search||url.hash||url.username||url.password)throw Error();knownUrl=url.href}catch{fail(400,'Enter only the existing Nomod payment link copied from the approved private attempt.')}
+   try{const url=new URL(body.checkoutUrl);if(url.origin!=='https://pay.nomodapp.com'||!/^\/en\/l\/[a-f0-9]{16}\/?$/.test(url.pathname)||url.search||url.hash||url.username||url.password)throw Error();knownUrl=url.href.replace(/\/$/,'')}catch{fail(400,'Enter only the existing Nomod payment link copied from the approved private attempt.')}
   }
   if(!prerequisites())fail(403,'Keep public purchasing and delivery closed, with the saved key and signed notifications configured.')
   const row=await prior()
@@ -107,16 +107,20 @@ export function createPrivateNomodTest({db,env,origin,readJson,audit,fetcher=fet
      // Link references can differ from the merchant's Checkout reference.
      // Search the fixed course title once, then match the exact copied URL.
      links=await read('https://api.nomod.com/v1/links?search='+encodeURIComponent(courseCatalog.meta.name)+'&page_size=2')
-     const matches=Array.isArray(links.results)&&links.results.length<=2?links.results.filter(item=>item.url===knownUrl):[]
+     const matches=Array.isArray(links.results)&&links.results.length<=2?links.results.filter(item=>typeof item.url==='string'&&item.url.replace(/\/$/,'')===knownUrl):[]
      if(matches.length===1)link=matches[0]
     }
     }
     if(!link)fail(409,'Nomod did not return one matching existing link. Use its copied payment URL or review Dashboard; do not retry creation.')
-    if(!uuid(link.id)||link.currency!=='AED'||!['49.99',49.99].includes(link.amount)||(knownUrl&&link.url!==knownUrl))fail(409,'The existing link does not match the approved private test.')
+    if(!uuid(link.id)||!uuid(candidate)&&(link.currency!=='AED'||!['49.99',49.99].includes(link.amount))||(knownUrl&&String(link.url).replace(/\/$/,'')!==knownUrl))fail(409,'The existing link does not match the approved private test.')
     // A Link ID is not assumed to be a Checkout ID: the Checkout endpoint must
     // independently authenticate the ID, reference, amount and payment URL.
     checkout=checkout||await read('https://api.nomod.com/v1/checkout/'+link.id.toLowerCase())
-    if(checkout.id?.toLowerCase()!==link.id.toLowerCase()||checkout.reference_id!==row.id||checkout.currency!=='AED'||!['49.99',49.99].includes(checkout.amount)||!['created','cancelled','expired','paid'].includes(checkout.status)||checkout.url!==link.url)fail(409,'Nomod did not verify the matching Hosted Checkout session.')
+    const verification={idMatches:typeof checkout.id==='string'&&checkout.id.toLowerCase()===link.id.toLowerCase(),referenceMatches:checkout.reference_id===row.id,currencyMatches:checkout.currency==='AED',currencyValue:typeof checkout.currency==='string'&&/^[A-Za-z]{3}$/.test(checkout.currency)?checkout.currency:null,amountMatches:['49.99',49.99].includes(checkout.amount),statusKnown:['created','cancelled','expired','paid'].includes(checkout.status),urlMatches:checkout.url===link.url,statusType:typeof checkout.status,statusValue:typeof checkout.status==='string'&&/^[A-Za-z_ -]{1,32}$/.test(checkout.status)?checkout.status:null,amountValue:['number','string'].includes(typeof checkout.amount)&&/^\d+(?:\.\d{1,12})?$/.test(String(checkout.amount))?String(checkout.amount):null,responseFields:Object.keys(checkout).filter(key=>/^[A-Za-z_]{1,40}$/.test(key)).slice(0,30)}
+    if(!['idMatches','referenceMatches','currencyMatches','amountMatches','statusKnown','urlMatches'].every(key=>verification[key])){
+     await db.transaction(async()=>{const current=await prior();await db.prepare('UPDATE course_paid_orders SET delivery=? WHERE id=?').run(JSON.stringify({...JSON.parse(current.delivery),verification}),row.id)})
+     fail(409,'Nomod did not verify the matching Hosted Checkout session. Refresh orders to see its non-secret response checks.')
+    }
     const target=new URL(checkout.url)
     if(target.protocol!=='https:'||target.username||target.password||target.port||!nomodOwnedHost(target.hostname))fail(409,'Nomod returned an unverified payment host.')
     await db.transaction(async()=>{

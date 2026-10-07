@@ -136,6 +136,19 @@ test('an uncertain response preserves only a candidate ID, which requires indepe
  assert.equal(posts,1);assert.equal(gets,1)
  assert.equal((await h.db.prepare('SELECT payment_status FROM course_paid_orders').get()).payment_status,'review')
 })
+test('a mismatched candidate GET records only response checks and never persists its URL as verified',async t=>{
+ const h=await fixture(t);let reference
+ const service=createPrivateNomodTest({...h.options,fetcher:async(target,options)=>{
+  if(options.method==='POST')reference=JSON.parse(options.body).reference_id
+  return new Response(JSON.stringify({id:h.id,reference_id:reference,currency:'AED',amount:'49.990000',url:'https://pay.nomodapp.com/en/l/0123456789abcdef/',status:'unverified',customer:{email:'private@example.test'},secret:'private-provider-data'}))
+ }})
+ await service.create(owner,body);await assert.rejects(service.reconcile(owner,{confirmation:'reconcile-existing-meta-4999-v1'}),{status:409})
+ const status=await service.status(owner),row=await h.db.prepare('SELECT * FROM course_paid_orders').get()
+ assert.equal(status.candidateCheckoutId,h.id);assert.equal(status.verification.referenceMatches,true);assert.equal(status.verification.amountMatches,false);assert.equal(status.verification.amountValue,'49.990000');assert.equal(status.verification.statusValue,'unverified')
+ assert.equal(row.provider_id,null);assert.equal(row.provider_url,null)
+ assert.ok(!row.delivery.includes('private-provider-data'));assert.ok(!row.delivery.includes('private@example.test'))
+ assert.equal((await service.status({...owner,username:'other_admin'})).candidateCheckoutId,undefined)
+})
 test('HTTP owner actions retain auth, origin and CSRF and expose diagnostic/private status through the real orders endpoint',async t=>{
  const db=createSqliteStore();await initializePaymentSchema(db);const activation='synthetic-activation',env={ASCORE_ORIGIN:origin,ASCORE_ALLOW_ADMIN_SETUP:'1',ASCORE_ADMIN_SETUP_GRANTS:JSON.stringify({aswinfrn:{tokenHash:createHash('sha256').update(activation).digest('hex'),expiresAt:new Date(Date.now()+60000).toISOString()}})}
  let requests=0;const app=await createPortalServer({store:db,env,nomodFetch:async()=>{requests++;throw Error('Disabled')},coursePdfReader:async()=>{throw Error('Not installed')}});await new Promise(r=>app.server.listen(0,'127.0.0.1',r));t.after(()=>app.close());const base=`http://127.0.0.1:${app.server.address().port}`
