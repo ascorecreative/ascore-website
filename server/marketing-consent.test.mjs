@@ -18,13 +18,13 @@ function browser({path='/courses/meta-ads/',consent='granted',privacy=false,refe
 test('consented course views and actual cart additions have exact course values, without fake purchases',()=>{
  const b=browser();b.context.AscoreMarketing.addedToCart(['meta']);b.load()
  assert.equal(b.events('PageView').length,1);assert.equal(b.events('ViewContent').length,1);assert.equal(b.events('AddToCart').length,1)
- const data=b.events('AddToCart')[0][3];assert.equal(data.currency,'AED');assert.equal(data.value,49.99);assert.deepEqual([...data.content_ids],['meta']);assert.equal(data.email,undefined)
+ const data=b.events('AddToCart')[0][3];assert.equal(data.currency,'AED');assert.equal(data.value,2);assert.deepEqual([...data.content_ids],['meta']);assert.equal(data.email,undefined)
  b.sync();assert.equal(b.events('ViewContent').length,1)
  b.context.history.pushState({},'','/courses/practical-ai/');assert.equal(b.events('ViewContent').length,2)
  assert.equal(b.context.AscoreMarketing.addedToCart(['meta','meta']),false);assert.equal(b.context.AscoreMarketing.addedToCart(['unknown']),false)
  assert.equal(b.context.AscoreMarketing.startedCheckout(['ai']),false)
  b.context.history.pushState({},'','/courses/checkout/');assert.equal(b.context.AscoreMarketing.startedCheckout(['meta','ai']),true)
- assert.equal(b.events('InitiateCheckout')[0][3].value,99.98);assert.equal(b.events('Purchase').length,0)
+ assert.equal(b.events('InitiateCheckout')[0][3].value,4);assert.equal(b.events('Purchase').length,0)
 })
 test('denied consent, privacy signals, sensitive URLs and private routes send no course events',()=>{
  for(const options of [{consent:'denied'},{consent:null},{privacy:true},{path:'/courses/checkout/?payment=success&order=private'},{path:'/portal/'},{referrer:'https://ascore.test/portal/'}]){
@@ -47,4 +47,18 @@ test('GA4 keeps validated campaign attribution after consent without sharing Met
  assert.equal(page.page_location,'https://ascore.test/courses/meta-ads/?utm_source=facebook&utm_medium=paid_social&utm_campaign=meta-course&utm_content=creative-1')
  assert.equal(page.page_referrer,'');assert.ok(!JSON.stringify(calls).includes('private-meta-click'));assert.ok(!JSON.stringify(calls).includes('private-route'))
  for(const options of [{consent:'denied',path:'/courses/?utm_source=facebook'},{privacy:true,path:'/courses/?utm_source=facebook'},{path:'/courses/?utm_source=facebook&token=private-secret'},{path:'/courses/?utm_content=buyer%40example.test'}]){const blocked=browser(options);assert.equal(blocked.scripts.length,0);assert.equal(blocked.context.dataLayer,undefined)}
+})
+
+test('public AED2 and historical AED49.99 receipts report matching item and total prices once',()=>{
+ for(const price of [200,4999])for(const items of [['meta'],['meta','ai']]){
+  const b=browser({path:'/courses/checkout/'});b.load()
+  const receipt={paymentStatus:'paid',currency:'AED',items,totalMinor:price*items.length,paymentEventId:'c'.repeat(64)}
+  assert.equal(b.context.AscoreMarketing.verifiedPurchase(receipt),true)
+  b.context.AscoreMarketing.verifiedPurchase(receipt)
+  const events=b.events('Purchase');assert.equal(events.length,1);assert.equal(events[0][3].value,receipt.totalMinor/100)
+  for(const item of events[0][3].contents)assert.equal(item.item_price,price/100)
+  const ga=b.context.dataLayer.map(args=>[...args]).filter(call=>call[0]==='event'&&call[1]==='purchase')
+  assert.equal(ga.length,1);assert.equal(ga[0][2].value,receipt.totalMinor/100)
+  for(const item of ga[0][2].items)assert.equal(item.price,price/100)
+ }
 })

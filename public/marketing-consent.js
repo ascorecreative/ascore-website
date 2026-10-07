@@ -3,6 +3,7 @@
   if (window.AscoreMarketing) return;
   const PIXEL = '1058485446949199';
   const GA4 = 'G-MX800C01N9';
+  const COURSE_PRICE = 2; // Owner-approved public AED 2 trial.
   // Owner confirmed Enhanced Measurement OFF for this stream on 2026-10-06.
   // Keep it off in GA Admin; send_page_view:false alone cannot disable history events.
   const GA4_READY = true;
@@ -31,7 +32,7 @@
   function courseEvent(name, items) {
     if (!granted() || !eligible() || !courseItems(items)) return false;
     if (!loaded || !initialized) { courseActions.push({name, items: [...items], path: path()}); courseActions = courseActions.slice(-10); load(); return true; }
-    window.fbq('trackSingle', PIXEL, name, {currency: 'AED', value: items.length * 49.99, content_type: 'product', content_ids: [...items], contents: items.map(id => ({id, quantity: 1, item_price: 49.99})), num_items: items.length});
+    window.fbq('trackSingle', PIXEL, name, {currency: 'AED', value: items.length * COURSE_PRICE, content_type: 'product', content_ids: [...items], contents: items.map(id => ({id, quantity: 1, item_price: COURSE_PRICE})), num_items: items.length});
     return true;
   }
   let googleLoaded = false, googleAttempted = false, googleInitialized = false, googleLastPage = null, googlePending = null, googleConsent = false;
@@ -52,7 +53,7 @@
     const sent = sentEvents();
     if (sentInMemory.has(receipt.paymentEventId) || sent.some(e => e.id === receipt.paymentEventId)) return;
     // Event IDs contain no email, order identifier, receipt token or PDF capability.
-    window.fbq('trackSingle', PIXEL, 'Purchase', {currency: 'AED', value: receipt.totalMinor / 100, content_type: 'product', content_ids: receipt.items, contents: receipt.items.map(id => ({id, quantity: 1, item_price: 49.99})), num_items: receipt.items.length}, {eventID: receipt.paymentEventId});
+    window.fbq('trackSingle', PIXEL, 'Purchase', {currency: 'AED', value: receipt.totalMinor / 100, content_type: 'product', content_ids: receipt.items, contents: receipt.items.map(id => ({id, quantity: 1, item_price: receipt.totalMinor / receipt.items.length / 100})), num_items: receipt.items.length}, {eventID: receipt.paymentEventId});
     sentInMemory.add(receipt.paymentEventId);
     write(SENT, [...sent, {id: receipt.paymentEventId, at: Date.now()}].slice(-100));
   }
@@ -69,7 +70,7 @@
     const receipt = googlePending; googlePending = null;
     const sent = sentEvents(GA_SENT);
     if (googleSentInMemory.has(receipt.paymentEventId) || sent.some(e => e.id === receipt.paymentEventId)) return;
-    window.gtag('event', 'purchase', {...googlePage(), send_to: GA4, transaction_id: receipt.paymentEventId, currency: 'AED', value: receipt.totalMinor / 100, items: receipt.items.map(id => ({item_id: id, item_name: id === 'meta' ? 'Meta Ads PDF course' : 'Practical AI PDF course', price: 49.99, quantity: 1}))});
+    window.gtag('event', 'purchase', {...googlePage(), send_to: GA4, transaction_id: receipt.paymentEventId, currency: 'AED', value: receipt.totalMinor / 100, items: receipt.items.map(id => ({item_id: id, item_name: id === 'meta' ? 'Meta Ads PDF course' : 'Practical AI PDF course', price: receipt.totalMinor / receipt.items.length / 100, quantity: 1}))});
     googleSentInMemory.add(receipt.paymentEventId);
     write(GA_SENT, [...sent, {id: receipt.paymentEventId, at: Date.now()}].slice(-100));
   }
@@ -168,7 +169,7 @@
     addedToCart(items) { return path().startsWith('/courses/') && courseEvent('AddToCart', items); },
     startedCheckout(items) { return path() === '/courses/checkout/' && courseEvent('InitiateCheckout', items); },
     verifiedPurchase(receipt) {
-      if (path() !== '/courses/checkout/' || !eligible() || !receipt || receipt.paymentStatus !== 'paid' || receipt.currency !== 'AED' || !/^[a-f0-9]{64}$/.test(receipt.paymentEventId) || !Array.isArray(receipt.items) || !receipt.items.length || receipt.items.length > 2 || new Set(receipt.items).size !== receipt.items.length || receipt.items.some(id => !['meta', 'ai'].includes(id)) || receipt.totalMinor !== receipt.items.length * 4999) return false;
+      if (path() !== '/courses/checkout/' || !eligible() || !receipt || receipt.paymentStatus !== 'paid' || receipt.currency !== 'AED' || !/^[a-f0-9]{64}$/.test(receipt.paymentEventId) || !Array.isArray(receipt.items) || !receipt.items.length || receipt.items.length > 2 || new Set(receipt.items).size !== receipt.items.length || receipt.items.some(id => !['meta', 'ai'].includes(id)) || ![200, 4999].some(price => receipt.totalMinor === receipt.items.length * price)) return false;
       pending = {paymentEventId: receipt.paymentEventId, totalMinor: receipt.totalMinor, items: [...receipt.items]};
       googlePending = {paymentEventId: receipt.paymentEventId, totalMinor: receipt.totalMinor, items: [...receipt.items]};
       load(); flushPurchase(); flushGooglePurchase(); return true;
