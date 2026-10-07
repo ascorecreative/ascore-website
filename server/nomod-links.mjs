@@ -35,7 +35,7 @@ export function createNomodLinks({env,origin,fetcher=fetch}){
  }
  function verifyLink(link,row,{creating=false}={}){
   if(!uuid(link.id)||!creating&&link.id!==row.provider_id||link.currency!=='AED'||nomodMinor(link.amount)!==Number(row.total_minor)||link.note!==noteFor(row)||typeof link.reference_id!=='string'||!link.reference_id||link.reference_id.length>100||!creating&&link.reference_id!==modeData(row).providerReference)reject()
-  if(!['enabled','disabled'].includes(link.status)||link.payment_block_reason!=null||link.allow_tip!==false||link.allow_service_fee!==false||link.shipping_address_required!==false||link.payment_expiry_limit!==1||['discount','tax','tip','service_fee'].some(k=>nomodMinor(link[k])!==0))reject()
+  if(!['enabled','disabled','expired'].includes(link.status)||link.payment_block_reason!=null||link.allow_tip!==false||link.allow_service_fee!==false||link.shipping_address_required!==false||link.payment_expiry_limit!==1||['discount','tax','tip','service_fee'].some(k=>nomodMinor(link[k])!==0))reject()
   try{const url=new URL(link.url);if(url.protocol!=='https:'||url.username||url.password||!hosts.includes(url.hostname))reject()}catch{reject()}
   if(!creating&&link.url!==row.provider_url)reject()
   const expected=JSON.parse(row.items).map(id=>[courseCatalog[id].name,1,Number(row.total_minor)/JSON.parse(row.items).length]).sort()
@@ -58,7 +58,7 @@ export function createNomodLinks({env,origin,fetcher=fetch}){
     if(!['paid','refunded','partially_refunded','disputed'].includes(candidate.status))continue
     // Read each capture independently, rather than trusting a callback body.
     const charge=await request('GET','/charges/'+candidate.id)
-    if(charge.id!==candidate.id||!['paid','refunded','partially_refunded','disputed'].includes(charge.status)||charge.currency!=='AED'||nomodMinor(charge.total)!==Number(row.total_minor)||nomodMinor(charge.refund_total)===null||nomodMinor(charge.refund_total)>Number(row.total_minor)||charge.note!==noteFor(row)||!returnMatches(charge.success_url,origin,row)||['discount','tax','tip','service_fee'].some(k=>nomodMinor(charge[k])!==0))reject()
+    if(charge.id!==candidate.id||!['paid','refunded','partially_refunded','disputed'].includes(charge.status)||charge.currency!=='AED'||nomodMinor(charge.total)!==Number(row.total_minor)||nomodMinor(charge.refund_total)===null||nomodMinor(charge.refund_total)>Number(row.total_minor)||!charge.link||charge.link.id!==row.provider_id||charge.link.reference_id!==modeData(row).providerReference||charge.link.type!=='full'||!returnMatches(charge.success_url,origin,row)||['discount','tax','tip','service_fee'].some(k=>nomodMinor(charge[k])!==0))reject()
     if(charge.status!=='paid'||nomodMinor(charge.refund_total)>0)requiresReview=true
     paid.push({id:charge.id,status:charge.status,amount:nomodMinor(charge.total)/100})
    }
@@ -67,7 +67,7 @@ export function createNomodLinks({env,origin,fetcher=fetch}){
    if(page===5)reject()
   }
   if(paid.length>1)reject()
-  return {id:link.id,url:link.url,reference_id:row.id,currency:link.currency,amount:nomodMinor(link.amount)/100,status:requiresReview?'review':paid.length?'paid':link.status==='disabled'?'expired':'enabled',charges:paid}
+  return {id:link.id,url:link.url,reference_id:row.id,currency:link.currency,amount:nomodMinor(link.amount)/100,status:requiresReview?'review':paid.length?'paid':['disabled','expired'].includes(link.status)?'expired':'enabled',charges:paid}
  }
  return {create,read}
 }

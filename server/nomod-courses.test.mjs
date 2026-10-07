@@ -1,7 +1,7 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
 import {createServer} from 'node:http'
-import {randomUUID,randomBytes} from 'node:crypto'
+import {randomUUID,randomBytes,createHash} from 'node:crypto'
 import {Webhook} from 'svix'
 import {createSqliteStore} from './sqlite-store.mjs'
 import {initializePaymentSchema} from './payment-schema.mjs'
@@ -21,8 +21,8 @@ async function harness(t,{contractVerified=true,env={},fetchFailure=false,mailFa
    const u=new URL(url)
    if(options.method==='POST'){const body=JSON.parse(options.body),id=randomUUID(),row={id,url:`https://checkout.nomod.example/${id}`,status:'enabled',reference_id:'link-'+id,currency:body.currency,amount:body.items.reduce((n,i)=>n+Number(i.amount)*i.quantity,0).toFixed(2),items:body.items,note:body.note,success_url:body.success_url,allow_tip:false,allow_service_fee:false,shipping_address_required:false,payment_expiry_limit:1,payment_block_reason:null,discount:'0.00',tax:'0.00',tip:'0.00',service_fee:'0.00',charges:[]};checkouts.set(id,row);return new Response(JSON.stringify(row),{status:201})}
    if(u.pathname==='/v1/charges'){const row=checkouts.get(u.searchParams.get('link_id'));assert.equal(u.searchParams.get('type'),'link');return new Response(JSON.stringify({count:row.charges.length,next:null,results:row.charges}))}
-   if(u.pathname.startsWith('/v1/charges/')){const id=u.pathname.split('/').at(-1),row=[...checkouts.values()].find(r=>r.charges.some(c=>c.id===id)),charge=row.charges.find(c=>c.id===id);return new Response(JSON.stringify({...charge,currency:row.currency,total:charge.amount,refund_total:charge.status==='refunded'?charge.amount:'0.00',note:row.note,success_url:row.success_url,discount:'0.00',tax:'0.00',tip:'0.00',service_fee:'0.00'}))}
-   const row=checkouts.get(u.pathname.split('/').at(-1));return new Response(JSON.stringify({...row,status:row.status==='paid'?'disabled':row.status}))
+   if(u.pathname.startsWith('/v1/charges/')){const id=u.pathname.split('/').at(-1),row=[...checkouts.values()].find(r=>r.charges.some(c=>c.id===id)),charge=row.charges.find(c=>c.id===id);return new Response(JSON.stringify({...charge,currency:row.currency,total:charge.amount,refund_total:charge.status==='refunded'?charge.amount:'0.00',note:'',link:{id:row.id,reference_id:row.reference_id,status:row.status==='paid'?'expired':row.status,type:'full'},success_url:row.success_url,discount:'0.00',tax:'0.00',tip:'0.00',service_fee:'0.00'}))}
+   const row=checkouts.get(u.pathname.split('/').at(-1));return new Response(JSON.stringify({...row,status:row.status==='paid'?'expired':row.status}))
   }
   assert.ok(url.startsWith('https://api.nomod.com/v1/checkout'));calls.push({url,method:options.method,headers:options.headers,body:options.body&&JSON.parse(options.body)})
   if(fetchFailure)throw Error('Mock connection interrupted')
@@ -179,4 +179,20 @@ test('general API flow persists link mapping, confirms capture without a webhook
  provider.charges[0].status='refunded';await h.db.prepare('UPDATE course_paid_orders SET provider_checked_at=0 WHERE id=?').run(a.order.id)
  await h.payments.confirm(a.order.id)
  assert.equal((await h.request(url.pathname+url.search)).status,404);assert.equal(h.mails.length,1)
+})
+
+
+test('a missing body eventId uses the signed message ID, deduplicates retries and rejects conflicts or malformed present IDs',async t=>{
+ const h=await harness(t,{apiLinks:true}),a=await h.buy(),row=h.paid(a.order),messageId='msg_'+randomUUID(),event={type:'charge.completed',data:{id:row.charges[0].id}}
+ const expected='svix_'+createHash('sha256').update(messageId).digest('hex')
+ assert.equal((await h.webhook(event,{messageId,tamper:true})).status,400)
+ assert.equal((await h.webhook(event,{messageId})).status,200)
+ assert.equal((await h.webhook(event,{messageId})).status,200)
+ assert.equal((await h.db.prepare('SELECT COUNT(*) AS n FROM course_payment_events').get()).n,1)
+ assert.equal((await h.db.prepare('SELECT svix_id FROM course_payment_events WHERE event_id=?').get(expected)).svix_id,messageId)
+ assert.equal(h.reports.at(-1).identitySource,'svix-id')
+ assert.equal((await h.webhook({...event,type:'charge.failed'},{messageId})).status,409)
+ for(const value of [null,'',{},'invalid!'])assert.equal((await h.webhook({...event,eventId:value})).status,400)
+ await h.payments.tick();await h.payments.tick();assert.equal(h.mails.length,1)
+ assert.equal((await h.db.prepare('SELECT state FROM course_payment_events WHERE event_id=?').get(expected)).state,'processed')
 })

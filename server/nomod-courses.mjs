@@ -156,11 +156,15 @@ export async function createNomodCourses({db,env={},origin,readJson,fetcher=fetc
     // diagnostics limited to fixed shape labels and validation booleans.
     const envelopeKind=Array.isArray(event)?'array':event===null?'null':typeof event
     const svixId=req.headers['svix-id'],signedShape={envelopeKind,eventIdPresent:Object.hasOwn(event||{},'eventId'),eventIdKind:event?.eventId===null?'null':Array.isArray(event?.eventId)?'array':typeof event?.eventId,eventIdLength:typeof event?.eventId==='string'?event.eventId.length:null,eventIdCharactersValid:typeof event?.eventId==='string'&&/^[A-Za-z0-9_-]+$/.test(event.eventId),eventIdValid:typeof event?.eventId==='string'&&/^[A-Za-z0-9_-]{1,100}$/.test(event.eventId),messageIdValid:typeof svixId==='string'&&/^[A-Za-z0-9_-]{1,100}$/.test(svixId),eventTypeValid:typeof event?.type==='string'&&event.type.length<=64,chargeIdValid:uuid(event?.data?.id)}
-    if(!signedShape.eventIdValid||!signedShape.messageIdValid||!signedShape.eventTypeValid)throw Object.assign(Error('Invalid payment notification.'),{status:400,signedShape})
+    if(envelopeKind!=='object'||signedShape.eventIdPresent&&!signedShape.eventIdValid||!signedShape.messageIdValid||!signedShape.eventTypeValid)throw Object.assign(Error('Invalid payment notification.'),{status:400,signedShape})
+    // Svix signs the message ID along with timestamp and raw body. When
+    // Nomod omits its documented eventId, use the authenticated message ID
+    // for durable deduplication; never repair a present but invalid eventId.
+    const eventId=signedShape.eventIdPresent?event.eventId:'svix_'+hash(svixId)
     const payloadHash=hash(raw),chargeId=uuid(event.data?.id)?event.data.id:null,state=!events.has(event.type)?'ignored':ready()&&chargeId?'queued':'needs_review'
-    async function save(){await db.transaction(async()=>{const old=await db.prepare(db.lock('SELECT * FROM course_payment_events WHERE event_id=? OR svix_id=?')).get(event.eventId,svixId);if(old){if(old.event_id!==event.eventId||old.payload_hash!==payloadHash)fail(409,'Payment notification conflicts with a stored event.');return}await db.prepare('INSERT INTO course_payment_events VALUES (?,?,?,?,?,?,?,?)').run(event.eventId,svixId,payloadHash,event.type,chargeId,now(),state,state==='needs_review'?'Hosted Checkout correlation is not verified.':null)})}
-    try{await save()}catch(error){if(!uniqueConflict(error))throw error;const old=await db.prepare('SELECT * FROM course_payment_events WHERE event_id=?').get(event.eventId);if(!old||old.payload_hash!==payloadHash)fail(409,'Payment notification conflicts with a stored event.')}
-    reportWebhookDelivery({at:now(),status:200,reason:'signed_event_stored'})
+    async function save(){await db.transaction(async()=>{const old=await db.prepare(db.lock('SELECT * FROM course_payment_events WHERE event_id=? OR svix_id=?')).get(eventId,svixId);if(old){if(old.event_id!==eventId||old.payload_hash!==payloadHash)fail(409,'Payment notification conflicts with a stored event.');return}await db.prepare('INSERT INTO course_payment_events VALUES (?,?,?,?,?,?,?,?)').run(eventId,svixId,payloadHash,event.type,chargeId,now(),state,state==='needs_review'?'Payment correlation is not verified.':null)})}
+    try{await save()}catch(error){if(!uniqueConflict(error))throw error;const old=await db.prepare('SELECT * FROM course_payment_events WHERE event_id=?').get(eventId);if(!old||old.payload_hash!==payloadHash)fail(409,'Payment notification conflicts with a stored event.')}
+    reportWebhookDelivery({at:now(),status:200,reason:'signed_event_stored',identitySource:signedShape.eventIdPresent?'body':'svix-id'})
     json(res,200,{accepted:true});return true
    }
    if(path==='/api/courses/paid/orders'&&req.method==='POST'){
