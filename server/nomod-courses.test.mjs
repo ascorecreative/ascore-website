@@ -13,14 +13,14 @@ const origin='https://ascore.test',secret='whsec_'+randomBytes(32).toString('bas
 const configured={ASCORE_ENABLE_PAID_COURSES:'1',ASCORE_ENABLE_PAID_COURSE_DELIVERY:'1',ASCORE_ENABLE_NOMOD_WEBHOOKS:'1',ASCORE_PAID_COURSE_TERMS_APPROVED:'1',ASCORE_NOMOD_LIVE_REQUESTS_APPROVED:'1',NOMOD_HOSTED_CHECKOUT_API_KEY:'mock-key-not-a-real-credential',NOMOD_WEBHOOK_SIGNING_SECRET:secret,NOMOD_CHECKOUT_HOSTS:'checkout.nomod.example'}
 async function readJson(req){const parts=[];for await(const c of req)parts.push(c);return JSON.parse(Buffer.concat(parts))}
 async function harness(t,{contractVerified=true,env={},fetchFailure=false,mailFailure=false,checkoutState='created',now=Date.now}={}){
- const db=createSqliteStore();await initializePaymentSchema(db);const calls=[],mails=[],checkouts=new Map()
+ const db=createSqliteStore();await initializePaymentSchema(db);const calls=[],mails=[],checkouts=new Map(),reports=[]
  const fetcher=async(url,options)=>{
   assert.ok(url.startsWith('https://api.nomod.com/v1/checkout'));calls.push({url,method:options.method,headers:options.headers,body:options.body&&JSON.parse(options.body)})
   if(fetchFailure)throw Error('Mock connection interrupted')
   if(options.method==='POST'){const body=JSON.parse(options.body),id=randomUUID(),row={id,url:`https://checkout.nomod.example/${id}`,status:checkoutState,amount:Number(body.amount),currency:body.currency,reference_id:body.reference_id,charges:[]};checkouts.set(id,row);return new Response(JSON.stringify(row))}
   return new Response(JSON.stringify(checkouts.get(url.split('/').at(-1))),{status:200})
  }
- const services={db,now,env:{...configured,...env},origin,readJson,fetcher,sendEmail:async m=>{mails.push(m);if(mailFailure)throw Error('Mock uncertain mail result');return {reference:'mock-mail'}},pdfReader:async()=>Buffer.from('%PDF-mock-private-fixture'),contractVerified,workerInterval:3600000}
+ const services={db,now,webhookReporter:value=>reports.push(value),env:{...configured,...env},origin,readJson,fetcher,sendEmail:async m=>{mails.push(m);if(mailFailure)throw Error('Mock uncertain mail result');return {reference:'mock-mail'}},pdfReader:async()=>Buffer.from('%PDF-mock-private-fixture'),contractVerified,workerInterval:3600000}
  const payments=await createNomodCourses(services),server=createServer(async(req,res)=>{res.setHeader('Cache-Control','no-store');const json=(r,s,b)=>{r.writeHead(s,{'Content-Type':'application/json'});r.end(JSON.stringify(b))};try{if(!await payments.publicHandle(req,res,new URL(req.url,'http://local').pathname,json))json(res,404,{error:'Not found'})}catch(e){payments.recordWebhookFailure(e);json(res,e.status||500,{error:e.status?e.message:'Server error'})}})
  await new Promise(r=>server.listen(0,'127.0.0.1',r));const base=`http://127.0.0.1:${server.address().port}`
  t.after(async()=>{await new Promise(r=>server.close(r));await payments.close();await db.close()})
@@ -28,7 +28,7 @@ async function harness(t,{contractVerified=true,env={},fetchFailure=false,mailFa
  const buy=async(items=['meta'],email='learner@example.com',requestId=randomUUID())=>{const r=await request('/api/courses/paid/orders',{body:{requestId,email,items}});return {response:r,order:await r.json(),requestId}}
  const paid=o=>{const row=checkouts.get(o.url.split('/').at(-1));row.status='paid';row.charges=[{id:randomUUID(),status:'paid',amount:row.amount}];return row}
  const webhook=async(event,{payload=JSON.stringify(event),messageId='msg_'+randomUUID(),date=new Date(),tamper=false}={})=>{const signature=new Webhook(secret).sign(messageId,date,payload);return request(nomodWebhookPath,{body:tamper?payload+' ':payload,headers:{'svix-id':messageId,'svix-timestamp':String(Math.floor(date.getTime()/1000)),'svix-signature':signature}})}
- return {db,payments,services,calls,mails,checkouts,request,buy,paid,webhook}
+ return {db,payments,services,calls,mails,checkouts,reports,request,buy,paid,webhook}
 }
 test('Nomod defaults closed even with keys: no schema writes, provider requests or delivery',async t=>{
  const h=await harness(t,{contractVerified:false});assert.equal(h.payments.ready(),false)
@@ -114,21 +114,19 @@ test('raw signed events reject tampering and stale timestamps and durably dedupl
  assert.equal((await h.webhook(event,{payload,tamper:true})).status,400);assert.equal((await h.webhook(event,{date:new Date(Date.now()-600000)})).status,400);assert.equal((await h.request(nomodWebhookPath,{body:payload})).status,400)
  assert.equal((await h.webhook(event,{payload})).status,200);assert.equal((await h.db.prepare('SELECT state FROM course_payment_events WHERE event_id=?').get(event.eventId)).state,'queued');assert.equal(h.mails.length,0)
  assert.equal((await h.webhook(event,{payload})).status,200);assert.equal((await h.db.prepare('SELECT COUNT(*) AS n FROM course_payment_events').get()).n,1)
+ assert.equal(h.reports.at(-1).reason,'signed_event_stored');assert.ok(!JSON.stringify(h.reports).includes(event.eventId))
  await h.payments.tick();await h.payments.tick();assert.equal(h.mails.length,1);assert.equal((await h.db.prepare('SELECT state FROM course_payment_events WHERE event_id=?').get(event.eventId)).state,'processed')
 })
-test('a single signed JSON string envelope is decoded without relaxing authentication or deduplication',async t=>{
- const h=await harness(t),a=await h.buy(),row=h.paid(a.order),event={type:'charge.completed',eventId:randomUUID(),data:{id:row.charges[0].id}},payload=JSON.stringify(JSON.stringify(event))
+test('signed string envelopes are rejected with bounded, redacted transport diagnostics',async t=>{
+ const h=await harness(t),event={type:'charge.completed',eventId:randomUUID(),data:{id:randomUUID(),customer:{email:'private@example.test'}}},payload=JSON.stringify(JSON.stringify(event))
  assert.equal((await h.webhook(event,{payload,tamper:true})).status,400)
  assert.equal(h.payments.webhookDeliveryState().signedShape,undefined)
- assert.equal((await h.webhook(event,{payload})).status,200)
- assert.equal((await h.webhook(event,{payload})).status,200)
- assert.equal((await h.db.prepare('SELECT COUNT(*) AS n FROM course_payment_events').get()).n,1)
- await h.payments.tick();await h.payments.tick();assert.equal(h.mails.length,1)
- const nested=JSON.stringify(payload),response=await h.webhook(event,{payload:nested});assert.equal(response.status,400)
+ const response=await h.webhook(event,{payload});assert.equal(response.status,400)
  assert.deepEqual(await response.json(),{error:'Invalid payment notification.'})
  const diagnostic=h.payments.webhookDeliveryState();assert.equal(diagnostic.reason,'invalid_event');assert.equal(diagnostic.signedShape.envelopeKind,'string');assert.equal(diagnostic.signedShape.eventIdValid,false)
- assert.ok(!JSON.stringify(diagnostic).includes(event.eventId));assert.ok(!JSON.stringify(diagnostic).includes(row.charges[0].id));assert.ok(!JSON.stringify(diagnostic).includes(secret))
- assert.equal((await h.db.prepare('SELECT COUNT(*) AS n FROM course_payment_events').get()).n,1)
+ assert.equal(h.reports.length,2);assert.deepEqual(h.reports.at(-1),diagnostic)
+ const logged=JSON.stringify(h.reports);assert.ok(!logged.includes(event.eventId));assert.ok(!logged.includes(event.data.id));assert.ok(!logged.includes(secret));assert.ok(!logged.includes('private@example.test'))
+ assert.equal((await h.db.prepare('SELECT COUNT(*) AS n FROM course_payment_events').get()).n,0);assert.equal(h.mails.length,0)
 })
 test('an uncorrelated signed event is quarantined, while a full refund revokes later downloads',async t=>{
  const h=await harness(t),a=await h.buy(),row=h.paid(a.order);await h.webhook({type:'charge.completed',eventId:randomUUID(),data:{id:randomUUID()}});await h.payments.tick();assert.equal(h.mails.length,0)

@@ -144,3 +144,11 @@ Live GA4 reporting after restart returned actual connected property metrics.
 - Receiver now accepts at most one JSON string envelope only after verifying the untouched raw body. It preserves strict identifiers, captured-charge correlation, exact prices, signature timestamp checks, deduplication and the closed production contract gate. Rejected authenticated events report only bounded shape labels and validation booleans privately, so the next retry can establish the remaining transport difference without logging secrets or customer data.
 - Full backend suite: 117 passed, including tampered string envelopes, duplicate notifications, recursive envelope rejection and private diagnostic redaction. No new checkout, payment, refund, PDF or customer email was made.
 - Public activation remains pending the exact signed event being stored and matched. The 7:39 failure supersedes the earlier assumption that every failed delivery was during the outage. Friday meeting-link automation still awaits the owner's link later today.
+
+### Nomod support reply, 8:21 AM UAE
+
+- Nomod support confirms the transport is a standard JSON object, with application/json, and says it triggered redelivery of the existing completed event. The owner check at 8:28 still finds no matching stored signed event; API captured-payment evidence remains verified. A claim of redelivery is not receiver success.
+- Asked Nomod for the actual retry timestamp, HTTP response status and confirmation of top-level eventId/type plus data.id charge UUID. Continuing the authorized discussion as Ascore Creative FZC LLC.
+- Removed the speculative JSON-string compatibility now that Nomod has confirmed the object contract. Signed string bodies fail closed, with only the fixed envelope label and field-validation booleans reported.
+- Production now writes the same bounded callback-result diagnostic to hosting runtime logs, without body, event/charge IDs, headers, keys, signatures, email addresses or customer data. This preserves the troubleshooting signal across app processes. Logging failure cannot change webhook persistence or its response.
+- 117 backend tests pass, including reporter redaction for rejected signed strings and accepted object events. Public contract gate and all purchasing/delivery flags remain closed. No new payment or checkout was requested or created.
