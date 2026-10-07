@@ -87,6 +87,24 @@ test('recovery retains owner and closed-gate requirements and does not expose pr
  await assert.rejects(service.reconcile(owner,confirmation),error=>error.status===502&&!error.message.includes('private provider content'))
  await assert.rejects(service.reconcile(owner,confirmation),{status:429});assert.equal(calls,1)
 })
+test('copied payment URL recovery never trusts a Link reference instead of the independently verified Checkout reference',async t=>{
+ for(const mismatch of [false,true]){
+  const h=await fixture(t);await createPrivateNomodTest({...h.options,fetcher:async()=>{throw Error('unknown')}}).create(owner,body)
+  const row=await h.db.prepare('SELECT * FROM course_paid_orders').get(),url='https://pay.nomodapp.com/en/l/0123456789abcdef/',reads=[]
+  const service=createPrivateNomodTest({...h.options,fetcher:async(target,options)=>{
+   assert.equal(options.method,'GET');reads.push(target)
+   const item={id:h.id,reference_id:'synthetic-link-number',currency:'AED',amount:'49.99',url}
+   return new Response(JSON.stringify(target.includes('reference_id=')?{count:0,results:[]}:target.includes('/v1/links?')?{count:1,results:[item]}:{...item,status:'created',reference_id:mismatch?randomUUID():row.id}))
+  }})
+  const confirmation={confirmation:'reconcile-existing-meta-4999-v1',checkoutUrl:url}
+  for(const checkoutUrl of ['https://evil.test/en/l/0123456789abcdef/',url+'?key=private','https://pay.nomodapp.com/en/l/other/'])await assert.rejects(service.reconcile(owner,{...confirmation,checkoutUrl}),{status:400})
+  assert.equal(reads.length,0)
+  if(mismatch){await assert.rejects(service.reconcile(owner,confirmation),{status:409});assert.equal((await h.db.prepare('SELECT provider_id FROM course_paid_orders').get()).provider_id,null)}
+  else assert.equal((await service.reconcile(owner,confirmation)).state,'reconciled')
+  assert.equal(reads.length,3)
+  assert.equal(new URL(reads[1]).searchParams.get('search'),'Mastering Facebook Ads: Meta Ads — Beginner to Expert')
+ }
+})
 test('HTTP owner actions retain auth, origin and CSRF and expose diagnostic/private status through the real orders endpoint',async t=>{
  const db=createSqliteStore();await initializePaymentSchema(db);const activation='synthetic-activation',env={ASCORE_ORIGIN:origin,ASCORE_ALLOW_ADMIN_SETUP:'1',ASCORE_ADMIN_SETUP_GRANTS:JSON.stringify({aswinfrn:{tokenHash:createHash('sha256').update(activation).digest('hex'),expiresAt:new Date(Date.now()+60000).toISOString()}})}
  let requests=0;const app=await createPortalServer({store:db,env,nomodFetch:async()=>{requests++;throw Error('Disabled')},coursePdfReader:async()=>{throw Error('Not installed')}});await new Promise(r=>app.server.listen(0,'127.0.0.1',r));t.after(()=>app.close());const base=`http://127.0.0.1:${app.server.address().port}`

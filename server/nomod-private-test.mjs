@@ -66,7 +66,11 @@ export function createPrivateNomodTest({db,env,origin,readJson,audit,fetcher=fet
  }
  async function reconcile(user,body){
   if(!owner(user))fail(403,'The private Nomod test is restricted to aswinfrn.')
-  if(!body||Array.isArray(body)||Object.keys(body).length!==1||body.confirmation!=='reconcile-existing-meta-4999-v1')fail(400,'Confirm reconciliation of the existing private test only.')
+  if(!body||typeof body!=='object'||Array.isArray(body)||Object.keys(body).some(key=>!['confirmation','checkoutUrl'].includes(key))||body.confirmation!=='reconcile-existing-meta-4999-v1')fail(400,'Confirm reconciliation of the existing private test only.')
+  let knownUrl=null
+  if(body.checkoutUrl!==undefined){
+   try{const url=new URL(body.checkoutUrl);if(url.origin!=='https://pay.nomodapp.com'||!/^\/en\/l\/[a-f0-9]{16}\/$/.test(url.pathname)||url.search||url.hash||url.username||url.password)throw Error();knownUrl=url.href}catch{fail(400,'Enter only the existing Nomod payment link copied from the approved private attempt.')}
+  }
   if(!prerequisites())fail(403,'Keep public purchasing and delivery closed, with the saved key and signed notifications configured.')
   const row=await prior()
   if(!row||!isPrivateNomodTest(row))fail(409,'No existing private attempt can be reconciled.')
@@ -86,10 +90,17 @@ export function createPrivateNomodTest({db,env,origin,readJson,audit,fetcher=fet
     return JSON.parse(Buffer.concat(parts).toString('utf8'))
    }
    try{
-    const links=await read('https://api.nomod.com/v1/links?reference_id='+encodeURIComponent(row.id)+'&page_size=2')
-    if(links.count!==1||!Array.isArray(links.results)||links.results.length!==1)fail(409,'Nomod did not return exactly one matching existing link. Review Dashboard; do not retry creation.')
-    const link=links.results[0]
-    if(!uuid(link.id)||link.reference_id!==row.id||link.currency!=='AED'||!['49.99',49.99].includes(link.amount))fail(409,'The existing link does not match the approved private test.')
+    let links=await read('https://api.nomod.com/v1/links?reference_id='+encodeURIComponent(row.id)+'&page_size=2'),link
+    if(links.count===1&&Array.isArray(links.results)&&links.results.length===1&&links.results[0].reference_id===row.id)link=links.results[0]
+    else if(knownUrl){
+     // Link references can differ from the merchant's Checkout reference.
+     // Search the fixed course title once, then match the exact copied URL.
+     links=await read('https://api.nomod.com/v1/links?search='+encodeURIComponent(courseCatalog.meta.name)+'&page_size=2')
+     const matches=Array.isArray(links.results)&&links.results.length<=2?links.results.filter(item=>item.url===knownUrl):[]
+     if(matches.length===1)link=matches[0]
+    }
+    if(!link)fail(409,'Nomod did not return one matching existing link. Use its copied payment URL or review Dashboard; do not retry creation.')
+    if(!uuid(link.id)||link.currency!=='AED'||!['49.99',49.99].includes(link.amount)||(knownUrl&&link.url!==knownUrl))fail(409,'The existing link does not match the approved private test.')
     // A Link ID is not assumed to be a Checkout ID: the Checkout endpoint must
     // independently authenticate the ID, reference, amount and payment URL.
     const checkout=await read('https://api.nomod.com/v1/checkout/'+link.id.toLowerCase())

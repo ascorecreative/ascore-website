@@ -31,10 +31,17 @@ sales, zero-payment checkout, paid PDF delivery or advertising spend.
   Hosted Checkout endpoint. Ambiguous or mismatched results remain held. This
   action cannot create another checkout, charge, email, download or sale; a
   recovered private row stays permanently excluded from fulfilment.
+  An optional copied payment URL permits one fixed-course-title search and an
+  exact URL match when the Link reference differs from the Checkout reference.
+  Only the Checkout response can establish the app's private merchant reference.
+- The first live recovery read did not find a unique link by merchant reference.
+  The existing payment page now confirms the unpaid checkout was cancelled by
+  its Back to store return. It cannot be used for a payment test. A replacement
+  and manual payment require new approval; neither has been performed.
 - The exact redirect host pay.nomodapp.com is saved in Hostinger. The temporary
   creation flag is off and signed notifications are on. Public sales remain off.
 
-Validation: 104 backend tests pass; lint has three existing warnings; production
+Validation: 105 backend tests pass; lint has three existing warnings; production
 build, course prerender and compression pass. Isolated Chrome checks cover the
 closed and enabled presentations, mobile/desktop layout, unchanged prices,
 review-only checkout and safe provider-error handling. No provider request,
