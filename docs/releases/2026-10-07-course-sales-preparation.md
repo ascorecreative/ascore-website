@@ -135,3 +135,12 @@ Meta click identifiers, referrers and private query fields remain excluded.
 Denied consent, browser privacy signals and sensitive URLs still load no tags.
 The attribution regression passes with the existing consent/Purchase protections.
 Live GA4 reporting after restart returned actual connected property metrics.
+
+### Actual Nomod retry and notification transport, 7:39 AM UAE
+
+- The original AED 2 completed-charge notification retried after the outage. The running receiver authenticated its signature, then rejected the notification format with HTTP 400. Owner status records the fixed diagnostic, without body, headers, signatures or customer data.
+- The existing phone webhook signing key matches the saved hosting variable. The editor was cancelled without changing or rotating credentials. The receiver flag is 1.
+- Nomod's exported event has the expected top-level `eventId`, `type`, `objectId` and `data` fields; the event UUID, completed type, paid AED 2 charge and charge UUID are valid. The raw HTTP envelope still requires confirmation from the next actual retry.
+- Receiver now accepts at most one JSON string envelope only after verifying the untouched raw body. It preserves strict identifiers, captured-charge correlation, exact prices, signature timestamp checks, deduplication and the closed production contract gate. Rejected authenticated events report only bounded shape labels and validation booleans privately, so the next retry can establish the remaining transport difference without logging secrets or customer data.
+- Full backend suite: 117 passed, including tampered string envelopes, duplicate notifications, recursive envelope rejection and private diagnostic redaction. No new checkout, payment, refund, PDF or customer email was made.
+- Public activation remains pending the exact signed event being stored and matched. The 7:39 failure supersedes the earlier assumption that every failed delivery was during the outage. Friday meeting-link automation still awaits the owner's link later today.

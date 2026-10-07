@@ -21,7 +21,7 @@ async function harness(t,{contractVerified=true,env={},fetchFailure=false,mailFa
   return new Response(JSON.stringify(checkouts.get(url.split('/').at(-1))),{status:200})
  }
  const services={db,now,env:{...configured,...env},origin,readJson,fetcher,sendEmail:async m=>{mails.push(m);if(mailFailure)throw Error('Mock uncertain mail result');return {reference:'mock-mail'}},pdfReader:async()=>Buffer.from('%PDF-mock-private-fixture'),contractVerified,workerInterval:3600000}
- const payments=await createNomodCourses(services),server=createServer(async(req,res)=>{res.setHeader('Cache-Control','no-store');const json=(r,s,b)=>{r.writeHead(s,{'Content-Type':'application/json'});r.end(JSON.stringify(b))};try{if(!await payments.publicHandle(req,res,new URL(req.url,'http://local').pathname,json))json(res,404,{error:'Not found'})}catch(e){json(res,e.status||500,{error:e.status?e.message:'Server error'})}})
+ const payments=await createNomodCourses(services),server=createServer(async(req,res)=>{res.setHeader('Cache-Control','no-store');const json=(r,s,b)=>{r.writeHead(s,{'Content-Type':'application/json'});r.end(JSON.stringify(b))};try{if(!await payments.publicHandle(req,res,new URL(req.url,'http://local').pathname,json))json(res,404,{error:'Not found'})}catch(e){payments.recordWebhookFailure(e);json(res,e.status||500,{error:e.status?e.message:'Server error'})}})
  await new Promise(r=>server.listen(0,'127.0.0.1',r));const base=`http://127.0.0.1:${server.address().port}`
  t.after(async()=>{await new Promise(r=>server.close(r));await payments.close();await db.close()})
  const request=async(path,{body,headers={},method}={})=>fetch(base+path,{method:method||(body?'POST':'GET'),headers:{...(body?{'Content-Type':'application/json'}:{}),Origin:origin,...headers},...(body?{body:typeof body==='string'?body:JSON.stringify(body)}:{})})
@@ -115,6 +115,20 @@ test('raw signed events reject tampering and stale timestamps and durably dedupl
  assert.equal((await h.webhook(event,{payload})).status,200);assert.equal((await h.db.prepare('SELECT state FROM course_payment_events WHERE event_id=?').get(event.eventId)).state,'queued');assert.equal(h.mails.length,0)
  assert.equal((await h.webhook(event,{payload})).status,200);assert.equal((await h.db.prepare('SELECT COUNT(*) AS n FROM course_payment_events').get()).n,1)
  await h.payments.tick();await h.payments.tick();assert.equal(h.mails.length,1);assert.equal((await h.db.prepare('SELECT state FROM course_payment_events WHERE event_id=?').get(event.eventId)).state,'processed')
+})
+test('a single signed JSON string envelope is decoded without relaxing authentication or deduplication',async t=>{
+ const h=await harness(t),a=await h.buy(),row=h.paid(a.order),event={type:'charge.completed',eventId:randomUUID(),data:{id:row.charges[0].id}},payload=JSON.stringify(JSON.stringify(event))
+ assert.equal((await h.webhook(event,{payload,tamper:true})).status,400)
+ assert.equal(h.payments.webhookDeliveryState().signedShape,undefined)
+ assert.equal((await h.webhook(event,{payload})).status,200)
+ assert.equal((await h.webhook(event,{payload})).status,200)
+ assert.equal((await h.db.prepare('SELECT COUNT(*) AS n FROM course_payment_events').get()).n,1)
+ await h.payments.tick();await h.payments.tick();assert.equal(h.mails.length,1)
+ const nested=JSON.stringify(payload),response=await h.webhook(event,{payload:nested});assert.equal(response.status,400)
+ assert.deepEqual(await response.json(),{error:'Invalid payment notification.'})
+ const diagnostic=h.payments.webhookDeliveryState();assert.equal(diagnostic.reason,'invalid_event');assert.equal(diagnostic.signedShape.envelopeKind,'string');assert.equal(diagnostic.signedShape.eventIdValid,false)
+ assert.ok(!JSON.stringify(diagnostic).includes(event.eventId));assert.ok(!JSON.stringify(diagnostic).includes(row.charges[0].id));assert.ok(!JSON.stringify(diagnostic).includes(secret))
+ assert.equal((await h.db.prepare('SELECT COUNT(*) AS n FROM course_payment_events').get()).n,1)
 })
 test('an uncorrelated signed event is quarantined, while a full refund revokes later downloads',async t=>{
  const h=await harness(t),a=await h.buy(),row=h.paid(a.order);await h.webhook({type:'charge.completed',eventId:randomUUID(),data:{id:randomUUID()}});await h.payments.tick();assert.equal(h.mails.length,0)
