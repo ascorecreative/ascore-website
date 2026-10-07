@@ -5,30 +5,35 @@ import {nomodOwnedHost} from './nomod-host.mjs'
 // A finite owner action, permanently separate from public course fulfilment.
 export const privateNomodRequestId='6ef0cd61-1c20-4b4b-b639-2040c48e417d'
 export const privateNomodReason='Owner-only Nomod test v1; no fulfilment.'
-export const isPrivateNomodTest=row=>row?.request_id===privateNomodRequestId||row?.review_reason===privateNomodReason
+export const replacementNomodRequestId='8cdff02b-9743-4cda-96da-9fd9a3c89cf0'
+export const replacementNomodReason='Owner-only Nomod replacement test v1; no fulfilment.'
+export const isPrivateNomodTest=row=>[privateNomodRequestId,replacementNomodRequestId].includes(row?.request_id)||[privateNomodReason,replacementNomodReason].includes(row?.review_reason)
 const owner=user=>user?.role==='admin'&&user.username==='aswinfrn'
 const fail=(status,message)=>{throw Object.assign(Error(message),{status})}
 const hash=value=>createHash('sha256').update(value).digest('hex')
 const uuid=value=>typeof value==='string'&&/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value)
-export function createPrivateNomodTest({db,env,origin,readJson,audit,fetcher=fetch,now=Date.now,isSchemaReady}){
+export function createPrivateNomodTest({db,env,origin,readJson,audit,fetcher=fetch,now=Date.now,isSchemaReady,replacement=false}){
+ const requestId=replacement?replacementNomodRequestId:privateNomodRequestId,reason=replacement?replacementNomodReason:privateNomodReason,creationFlag=replacement?'ASCORE_ALLOW_NOMOD_REPLACEMENT_TEST':'ASCORE_ALLOW_NOMOD_PRIVATE_TEST',confirmation=replacement?'meta-4999-replacement-v1':'meta-4999-v1'
  let flight=null,recovery=null,recoveryAt=0
  const closed=()=>['ASCORE_ENABLE_PAID_COURSES','ASCORE_ENABLE_FREE_COURSES','ASCORE_ENABLE_PAID_COURSE_DELIVERY','ASCORE_NOMOD_LIVE_REQUESTS_APPROVED'].every(key=>env[key]!=='1')
  const originReady=()=>{try{const url=new URL(origin);return url.protocol==='https:'&&url.origin===origin}catch{return false}}
  const prerequisites=()=>closed()&&isSchemaReady()&&originReady()&&env.ASCORE_ENABLE_NOMOD_WEBHOOKS==='1'&&/^whsec_[A-Za-z0-9+/=]+$/.test(env.NOMOD_WEBHOOK_SIGNING_SECRET||'')&&!!env.NOMOD_HOSTED_CHECKOUT_API_KEY
- const prior=()=>db.prepare('SELECT * FROM course_paid_orders WHERE request_id=?').get(privateNomodRequestId)
+ const prior=()=>db.prepare('SELECT * FROM course_paid_orders WHERE request_id=?').get(requestId)
+ const original=()=>db.prepare('SELECT id FROM course_paid_orders WHERE request_id=?').get(privateNomodRequestId)
  const view=row=>row?{state:JSON.parse(row.delivery).testState||'claimed',referenceId:row.id,checkoutId:row.provider_id||null,url:row.provider_url||null,createdAt:Number(row.created_at)}:{state:'not_created',checkoutId:null,url:null}
  async function status(user){
   if(!owner(user))return {ownerAllowed:false,allowed:false}
   const row=isSchemaReady()?await prior():null
-  return {ownerAllowed:true,allowed:env.ASCORE_ALLOW_NOMOD_PRIVATE_TEST==='1'&&prerequisites()&&!row,operatorEnabled:env.ASCORE_ALLOW_NOMOD_PRIVATE_TEST==='1',prerequisitesReady:prerequisites(),inProgress:!!flight,amountMinor:4999,currency:'AED',...view(row)}
+  return {ownerAllowed:true,allowed:env[creationFlag]==='1'&&prerequisites()&&!row&&(!replacement||!!await original()),operatorEnabled:env[creationFlag]==='1',prerequisitesReady:prerequisites(),inProgress:!!flight,amountMinor:4999,currency:'AED',...view(row)}
  }
  async function create(user,body){
   if(!owner(user))fail(403,'The private Nomod test is restricted to aswinfrn.')
-  if(!body||Array.isArray(body)||typeof body!=='object'||Object.keys(body).length!==1||body.confirmation!=='meta-4999-v1')fail(400,'Confirm only the approved one-time AED 49.99 Meta test.')
+  if(!body||Array.isArray(body)||typeof body!=='object'||Object.keys(body).length!==1||body.confirmation!==confirmation)fail(400,'Confirm only the approved one-time AED 49.99 Meta test.')
   if(!isSchemaReady())fail(503,'Verify the payment tables first.')
   // Retrieval of the durable claim is allowed after the temporary flag is off.
   const existing=await prior();if(existing)return {...view(existing),alreadyAttempted:true}
-  if(env.ASCORE_ALLOW_NOMOD_PRIVATE_TEST!=='1'||!prerequisites())fail(403,'Private test creation is disabled. Approval, signed notifications and closed public checkout/delivery are required.')
+  if(env[creationFlag]!=='1'||!prerequisites())fail(403,'Private test creation is disabled. Approval, signed notifications and closed public checkout/delivery are required.')
+  if(replacement&&!await original())fail(409,'Record the original private attempt before its one approved replacement.')
   if(flight)return flight
   const task=(async()=>{
    const claim=await db.transaction(async()=>{
@@ -36,7 +41,7 @@ export function createPrivateNomodTest({db,env,origin,readJson,audit,fetcher=fet
     if(!owner(account))fail(403,'The existing approved owner account is required.')
     const row=await prior();if(row)return {row,created:false}
     const id=randomUUID(),time=now()
-    await db.prepare('INSERT INTO course_paid_orders (id,request_id,payload_hash,email,items,total_minor,currency,secret,provider_id,provider_url,payment_status,created_at,expires_at,provider_checked_at,delivery,review_reason) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)').run(id,privateNomodRequestId,hash('meta-4999-v1'),'','["meta"]',4999,'AED',randomBytes(32).toString('hex'),null,null,'review',time,time+86400000,0,JSON.stringify({status:'held_private_test',testState:'claimed'}),privateNomodReason)
+    await db.prepare('INSERT INTO course_paid_orders (id,request_id,payload_hash,email,items,total_minor,currency,secret,provider_id,provider_url,payment_status,created_at,expires_at,provider_checked_at,delivery,review_reason) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)').run(id,requestId,hash(confirmation),'','["meta"]',4999,'AED',randomBytes(32).toString('hex'),null,null,'review',time,time+86400000,0,JSON.stringify({status:'held_private_test',testState:'claimed'}),reason)
     await audit(user.id,'nomod_private_test_claimed',id)
     return {row:await prior(),created:true}
    })
@@ -57,7 +62,7 @@ export function createPrivateNomodTest({db,env,origin,readJson,audit,fetcher=fet
     url=target.href;state='created'
    }catch{/* Never retry a live creation after an unknown response. */}finally{clearTimeout(timer)}
    await db.transaction(async()=>{
-    await db.prepare('UPDATE course_paid_orders SET provider_id=?,provider_url=?,delivery=? WHERE id=?').run(state==='created'?result.id:null,state==='created'?url:null,JSON.stringify({status:'held_private_test',testState:state}),row.id)
+    await db.prepare('UPDATE course_paid_orders SET provider_id=?,provider_url=?,delivery=? WHERE id=?').run(state==='created'?result.id:null,state==='created'?url:null,JSON.stringify({status:'held_private_test',testState:state,...(state==='uncertain'&&uuid(result?.id)?{candidateCheckoutId:result.id.toLowerCase()}:{})}),row.id)
     await audit(user.id,'nomod_private_test_'+state,row.id)
    })
    return {...view(await prior()),alreadyAttempted:false}
@@ -90,7 +95,13 @@ export function createPrivateNomodTest({db,env,origin,readJson,audit,fetcher=fet
     return JSON.parse(Buffer.concat(parts).toString('utf8'))
    }
    try{
-    let links=await read('https://api.nomod.com/v1/links?reference_id='+encodeURIComponent(row.id)+'&page_size=2'),link
+    const candidate=JSON.parse(row.delivery).candidateCheckoutId
+    let links,link,checkout
+    if(uuid(candidate)){
+     checkout=await read('https://api.nomod.com/v1/checkout/'+candidate)
+     link={id:candidate,amount:checkout.amount,currency:checkout.currency,url:checkout.url}
+    }else{
+    links=await read('https://api.nomod.com/v1/links?reference_id='+encodeURIComponent(row.id)+'&page_size=2')
     if(links.count===1&&Array.isArray(links.results)&&links.results.length===1&&links.results[0].reference_id===row.id)link=links.results[0]
     else if(knownUrl){
      // Link references can differ from the merchant's Checkout reference.
@@ -99,11 +110,12 @@ export function createPrivateNomodTest({db,env,origin,readJson,audit,fetcher=fet
      const matches=Array.isArray(links.results)&&links.results.length<=2?links.results.filter(item=>item.url===knownUrl):[]
      if(matches.length===1)link=matches[0]
     }
+    }
     if(!link)fail(409,'Nomod did not return one matching existing link. Use its copied payment URL or review Dashboard; do not retry creation.')
     if(!uuid(link.id)||link.currency!=='AED'||!['49.99',49.99].includes(link.amount)||(knownUrl&&link.url!==knownUrl))fail(409,'The existing link does not match the approved private test.')
     // A Link ID is not assumed to be a Checkout ID: the Checkout endpoint must
     // independently authenticate the ID, reference, amount and payment URL.
-    const checkout=await read('https://api.nomod.com/v1/checkout/'+link.id.toLowerCase())
+    checkout=checkout||await read('https://api.nomod.com/v1/checkout/'+link.id.toLowerCase())
     if(checkout.id?.toLowerCase()!==link.id.toLowerCase()||checkout.reference_id!==row.id||checkout.currency!=='AED'||!['49.99',49.99].includes(checkout.amount)||!['created','cancelled','expired','paid'].includes(checkout.status)||checkout.url!==link.url)fail(409,'Nomod did not verify the matching Hosted Checkout session.')
     const target=new URL(checkout.url)
     if(target.protocol!=='https:'||target.username||target.password||target.port||!nomodOwnedHost(target.hostname))fail(409,'Nomod returned an unverified payment host.')
@@ -119,8 +131,8 @@ export function createPrivateNomodTest({db,env,origin,readJson,audit,fetcher=fet
   recovery=task;try{return await task}finally{if(recovery===task)recovery=null}
  }
  return {status,create,reconcile,close:async()=>{await Promise.allSettled([flight,recovery].filter(Boolean))},async handle(req,res,path,user,json){
-  const recover=path==='/api/courses/admin/payments/private-test/reconcile'
-  if(path!=='/api/courses/admin/payments/private-test'&&!recover)return false
+  const endpoint='/api/courses/admin/payments/'+(replacement?'replacement-test':'private-test'),recover=path===endpoint+'/reconcile'
+  if(path!==endpoint&&!recover)return false
   if(!owner(user))fail(403,'The private Nomod test is restricted to aswinfrn.')
   if(req.method==='GET'&&!recover){json(res,200,await status(user));return true}
   if(req.method!=='POST')fail(405,'Method not allowed.')

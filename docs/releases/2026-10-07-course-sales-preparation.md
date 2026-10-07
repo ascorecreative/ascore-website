@@ -37,11 +37,19 @@ sales, zero-payment checkout, paid PDF delivery or advertising spend.
 - The first live recovery read did not find a unique link by merchant reference.
   The existing payment page now confirms the unpaid checkout was cancelled by
   its Back to store return. It cannot be used for a payment test. A replacement
-  and manual payment require new approval; neither has been performed.
+  and manual payment were subsequently approved by the owner. The replacement
+  has its own durable request ID and ASCORE_ALLOW_NOMOD_REPLACEMENT_TEST gate;
+  the original claim is preserved. Both remain excluded from delivery, reviews,
+  weekly buyer emails and Purchase analytics. Restore the replacement gate to 0
+  after its single creation. The owner must perform payment manually; the agent
+  must not enter payment details, pay, refund or create further checkouts.
+- If creation returns a UUID but fails the remaining validation, only that
+  candidate ID is kept privately. Independent GET verification must establish
+  its exact merchant reference, amount, currency and HTTPS URL before recovery.
 - The exact redirect host pay.nomodapp.com is saved in Hostinger. The temporary
   creation flag is off and signed notifications are on. Public sales remain off.
 
-Validation: 105 backend tests pass; lint has three existing warnings; production
+Validation: 107 backend tests pass; lint has three existing warnings; production
 build, course prerender and compression pass. Isolated Chrome checks cover the
 closed and enabled presentations, mobile/desktop layout, unchanged prices,
 review-only checkout and safe provider-error handling. No provider request,

@@ -4,7 +4,7 @@ import {createHash,randomUUID} from 'node:crypto'
 import {Webhook} from 'svix'
 import {createSqliteStore} from './sqlite-store.mjs'
 import {initializePaymentSchema} from './payment-schema.mjs'
-import {createPrivateNomodTest,privateNomodRequestId,isPrivateNomodTest} from './nomod-private-test.mjs'
+import {createPrivateNomodTest,privateNomodRequestId,replacementNomodRequestId,isPrivateNomodTest} from './nomod-private-test.mjs'
 import {createNomodCourses} from './nomod-courses.mjs'
 import {createPortalServer} from './app.mjs'
 const owner={id:'fixture-owner',username:'aswinfrn',role:'admin'},origin='https://ascore.test',key='synthetic-key',secret='whsec_'+Buffer.from('synthetic-signing-secret').toString('base64'),body={confirmation:'meta-4999-v1'}
@@ -105,6 +105,37 @@ test('copied payment URL recovery never trusts a Link reference instead of the i
   assert.equal(new URL(reads[1]).searchParams.get('search'),'Mastering Facebook Ads: Meta Ads — Beginner to Expert')
  }
 })
+test('one approved replacement has a separate durable limit and never resets or fulfils the original claim',async t=>{
+ const h=await fixture(t),replacementBody={confirmation:'meta-4999-replacement-v1'},replacement=()=>createPrivateNomodTest({...h.options,replacement:true,fetcher:async(...args)=>{const response=await h.options.fetcher(...args);return new Response(JSON.stringify({...await response.json(),id:randomUUID()}))}})
+ assert.equal((await replacement().status(owner)).allowed,false)
+ await assert.rejects(replacement().create(owner,replacementBody),{status:403})
+ h.env.ASCORE_ALLOW_NOMOD_REPLACEMENT_TEST='1'
+ await assert.rejects(replacement().create(owner,replacementBody),{status:409})
+ const initial=await h.service.create(owner,body);h.env.ASCORE_ALLOW_NOMOD_PRIVATE_TEST='0'
+ await assert.rejects(replacement().create(owner,body),{status:400})
+ const results=await Promise.all([replacement().create(owner,replacementBody),replacement().create(owner,replacementBody)])
+ assert.equal(h.calls.length,2);assert.ok(results.every(result=>result.referenceId!==initial.referenceId))
+ h.env.ASCORE_ALLOW_NOMOD_REPLACEMENT_TEST='0'
+ assert.equal((await replacement().create(owner,replacementBody)).alreadyAttempted,true);assert.equal(h.calls.length,2)
+ const rows=await h.db.prepare('SELECT * FROM course_paid_orders ORDER BY created_at').all()
+ assert.equal(rows.length,2);assert.deepEqual(new Set(rows.map(row=>row.request_id)),new Set([privateNomodRequestId,replacementNomodRequestId]))
+ assert.ok(rows.every(row=>isPrivateNomodTest(row)&&row.payment_status==='review'&&row.total_minor===4999&&row.email===''))
+ assert.equal((await h.service.status(owner)).referenceId,initial.referenceId)
+})
+test('an uncertain response preserves only a candidate ID, which requires independent GET verification and cannot trigger another creation',async t=>{
+ const h=await fixture(t);let posts=0,gets=0,reference
+ const service=createPrivateNomodTest({...h.options,fetcher:async(target,options)=>{
+  if(options.method==='POST'){posts++;reference=JSON.parse(options.body).reference_id}else{gets++;assert.equal(target,'https://api.nomod.com/v1/checkout/'+h.id)}
+  return new Response(JSON.stringify({id:h.id,reference_id:reference,currency:'AED',amount:'49.99',url:'https://pay.nomodapp.com/en/l/0123456789abcdef/',status:options.method==='POST'?'unverified':'created'}))
+ }})
+ assert.equal((await service.create(owner,body)).state,'uncertain')
+ const row=await h.db.prepare('SELECT * FROM course_paid_orders').get()
+ assert.equal(row.provider_id,null);assert.equal(row.provider_url,null);assert.equal(JSON.parse(row.delivery).candidateCheckoutId,h.id)
+ assert.equal((await service.create(owner,body)).alreadyAttempted,true)
+ assert.equal((await service.reconcile(owner,{confirmation:'reconcile-existing-meta-4999-v1'})).checkoutId,h.id)
+ assert.equal(posts,1);assert.equal(gets,1)
+ assert.equal((await h.db.prepare('SELECT payment_status FROM course_paid_orders').get()).payment_status,'review')
+})
 test('HTTP owner actions retain auth, origin and CSRF and expose diagnostic/private status through the real orders endpoint',async t=>{
  const db=createSqliteStore();await initializePaymentSchema(db);const activation='synthetic-activation',env={ASCORE_ORIGIN:origin,ASCORE_ALLOW_ADMIN_SETUP:'1',ASCORE_ADMIN_SETUP_GRANTS:JSON.stringify({aswinfrn:{tokenHash:createHash('sha256').update(activation).digest('hex'),expiresAt:new Date(Date.now()+60000).toISOString()}})}
  let requests=0;const app=await createPortalServer({store:db,env,nomodFetch:async()=>{requests++;throw Error('Disabled')},coursePdfReader:async()=>{throw Error('Not installed')}});await new Promise(r=>app.server.listen(0,'127.0.0.1',r));t.after(()=>app.close());const base=`http://127.0.0.1:${app.server.address().port}`
@@ -113,5 +144,7 @@ test('HTTP owner actions retain auth, origin and CSRF and expose diagnostic/priv
  assert.equal((await call(path,body)).status,401);assert.equal((await call(path,body,{Cookie:login.cookie})).status,403);assert.equal((await call(path,body,{...auth,Origin:'https://foreign.test'})).status,403);assert.equal((await call(path,body,auth)).status,403)
  const recovery=path+'/reconcile',recoveryBody={confirmation:'reconcile-existing-meta-4999-v1'}
  assert.equal((await call(recovery,recoveryBody)).status,401);assert.equal((await call(recovery,recoveryBody,{Cookie:login.cookie})).status,403);assert.equal((await call(recovery,recoveryBody,{...auth,Origin:'https://foreign.test'})).status,403);assert.equal((await call(recovery,recoveryBody,auth)).status,403)
- const status=(await call('/api/courses/admin/orders',null,auth)).data;assert.equal(status.payments.diagnostic.ownerAllowed,true);assert.equal(status.payments.privateNomodTest.ownerAllowed,true);assert.equal(status.payments.privateNomodTest.allowed,false);assert.equal(requests,0);assert.deepEqual((await call('/api/courses/config')).data,{freeCheckoutReady:false,paidCheckoutEnabled:false})
+ const replacementPath='/api/courses/admin/payments/replacement-test',replacementBody={confirmation:'meta-4999-replacement-v1'}
+ assert.equal((await call(replacementPath,replacementBody)).status,401);assert.equal((await call(replacementPath,replacementBody,{Cookie:login.cookie})).status,403);assert.equal((await call(replacementPath,replacementBody,{...auth,Origin:'https://foreign.test'})).status,403);assert.equal((await call(replacementPath,replacementBody,auth)).status,403)
+ const status=(await call('/api/courses/admin/orders',null,auth)).data;assert.equal(status.payments.diagnostic.ownerAllowed,true);assert.equal(status.payments.privateNomodTest.ownerAllowed,true);assert.equal(status.payments.privateNomodTest.allowed,false);assert.equal(status.payments.replacementNomodTest.ownerAllowed,true);assert.equal(status.payments.replacementNomodTest.allowed,false);assert.equal(requests,0);assert.deepEqual((await call('/api/courses/config')).data,{freeCheckoutReady:false,paidCheckoutEnabled:false})
 })

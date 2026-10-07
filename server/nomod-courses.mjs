@@ -1,6 +1,6 @@
 import {createPaymentSetup} from './payment-setup.mjs'
 import {createNomodDiagnostic} from './nomod-diagnostic.mjs'
-import {createPrivateNomodTest,isPrivateNomodTest,privateNomodRequestId} from './nomod-private-test.mjs'
+import {createPrivateNomodTest,isPrivateNomodTest,privateNomodRequestId,replacementNomodRequestId} from './nomod-private-test.mjs'
 import {courseReviewToken} from './course-reviews.mjs'
 import {createHash,randomBytes,randomUUID,timingSafeEqual} from 'node:crypto'
 import {Webhook} from 'svix'
@@ -48,8 +48,9 @@ export async function createNomodCourses({db,env={},origin,readJson,fetcher=fetc
  const requirements={enabled,schemaReady,contractVerified:contractVerified===true,apiKeyConfigured:typeof env.NOMOD_HOSTED_CHECKOUT_API_KEY==='string'&&!!env.NOMOD_HOSTED_CHECKOUT_API_KEY,webhookSecretConfigured:typeof env.NOMOD_WEBHOOK_SIGNING_SECRET==='string'&&/^whsec_[A-Za-z0-9+/=]+$/.test(env.NOMOD_WEBHOOK_SIGNING_SECRET),checkoutHostsConfigured:hosts.length>0&&hosts.every(h=>/^[a-z0-9]+(?:[.-][a-z0-9]+)*\.[a-z]{2,}$/.test(h)),liveRequestsApproved:env.ASCORE_NOMOD_LIVE_REQUESTS_APPROVED==='1',deliveryEnabled:env.ASCORE_ENABLE_PAID_COURSE_DELIVERY==='1',termsApproved:env.ASCORE_PAID_COURSE_TERMS_APPROVED==='1',senderConfigured:!!sendEmail||smtpConfigured(env),privatePdfsReady:false,originReady:(()=>{try{const u=new URL(origin);return u.protocol==='https:'&&!u.username&&!u.password&&!u.search&&!u.hash&&u.pathname==='/'&&u.origin===origin}catch{return false}})()}
  if(enabled){try{await Promise.all(Object.keys(courseCatalog).map(id=>pdfReader(env,id)));requirements.privatePdfsReady=true}catch{}}
  const paymentSetup=createPaymentSetup({db,env,readJson,audit,isSchemaReady:()=>schemaReady,onReady:value=>{schemaReady=value;requirements.schemaReady=value}})
- const diagnostic=createNomodDiagnostic({db,env,readJson,fetcher,now,isSchemaReady:()=>schemaReady,expectedCheckout:id=>db.prepare('SELECT id,total_minor,currency FROM course_paid_orders WHERE request_id=? AND provider_id=?').get(privateNomodRequestId,id)})
+ const diagnostic=createNomodDiagnostic({db,env,readJson,fetcher,now,isSchemaReady:()=>schemaReady,expectedCheckout:id=>db.prepare('SELECT id,total_minor,currency FROM course_paid_orders WHERE request_id IN (?,?) AND provider_id=?').get(privateNomodRequestId,replacementNomodRequestId,id)})
  const privateTest=createPrivateNomodTest({db,env,origin,readJson,audit,fetcher,now,isSchemaReady:()=>schemaReady})
+ const replacementTest=createPrivateNomodTest({db,env,origin,readJson,audit,fetcher,now,isSchemaReady:()=>schemaReady,replacement:true})
  const ready=()=>Object.values(requirements).every(Boolean)
  const mail=sendEmail||(requirements.senderConfigured?sender(env):null),flights=new Map(),eventFlights=new Map()
  const rowFor=id=>db.prepare('SELECT * FROM course_paid_orders WHERE id=?').get(id)
@@ -126,8 +127,8 @@ export async function createNomodCourses({db,env={},origin,readJson,fetcher=fetc
   const rows=await db.prepare("SELECT id FROM course_paid_orders WHERE payment_status='paid' AND expires_at>? ORDER BY created_at LIMIT 100").all(now());for(const row of rows)await deliver(row.id)
  }
  const interval=ready()?setInterval(()=>{tick().catch(()=>{})},workerInterval):null;interval?.unref()
- return {requirements,ready,confirm,deliver,tick,setupState:paymentSetup.state,diagnosticState:diagnostic.state,privateTestState:privateTest.status,async adminHandle(req,res,path,user,json){return await privateTest.handle(req,res,path,user,json)||await diagnostic.handle(req,res,path,user,json)||await paymentSetup.handle(req,res,path,user,json)},
-  async close(){await privateTest.close();if(interval)clearInterval(interval);await Promise.allSettled([...flights.values(),...eventFlights.values()])},
+ return {requirements,ready,confirm,deliver,tick,setupState:paymentSetup.state,diagnosticState:diagnostic.state,privateTestState:privateTest.status,replacementTestState:replacementTest.status,async adminHandle(req,res,path,user,json){return await privateTest.handle(req,res,path,user,json)||await replacementTest.handle(req,res,path,user,json)||await diagnostic.handle(req,res,path,user,json)||await paymentSetup.handle(req,res,path,user,json)},
+  async close(){await Promise.all([privateTest.close(),replacementTest.close()]);if(interval)clearInterval(interval);await Promise.allSettled([...flights.values(),...eventFlights.values()])},
   async publicHandle(req,res,path,json){
    if(path===nomodWebhookPath&&req.method==='POST'){
     if(!schemaReady||!requirements.webhookSecretConfigured||env.ASCORE_ENABLE_NOMOD_WEBHOOKS!=='1')fail(503,'Payment notifications are not configured.')

@@ -1,4 +1,4 @@
-import {isPrivateNomodTest,privateNomodRequestId,privateNomodReason} from './nomod-private-test.mjs'
+import {isPrivateNomodTest,privateNomodRequestId,privateNomodReason,replacementNomodRequestId,replacementNomodReason} from './nomod-private-test.mjs'
 import {createHash,randomUUID,timingSafeEqual} from 'node:crypto'
 import {verifyPaymentSchema} from './payment-schema.mjs'
 import {verifyDatabaseIdentity} from './database-preflight.mjs'
@@ -49,7 +49,7 @@ export async function createCourseReviews({db,env={},readJson,audit=async()=>{},
   const list=/^\/api\/courses\/reviews\/(meta|ai)$/.exec(path)
   if(list&&req.method==='GET'){
    if(!ready()){json(res,200,{ready:false,reviews:[],count:0,rating:null});return true}
-   const where=`FROM course_reviews r JOIN course_paid_orders o ON o.id=r.order_id WHERE r.course_id=? AND r.state='published' AND o.payment_status='paid' AND o.request_id<>'${privateNomodRequestId}' AND COALESCE(o.review_reason,'')<>'${privateNomodReason}'`
+   const where=`FROM course_reviews r JOIN course_paid_orders o ON o.id=r.order_id WHERE r.course_id=? AND r.state='published' AND o.payment_status='paid' AND o.request_id NOT IN ('${privateNomodRequestId}','${replacementNomodRequestId}') AND COALESCE(o.review_reason,'') NOT IN ('${privateNomodReason}','${replacementNomodReason}')`
    const total=await db.prepare('SELECT COUNT(*) AS count,AVG(r.rating) AS rating '+where).get(list[1]),rows=await db.prepare('SELECT r.* '+where+' ORDER BY r.created_at DESC LIMIT 20').all(list[1])
    json(res,200,{ready:true,count:Number(total.count),rating:Number(total.count)>0?Math.round(Number(total.rating)*10)/10:null,reviews:rows.map(view)});return true
   }
