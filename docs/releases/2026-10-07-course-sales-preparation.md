@@ -97,3 +97,17 @@ The production verifier now recognizes that one table only with its ownership
 marker; unmarked tables and unrelated databases still fail closed. A regression
 test covers actual production inventory verification after private test setup.
 Fresh HTTP health and signed payment confirmation remain required before sales.
+
+Fresh recovery checks confirm the AED 2 checkout is paid with the exact private
+reference, AED currency and captured total. Its signed completed event is still
+awaiting successful delivery after the outage. Nomod's existing Hosted Checkout
+webhook points to the exact receiver; completion attempts at 07:01 and 07:06 UAE
+show failed delivery. No further checkout or payment is needed or authorized.
+Public gates and the reviewed-contract gate remain closed.
+
+The owner portal now gives public purchasing an explicit enabled/disabled status,
+collapses private verification history and describes launch gates consistently.
+Customer download emails include the owner's Friday 2 PM UAE Google Meet support
+arrangement and WhatsApp/call contact. The reusable joining link remains pending;
+weekly emails remain disabled. The targeted 17 payment/diagnostic tests pass;
+production build and lint pass with the same three existing warnings.

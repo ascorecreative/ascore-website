@@ -37,8 +37,9 @@ export function nomodReturnURLs(origin,id){
  return Object.fromEntries(['success','failure','cancelled'].map(state=>[state+'_url',`${origin}/courses/checkout/?payment=${state}&order=${id}`]))
 }
 export function paidCourseEmail(row,origin){
- const links=JSON.parse(row.items).map(id=>`${courseCatalog[id].name}\n${origin}/api/courses/paid/download/${row.id}/${id}?token=${downloadToken(row,id)}`)
- return {from:{name:'Ascore Creative',address:'orders@ascore.ae'},to:row.email,messageId:`<paid-course-${row.id}@ascore.ae>`,subject:'Your Ascore course downloads',text:`Thank you for learning with Ascore.\n\nOrder: ${row.id}\nPayment confirmed: AED ${(Number(row.total_minor)/100).toFixed(2)}.\n\n${links.join('\n\n')}\n\nThese private links expire at ${new Date(Number(row.expires_at)).toISOString()} and allow up to 10 downloads per course. For help, contact info@ascore.ae.`,envelope:{from:'orders@ascore.ae',to:[row.email]}}
+ const items=JSON.parse(row.items),support=items.includes('meta')?'\n\nMeta Ads live support: Google Meet every Friday at 2 PM UAE time. The joining link will be emailed on Friday morning. For enquiries, WhatsApp or call +971568555626.':''
+ const links=items.map(id=>`${courseCatalog[id].name}\n${origin}/api/courses/paid/download/${row.id}/${id}?token=${downloadToken(row,id)}`)
+ return {from:{name:'Ascore Creative',address:'orders@ascore.ae'},to:row.email,messageId:`<paid-course-${row.id}@ascore.ae>`,subject:'Your Ascore course downloads',text:`Thank you for learning with Ascore.\n\nOrder: ${row.id}\nPayment confirmed: AED ${(Number(row.total_minor)/100).toFixed(2)}.\n\n${links.join('\n\n')}${support}\n\nThese private links expire at ${new Date(Number(row.expires_at)).toISOString()} and allow up to 10 downloads per course. For help, contact info@ascore.ae or WhatsApp/call +971568555626.`,envelope:{from:'orders@ascore.ae',to:[row.email]}}
 }
 // The published application always leaves contractVerified false. Nomod's generic
 // charge example does not establish the Hosted Checkout webhook correlation.
