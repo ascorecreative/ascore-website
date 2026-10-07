@@ -1,0 +1,3 @@
+import {portalRequest} from '../../services/portalApi'
+export function TagList({tags=[]}){return <span className="commerce-tags">{tags.map(tag=><span key={tag}>{tag}</span>)}</span>}
+export function WorkspaceSetup({ready,onReady,onError}){return ready?null:<div className="commerce-setup"><p>Activate saved customer profiles, order tags and timeline entries.</p><button type="button" onClick={async()=>{try{await portalRequest('/courses/admin/order-workspace/setup',{method:'POST',body:{confirmation:'initialize-order-workspace-v1'}});onReady()}catch(e){onError(e.message)}}}>Enable order management</button></div>}

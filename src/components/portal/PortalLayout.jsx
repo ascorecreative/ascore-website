@@ -6,6 +6,7 @@ import '../../styles/portal-functional.css'
 import ZohoConnections from './ZohoConnections'
 import CourseOrders from './CourseOrders'
 import OrdersWorkspace from './OrdersWorkspace'
+import CustomersWorkspace from './CustomersWorkspace'
 import AdminOverview from './AdminOverview'
 import '../../styles/admin-workspace.css'
 
@@ -45,7 +46,8 @@ function DocumentSheet({document:invoice,client,onClose,opener}) {
 export default function PortalLayout() {
   const {user,isAdmin,logout}=useAuth()
   const [data,setData]=useState(empty)
-  const [tab,setTab]=useState(()=>isAdmin&&['courses','orders'].includes(new URLSearchParams(window.location.search).get('view'))?new URLSearchParams(window.location.search).get('view'):'overview')
+  const [tab,setTab]=useState(()=>isAdmin&&['courses','orders','customers','analytics'].includes(new URLSearchParams(window.location.search).get('view'))?new URLSearchParams(window.location.search).get('view'):'overview')
+  const [selectedOrder,setSelectedOrder]=useState(()=>new URLSearchParams(window.location.search).get('order')), [selectedCustomer,setSelectedCustomer]=useState(()=>new URLSearchParams(window.location.search).get('customer'))
   const [error,setError]=useState('')
   const [notice,setNotice]=useState('')
   const [busy,setBusy]=useState(false)
@@ -71,13 +73,14 @@ export default function PortalLayout() {
     if(await mutate(typeof path==='function'?path(values):path,transform(values),method))form.reset()
   }
   const selectedProject=data.projects.find(p=>p.id===projectId)||data.projects[0]
-  const nav=[['overview',isAdmin?'Home':'Overview'],['projects',isAdmin?'Projects & updates':'My projects'],['documents',isAdmin?'Finance':'Quotations & finances'],...(isAdmin?[['leads','Leads'],['clients','Clients'],['connections','Connections'],['orders','Orders'],['courses','Course setup'],['analytics','Analytics']]:[])]
+  const nav=[['overview',isAdmin?'Home':'Overview'],...(isAdmin?[['orders','Orders'],['customers','Customers']]:[]),['projects',isAdmin?'Projects & updates':'My projects'],['documents',isAdmin?'Finance':'Quotations & finances'],...(isAdmin?[['leads','Leads'],['clients','Clients'],['connections','Connections'],['courses','Course setup'],['analytics','Analytics']]:[])]
   const groups=data.documents.filter(d=>d.kind==='invoice').reduce((all,d)=>{const item=all[d.currency]||(all[d.currency]={amount:0,paid:0,balance:0});item.amount+=d.amount;item.paid+=d.amountPaid;item.balance+=d.balance;return all},{})
   const leave=async()=>{try{await logout();window.location.hash='login'}catch(err){setError(err.message)}}
   const clientOptions=<><option value="">Select client</option>{data.clients.map(c=><option key={c.id} value={c.id}>{c.name} · {c.company||c.username}</option>)}</>
 
-  const icons={overview:Home,projects:FolderOpen,documents:FileText,leads:Contact,clients:Users,connections:Plug,courses:BookOpen,orders:BookOpen,analytics:BarChart3}
-  const navigate=(id,selectedId)=>{setTab(id);setNotice('');setError('');setQuery('');setMenuOpen(false);if(selectedId)setProjectId(selectedId)}
+  const icons={overview:Home,projects:FolderOpen,documents:FileText,leads:Contact,clients:Users,connections:Plug,courses:BookOpen,orders:BookOpen,customers:Users,analytics:BarChart3}
+  const navigate=(id,selectedId)=>{setTab(id);setNotice('');setError('');setQuery('');setMenuOpen(false);if(id==='projects'&&selectedId)setProjectId(selectedId);setSelectedOrder(id==='orders'?selectedId||null:null);setSelectedCustomer(id==='customers'?selectedId||null:null);const url=new URL(window.location.href);url.searchParams.set('view',id);url.searchParams.delete('order');url.searchParams.delete('customer');if(selectedId&&['orders','customers'].includes(id))url.searchParams.set(id==='orders'?'order':'customer',selectedId);history.pushState(null,'',url);window.scrollTo({top:0,behavior:'instant'})}
+  useEffect(()=>{const back=()=>{const params=new URLSearchParams(window.location.search),view=params.get('view');setTab(['overview','orders','customers','projects','documents','leads','clients','connections','courses','analytics'].includes(view)?view:'overview');setSelectedOrder(params.get('order'));setSelectedCustomer(params.get('customer'));setMenuOpen(false)};window.addEventListener('popstate',back);return()=>window.removeEventListener('popstate',back)},[isAdmin])
   const matches=query.trim()?[
     ...nav.map(([id,label])=>({id,label,type:'Workspace section',tab:id})),
     ...data.projects.map(p=>({id:p.id,label:p.title,type:'Project',tab:'projects'})),
@@ -95,7 +98,7 @@ export default function PortalLayout() {
     window.addEventListener('keydown',key);large.addEventListener('change',resize)
     return()=>{window.removeEventListener('keydown',key);large.removeEventListener('change',resize);document.body.style.overflow=overflow;main.inert=false;trigger?.focus({preventScroll:true})}
   },[isAdmin,menuOpen])
-  const descriptions={overview:'Projects, clients and course delivery in one place.',projects:'Keep project progress and milestones up to date.',documents:'Quotations, invoices and offline settlement records.',leads:'Manage the enquiries added to your studio pipeline.',clients:'Registered client accounts and their contact details.',connections:'Review the existing website and Zoho connections.',orders:'Paid purchases, unpaid checkouts, buyers and delivery status.',courses:'Private PDF setup, payment settings and delivery diagnostics.',analytics:'GA4 traffic reports and counts from saved workspace records.'}
+  const descriptions={overview:'Projects, clients and course delivery in one place.',projects:'Keep project progress and milestones up to date.',documents:'Quotations, invoices and offline settlement records.',leads:'Manage the enquiries added to your studio pipeline.',clients:'Registered client accounts and their contact details.',connections:'Review the existing website and Zoho connections.',customers:'Online customers, profiles, purchase history and tags.',orders:'Paid purchases, unpaid checkouts, buyers and delivery status.',courses:'Private PDF setup, payment settings and delivery diagnostics.',analytics:'GA4 traffic reports and counts from saved workspace records.'}
 
   return <div className={'portal-workspace'+(isAdmin?' admin-workspace':'')}>
     {isAdmin&&menuOpen&&<button className="admin-nav-backdrop" type="button" aria-label="Close navigation" tabIndex={-1} onClick={()=>setMenuOpen(false)}/>}
@@ -123,7 +126,8 @@ export default function PortalLayout() {
 
     {loaded&&tab==='clients'&&isAdmin&&<><p>Registered client accounts appear here. Each account has its own projects and financial documents.</p><div className="workspace-table-wrap"><table className="workspace-table"><thead><tr><th>Client</th><th>Username</th><th>Company</th><th>Email</th></tr></thead><tbody>{data.clients.map(c=><tr key={c.id}><td>{c.name}</td><td>{c.username}</td><td>{c.company||'—'}</td><td>{c.email}</td></tr>)}</tbody></table>{!data.clients.length&&<p className="workspace-empty">No client accounts registered yet.</p>}</div></>}
 
-    {loaded&&tab==='orders'&&isAdmin&&<OrdersWorkspace refreshKey={refreshedAt} clients={data.clients}/> }
+    {loaded&&tab==='orders'&&isAdmin&&<OrdersWorkspace refreshKey={refreshedAt} selectedId={selectedOrder} onSelect={id=>navigate('orders',id)} onCustomer={id=>navigate('customers',id)}/> }
+    {loaded&&tab==='customers'&&isAdmin&&<CustomersWorkspace refreshKey={refreshedAt} selectedId={selectedCustomer} onSelect={id=>navigate('customers',id)} onOrder={id=>navigate('orders',id)}/>}
     {loaded&&tab==='courses'&&isAdmin&&<CourseOrders refreshKey={refreshedAt}/>}
     {loaded&&tab==='connections'&&isAdmin&&<ZohoConnections data={data} onRefresh={refresh}/>}
     </div></main>{selectedDocument&&<DocumentSheet opener={documentOpener} document={selectedDocument} client={isAdmin?data.clients.find(c=>c.id===selectedDocument.clientId):user} onClose={()=>setSelectedDocument(null)}/>}

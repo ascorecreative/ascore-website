@@ -1,4 +1,4 @@
-import {courseOrderHistory} from './course-order-history.mjs'
+import {createOrderWorkspace} from './order-workspace.mjs'
 import {createGA4Reporting} from './ga4-reporting.mjs'
 import {createPrivateCourseTest} from './private-course-test.mjs'
 import {createPdfStore} from './pdf-store.mjs'
@@ -170,6 +170,7 @@ export async function createPortalServer(options = {}) {
   const courses = await createCourses({db,env,readJson,origin,audit,sendEmail:options.courseSender,pdfReader:coursePdfReader,now:options.now||Date.now,workerInterval:options.courseWorkerInterval,pdfStorage,privateTestStatus:user=>privateCourseTest.status(user),paidReady:()=>nomod?.ready()===true,paymentReadiness:async user=>({sales:await nomod?.salesOverview(user),privateNomodTest:await nomod?.privateTestState(user),replacementNomodTest:await nomod?.replacementTestState(user),smallNomodTest:await nomod?.smallTestState(user),setup:nomod?.setupState(user),diagnostic:nomod?.diagnosticState(user),ready:nomod?.ready()===true,requirements:nomod?.requirements,paymentMode:nomod?.paymentMode,webhooksEnabled:env.ASCORE_ENABLE_NOMOD_WEBHOOKS==='1',webhookDelivery:nomod?.webhookDeliveryState()})})
   // Production stays closed until the general API capture contract is verified.
   nomod=await createNomodCourses({db,env,readJson,origin,audit,webhookReporter:value=>console.info('Nomod webhook result:',JSON.stringify(value)),contractVerified:env.NOMOD_PAYMENT_MODE==='api-links'&&env.ASCORE_NOMOD_API_CONTRACT_VERIFIED==='1'&&(Object.values(courseCatalog).every(p=>p.priceMinor===4999)||env.ASCORE_ENABLE_PUBLIC_COURSE_TRIAL==='1'&&Object.values(courseCatalog).every(p=>p.priceMinor===200)),fetcher:options.nomodFetch||fetch,sendEmail:options.courseSender,pdfReader:coursePdfReader,now:options.now||Date.now,workerInterval:options.courseWorkerInterval})
+  const orderWorkspace=await createOrderWorkspace({db,readJson})
   const ga4=createGA4Reporting({env,fetcher:options.ga4Fetch||fetch,now:options.now||Date.now})
   const weeklySessions=await createWeeklyMetaSessions({db,env,audit,paymentReady:()=>nomod.ready(),sendEmail:options.courseSender,now:options.now||Date.now,workerInterval:options.courseWorkerInterval})
   const server = createServer(async (request, response) => {
@@ -238,7 +239,7 @@ export async function createPortalServer(options = {}) {
       }
       if (request.method === 'GET' && path === '/api/workspace') return responseJson(response, 200, await workspace(user))
       if (user.role !== 'admin') fail(403, 'Agency access is required.')
-      if(request.method==='GET'&&path==='/api/courses/admin/order-history')return responseJson(response,200,await courseOrderHistory(db,user,new URL(request.url,'http://local').searchParams.get('cursor')))
+      if(await orderWorkspace.handle(request,response,path,user,responseJson))return
       if(await ga4.handle(request,response,path,user,responseJson))return
       if (await enquiries.adminHandle(request,response,path,responseJson)) return
       if(await courseReviews.adminHandle(request,response,path,user,responseJson))return

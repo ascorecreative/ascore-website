@@ -20,6 +20,8 @@ function fixture(extra={}){
   const body=JSON.parse(options.body)
   if(url.endsWith(':runRealtimeReport'))return Response.json(report(['activeUsers'],[7]))
   assert.equal(body.dimensionFilter.filter.fieldName,'hostName');assert.equal(body.dimensionFilter.filter.stringFilter.value,'ascore.ae')
+  if(body.dimensions?.[0]?.name==='date')return Response.json(report(['sessions','activeUsers','screenPageViews'],null,['date'],[{dimensionValues:[{value:'20261007'}],metricValues:[{value:'13'},{value:'10'},{value:'25'}]}]))
+  if(body.dimensions?.[0]?.name==='deviceCategory'||body.dimensions?.[0]?.name==='country')return Response.json(report(['sessions'],null,[body.dimensions[0].name],[{dimensionValues:[{value:body.dimensions[0].name==='country'?'United Arab Emirates':'mobile'}],metricValues:[{value:'13'}]}]))
   if(body.dimensions)return Response.json(report(['sessions'],null,['sessionSource','sessionMedium'],[{dimensionValues:[{value:'google'},{value:'organic'}],metricValues:[{value:'8'}]},{dimensionValues:[{value:'(direct)'},{value:'(none)'}],metricValues:[{value:'5'}]}]))
   return Response.json(report(['activeUsers','sessions','screenPageViews'],[10,13,25]))
  }
@@ -27,9 +29,9 @@ function fixture(extra={}){
  return {service,calls,advance:n=>{clock+=n}}
 }
 test('GA4 uses only fixed read APIs, readonly signed credentials and real provider metrics, with independently cached totals',async()=>{
- const h=fixture(),[a,b]=await Promise.all([h.service.read('today'),h.service.read('today')]);assert.deepEqual(a,b);assert.equal(h.calls.length,4);assert.equal(a.realtime.activeUsers,7);assert.equal(a.realtime.windowMinutes,30);assert.equal(a.history.activeUsers,10);assert.equal(a.history.sessions,13);assert.equal(a.history.pageViews,25);assert.equal(a.history.timeZone,'Asia/Dubai');assert.equal(a.history.sources[0].sessions,8)
+ const h=fixture(),[a,b]=await Promise.all([h.service.read('today'),h.service.read('today')]);assert.deepEqual(a,b);assert.equal(h.calls.length,7);assert.equal(a.realtime.activeUsers,7);assert.equal(a.realtime.windowMinutes,30);assert.equal(a.history.activeUsers,10);assert.equal(a.history.sessions,13);assert.equal(a.history.pageViews,25);assert.equal(a.history.timeZone,'Asia/Dubai');assert.equal(a.history.sources[0].sessions,8);assert.equal(a.history.available,true);assert.deepEqual(a.history.daily,[{date:'2026-10-07',sessions:13,activeUsers:10,pageViews:25}]);assert.equal(a.history.devices[0].label,'mobile');assert.equal(a.history.countries[0].sessions,13)
  const output=JSON.stringify(a);for(const secret of [email,pem,'synthetic-secret-token','123456789'])assert.ok(!output.includes(secret))
- await h.service.read('today');assert.equal(h.calls.length,4);await h.service.read('yesterday');assert.equal(h.calls.length,6)
+ await h.service.read('today');assert.equal(h.calls.length,7);await h.service.read('yesterday');assert.equal(h.calls.length,12)
  assert.deepEqual(JSON.parse(h.calls.find(c=>c.body?.includes('yesterday')).body).dateRanges,[{startDate:'yesterday',endDate:'yesterday'}])
  for(const [range,start]of [['7days','6daysAgo'],['30days','29daysAgo']]){await h.service.read(range);const call=h.calls.find(c=>c.body?.includes(start));assert.deepEqual(JSON.parse(call.body).dateRanges,[{startDate:start,endDate:'today'}])}
  h.advance(31000);await h.service.read('today');assert.equal(h.calls.filter(c=>c.url.endsWith(':runRealtimeReport')).length,2);assert.equal(h.calls.filter(c=>c.url==='https://oauth2.googleapis.com/token').length,1)

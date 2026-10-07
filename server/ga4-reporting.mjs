@@ -67,8 +67,22 @@ export function createGA4Reporting({env={},fetcher=fetch,now=Date.now}){
     ])
     validReport(totals,['activeUsers','sessions','screenPageViews']);validReport(sources,['sessions'],['sessionSource','sessionMedium'])
     if(totals.rows?.length>1||sources.rows?.length>10)fail(502,'Google returned an unexpected traffic report.')
+    // Keep totals available if a separate chart report is temporarily unavailable.
+    let charts={daily:[],devices:[],countries:[],available:false}
+    try{
+     const [daily,devices,countries]=await Promise.all([
+      report('runReport',{...base,dimensions:[{name:'date'}],metrics:[{name:'sessions'},{name:'activeUsers'},{name:'screenPageViews'}],orderBys:[{dimension:{dimensionName:'date'}}],limit:31}),
+      report('runReport',{...base,dimensions:[{name:'deviceCategory'}],metrics:[{name:'sessions'}],orderBys:[{metric:{metricName:'sessions'},desc:true}],limit:10}),
+      report('runReport',{...base,dimensions:[{name:'country'}],metrics:[{name:'sessions'}],orderBys:[{metric:{metricName:'sessions'},desc:true}],limit:10})
+     ])
+     validReport(daily,['sessions','activeUsers','screenPageViews'],['date']);validReport(devices,['sessions'],['deviceCategory']);validReport(countries,['sessions'],['country'])
+     if(daily.rows?.length>31||devices.rows?.length>10||countries.rows?.length>10)fail(502,'Google returned an unexpected chart report.')
+     const dailyRows=(daily.rows||[]).map(row=>{const date=row.dimensionValues?.[0]?.value;if(typeof date!=='string'||!/^\d{8}$/.test(date))fail(502,'Google returned an invalid chart date.');return {date:date.slice(0,4)+'-'+date.slice(4,6)+'-'+date.slice(6),sessions:number(row.metricValues?.[0]?.value),activeUsers:number(row.metricValues?.[1]?.value),pageViews:number(row.metricValues?.[2]?.value)}})
+     const rows=report=>(report.rows||[]).map(row=>({label:label(row.dimensionValues?.[0]?.value)||'(not set)',sessions:number(row.metricValues?.[0]?.value)}))
+     charts={daily:dailyRows,devices:rows(devices),countries:rows(countries),available:true,thresholded:[daily,devices,countries].some(r=>r.metadata?.subjectToThresholding===true),otherRow:[devices,countries].some(r=>r.metadata?.dataLossFromOtherRow===true)}
+    }catch{charts.error='Detailed Google charts are temporarily unavailable. Refresh to try again.'}
     const values=totals.rows?.[0]?.metricValues
-    return {activeUsers:values?number(values[0]?.value):0,sessions:values?number(values[1]?.value):0,pageViews:values?number(values[2]?.value):0,sources:(sources.rows||[]).map(row=>({source:label(row.dimensionValues?.[0]?.value),medium:label(row.dimensionValues?.[1]?.value),sessions:number(row.metricValues?.[0]?.value)})),sourceRowCount:Number.isSafeInteger(sources.rowCount)?sources.rowCount:0,timeZone:label(totals.metadata?.timeZone)||'GA4 property timezone',thresholded:totals.metadata?.subjectToThresholding===true||sources.metadata?.subjectToThresholding===true,otherRow: sources.metadata?.dataLossFromOtherRow===true,fetchedAt:now(),hostname:'ascore.ae',dateRange:ranges[range]}
+    return {...charts,activeUsers:values?number(values[0]?.value):0,sessions:values?number(values[1]?.value):0,pageViews:values?number(values[2]?.value):0,sources:(sources.rows||[]).map(row=>({source:label(row.dimensionValues?.[0]?.value),medium:label(row.dimensionValues?.[1]?.value),sessions:number(row.metricValues?.[0]?.value)})),sourceRowCount:Number.isSafeInteger(sources.rowCount)?sources.rowCount:0,timeZone:label(totals.metadata?.timeZone)||'GA4 property timezone',thresholded:totals.metadata?.subjectToThresholding===true||sources.metadata?.subjectToThresholding===true,otherRow: sources.metadata?.dataLossFromOtherRow===true,fetchedAt:now(),hostname:'ascore.ae',dateRange:ranges[range]}
    })
   ])
   return {...status(),connected:true,range,realtime,history}
