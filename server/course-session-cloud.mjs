@@ -5,7 +5,7 @@ import {verifyPaymentSchema} from './payment-schema.mjs'
 import {verifyDatabaseIdentity} from './database-preflight.mjs'
 import {verifyMariaDbSchema} from './mariadb-schema.mjs'
 const hash=v=>createHash('sha256').update(v).digest('hex')
-const equal=(a,b)=>typeof a==='string'&&typeof b==='string'&&a.length===b.length&&timingSafeEqual(Buffer.from(a),Buffer.from(b))
+const equal=(a,b)=>typeof a==='string'&&typeof b==='string'&&Buffer.byteLength(a)===Buffer.byteLength(b)&&timingSafeEqual(Buffer.from(a),Buffer.from(b))
 const fail=(status,message)=>{throw Object.assign(Error(message),{status})}
 export const cloudSessionPath='/api/courses/sessions/cloud'
 const owner=u=>u?.role==='admin'&&u.username==='aswinfrn'
