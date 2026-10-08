@@ -9,6 +9,7 @@ import { createZohoSync } from './zoho-sync.mjs'
 import { createEnquiries } from './enquiries.mjs'
 import { createCourses,courseCatalog } from './courses.mjs'
 import {createNomodCourses,nomodWebhookPath} from './nomod-courses.mjs'
+import {createCloudMetaSessions,cloudSessionPath} from './course-session-cloud.mjs'
 import {createWeeklyMetaSessions} from './course-sessions.mjs'
 import {createCourseReviews} from './course-reviews.mjs'
 import { createPersistence,uniqueConflict } from './persistence.mjs'
@@ -172,7 +173,8 @@ export async function createPortalServer(options = {}) {
   nomod=await createNomodCourses({db,env,readJson,origin,audit,webhookReporter:value=>console.info('Nomod webhook result:',JSON.stringify(value)),contractVerified:env.NOMOD_PAYMENT_MODE==='api-links'&&env.ASCORE_NOMOD_API_CONTRACT_VERIFIED==='1'&&(Object.values(courseCatalog).every(p=>p.priceMinor===4999)||env.ASCORE_ENABLE_PUBLIC_COURSE_TRIAL==='1'&&Object.values(courseCatalog).every(p=>p.priceMinor===200)),fetcher:options.nomodFetch||fetch,sendEmail:options.courseSender,pdfReader:coursePdfReader,now:options.now||Date.now,workerInterval:options.courseWorkerInterval})
   const orderWorkspace=await createOrderWorkspace({db,readJson})
   const ga4=createGA4Reporting({env,fetcher:options.ga4Fetch||fetch,now:options.now||Date.now})
-  const weeklySessions=await createWeeklyMetaSessions({db,env,audit,paymentReady:()=>nomod.ready(),sendEmail:options.courseSender,now:options.now||Date.now,workerInterval:options.courseWorkerInterval})
+  const cloudSessions=await createCloudMetaSessions({db,env,readJson,audit,now:options.now||Date.now,paymentReady:()=>nomod.ready()})
+  const weeklySessions=await createWeeklyMetaSessions({db,env,audit,cloudConfigured:()=>cloudSessions.configured(),paymentReady:()=>nomod.ready(),sendEmail:options.courseSender,now:options.now||Date.now,workerInterval:options.courseWorkerInterval})
   const server = createServer(async (request, response) => {
     response.setHeader('Cache-Control', 'no-store')
     response.setHeader('X-Content-Type-Options', 'nosniff')
@@ -184,6 +186,7 @@ export async function createPortalServer(options = {}) {
       // This is the sole cross-origin mutation exception. Nomod must verify the
       // untouched body and Svix signature before any event can be persisted.
       if(path===nomodWebhookPath&&request.method==='POST'){await nomod.publicHandle(request,response,path,responseJson);return}
+      if(path===cloudSessionPath&&request.method==='POST'){await cloudSessions.publicHandle(request,response,path,responseJson);return}
       if (mutation && request.headers.origin !== origin) fail(403, 'Request origin is not allowed.')
       if (await enquiries.publicHandle(request,response,path,responseJson)) return
       if(await courseReviews.publicHandle(request,response,path,responseJson))return
@@ -239,6 +242,7 @@ export async function createPortalServer(options = {}) {
       }
       if (request.method === 'GET' && path === '/api/workspace') return responseJson(response, 200, await workspace(user))
       if (user.role !== 'admin') fail(403, 'Agency access is required.')
+      if(await cloudSessions.adminHandle(request,response,path,user,responseJson))return
       if(await orderWorkspace.handle(request,response,path,user,responseJson))return
       if(await ga4.handle(request,response,path,user,responseJson))return
       if (await enquiries.adminHandle(request,response,path,responseJson)) return

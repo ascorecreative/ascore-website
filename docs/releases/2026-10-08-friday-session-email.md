@@ -1,0 +1,15 @@
+# Friday Meta-course session emails
+
+The owner requested email from ascorecreative@gmail.com every Friday at 09:00 Asia/Dubai for a 14:00 Google Meet. Chrome's accurweb@gmail.com profile contains the verified Ascore Google account; both Gmail and Calendar connectors independently identify ascorecreative@gmail.com.
+
+A private recurring meeting was created in the Ascore calendar for Fridays 14:00–15:00 UAE, starting 9 October 2026, with no customer attendee list. Calendar event j6sbj6q9u85ee5rk0gdajgeca4 has a successfully provisioned Google Meet.
+
+Google Apps Script source and explicit manifest are in scripts/google. MailApp requests send-only mail access, external requests restricted to the Ascore session endpoint, own-script trigger management, and sender identity. The private key is a Script Property; it is never source, browser bundle, Git or an email. The website stores only its SHA256 hash. Google approval and connection activation are separate from deploying inert code.
+
+Owner-only origin/CSRF-protected setup verifies the owned platform and payment schema before adding two session tables. Partial DDL ownership is recorded. A narrowly authorized cloud endpoint claims eligible recipients only on Fridays between 09:00 and 14:00 UAE. Eligible orders must have confirmed paid status, AED currency and Meta inclusion; AI-only, unpaid/review and private Nomod verification orders are excluded. PDF expiry does not remove ongoing live support. Recipients are normalized and deduplicated per week. Eligibility is rechecked before sending. Each email is private and includes date, time, Google Meet and +971568555626 enquiries.
+
+Google's minute trigger targets 09:00; scheduler/outage delays may cause a later pre-session send. Daily consumer quota applies (100 recipients/day according to Google's documentation). No automatic retry follows an uncertain mail result or a lost completion acknowledgement. Course setup shows accepted/uncertain/held outcome counts and the most recent cloud check. Google acceptance does not guarantee inbox delivery. Existing SMTP session worker yields to cloud configuration; it shares the durable weekly ledger.
+
+Validation: backend paid-only, concurrent deduplication, time boundaries, sender/key restrictions, refund recheck, acknowledgement idempotency and uncertain-send hold; mock Google-script tests cover sender identity, quota, time gating, trigger idempotency, no-mail verification and lost acknowledgements. Existing payment, order and delivery regressions remain. Full portal suite and production build pass; lint has existing unrelated warnings. No customer test email, checkout or payment is created during setup.
+
+Official references: https://developers.google.com/apps-script/reference/mail/mail-app ; https://developers.google.com/apps-script/reference/script/clock-trigger-builder ; https://developers.google.com/apps-script/guides/services/quotas .

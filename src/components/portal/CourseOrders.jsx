@@ -1,6 +1,7 @@
 import {useCallback,useEffect,useRef,useState} from 'react'
 import {X} from 'lucide-react'
 import CourseReviews from './CourseReviews'
+import CourseSessions from './CourseSessions'
 import {portalRequest,portalUpload} from '../../services/portalApi'
 const money=minor=>new Intl.NumberFormat('en-AE',{style:'currency',currency:'AED'}).format(minor/100)
 const dates=time=>new Date(time).toLocaleString('en-AE',{dateStyle:'medium',timeStyle:'short'})
@@ -70,6 +71,7 @@ export default function CourseOrders({refreshKey}){
    <div className="course-order-cards">{visible.map(order=><article className="course-order-card" key={order.id}><header><strong>{dates(order.createdAt)}</strong><DeliveryBadge order={order}/></header><p>{order.email}<small>{order.items.map(id=>names[id]).join(' + ')}</small></p><div className="course-order-card-footer"><span>{order.paymentStatus==='paid'?'Paid':'Zero-payment test'} · {money(order.totalMinor)}</span><button type="button" onClick={event=>openOrder(order,event)}>View details</button></div></article>)}{!visible.length&&<p className="workspace-empty">{summary?'No orders match this view.':'Course order history awaits database setup.'}</p>}</div>
    {data.nextCursor&&<button type="button" disabled={busy} onClick={()=>refresh(data.nextCursor)}>Load older orders</button>}
   </>}
+  <CourseSessions/>
   <CourseReviews/>
   {selected&&<OrderDetail order={selected} busy={busy} onRetry={retry} onClose={()=>setSelectedId(null)} opener={opener}/>}
  </section>

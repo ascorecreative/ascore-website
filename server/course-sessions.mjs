@@ -19,13 +19,15 @@ export async function initializeSessionSchema(db,env={}){
   for(const application of ['ascore-platform','ascore-payments'])if(!await db.prepare('SELECT version FROM ascore_schema_versions WHERE application=? AND version=?').get(application,1))throw Error('Platform and payment ownership must be verified before session setup.')
   const owned=await db.prepare('SELECT version FROM ascore_schema_versions WHERE application=? AND version=?').get('ascore-course-sessions',1)
   if(owned){await verifySessionSchema(db);return}
+  const partial=await db.prepare('SELECT version FROM ascore_schema_versions WHERE application=? AND version=?').get('ascore-course-sessions',0)
   const names=await db.prepare('SELECT TABLE_NAME AS name FROM information_schema.tables WHERE table_schema=DATABASE()').all()
-  if(names.some(r=>r.name==='course_session_emails'))throw Error('Existing session email table has no verified ownership marker.')
+  if(!partial&&names.some(r=>r.name==='course_session_emails'))throw Error('Existing session email table has no verified ownership marker.')
+  if(!partial)await db.prepare('INSERT INTO ascore_schema_versions (application,version,applied_at) VALUES (?,?,?)').run('ascore-course-sessions',0,Date.now())
  }
  await db.exec(`CREATE TABLE IF NOT EXISTS course_session_emails (week_key CHAR(10) NOT NULL, recipient_hash CHAR(64) NOT NULL, order_id VARCHAR(36) NOT NULL, state VARCHAR(16) NOT NULL, claimed_at BIGINT NOT NULL, finished_at BIGINT, PRIMARY KEY(week_key,recipient_hash))${db.kind==='mariadb'?' ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci':''}`)
  if(db.kind==='mariadb')await db.prepare('INSERT INTO ascore_schema_versions (application,version,applied_at) VALUES (?,?,?)').run('ascore-course-sessions',1,Date.now())
 }
-export async function createWeeklyMetaSessions({db,env={},paymentReady=()=>false,sendEmail,now=Date.now,audit=async()=>{},workerInterval=60000}){
+export async function createWeeklyMetaSessions({db,env={},paymentReady=()=>false,sendEmail,now=Date.now,audit=async()=>{},workerInterval=60000,cloudConfigured=async()=>false}){
  let schemaReady=false;try{await verifySessionSchema(db);schemaReady=true}catch{}
  const hour=env.ASCORE_META_SESSION_EMAIL_HOUR_UAE
  const platform=env.ASCORE_META_SESSION_PLATFORM
@@ -37,7 +39,7 @@ export async function createWeeklyMetaSessions({db,env={},paymentReady=()=>false
  let flight=null
  const eligible=row=>{try{return !isPrivateNomodTest(row)&&row?.payment_status==='paid'&&row.currency==='AED'&&JSON.parse(row.items).includes('meta')&&typeof row.email==='string'&&/^[^\s@<>]+@[^\s@<>]+\.[^\s@<>]+$/.test(row.email)}catch{return false}}
  async function run(){
-  const session=fridaySession(now());if(!ready()||!session.friday||session.hour<Number(hour)||session.hour>=14)return
+  const session=fridaySession(now());if(await cloudConfigured()||!ready()||!session.friday||session.hour<Number(hour)||session.hour>=14)return
   // Ongoing access: PDF-link expiry does not end weekly session eligibility.
   const rows=await db.prepare("SELECT * FROM course_paid_orders WHERE payment_status='paid' ORDER BY created_at ASC").all()
   for(const row of rows){
