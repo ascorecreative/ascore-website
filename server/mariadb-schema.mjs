@@ -4,7 +4,7 @@ import {courseTables} from './course-schema.mjs'
 import {paymentTables,verifyPaymentOwnership} from './payment-schema.mjs'
 // Only application-owned tables in a separately approved dedicated database.
 const suffix='ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci'
-const optionalCourseSchemas=[{application:'ascore-course-reviews',tables:['course_reviews','course_review_limits']},{application:'ascore-course-sessions',tables:['course_session_emails']},{application:'ascore-order-workspace',tables:['course_customers','course_order_metadata','course_order_entries']}]
+const optionalCourseSchemas=[{application:'ascore-session-cloud',tables:['course_session_cloud_config']},{application:'ascore-course-reviews',tables:['course_reviews','course_review_limits']},{application:'ascore-course-sessions',tables:['course_session_emails']},{application:'ascore-order-workspace',tables:['course_customers','course_order_metadata','course_order_entries']}]
 const optionalCourseTables=optionalCourseSchemas.flatMap(schema=>schema.tables)
 async function verifyOptionalCourseOwnership(store,names){
  for(const schema of optionalCourseSchemas){

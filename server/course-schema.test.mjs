@@ -29,7 +29,7 @@ test('course migration creates only its three tables and ownership markers; reru
 })
 
 test('optional review and session tables survive production startup only with their own verified ownership markers',async()=>{
- for(const [application,tables] of [['ascore-course-reviews',['course_reviews','course_review_limits']],['ascore-course-sessions',['course_session_emails']]]){
+ for(const [application,tables] of [['ascore-session-cloud',['course_session_cloud_config']],['ascore-course-reviews',['course_reviews','course_review_limits']],['ascore-course-sessions',['course_session_emails']]]){
   const owned=fixture({owned:true});tables.forEach(name=>owned.names.add(name))
   await assert.rejects(verifyMariaDbSchema(owned.db),/optional course tables.*ownership/)
   for(const version of [0,1]){owned.markers.add(application+':'+version);assert.deepEqual(await verifyMariaDbSchema(owned.db),{version:1});owned.markers.delete(application+':'+version)}
