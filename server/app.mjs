@@ -1,3 +1,4 @@
+import {createLeadWorkspace} from './leads.mjs'
 import {createOrderWorkspace} from './order-workspace.mjs'
 import {createGA4Reporting} from './ga4-reporting.mjs'
 import {createPrivateCourseTest} from './private-course-test.mjs'
@@ -171,6 +172,7 @@ export async function createPortalServer(options = {}) {
   const courses = await createCourses({db,env,readJson,origin,audit,sendEmail:options.courseSender,pdfReader:coursePdfReader,now:options.now||Date.now,workerInterval:options.courseWorkerInterval,pdfStorage,privateTestStatus:user=>privateCourseTest.status(user),paidReady:()=>nomod?.ready()===true,paymentReadiness:async user=>({sales:await nomod?.salesOverview(user),privateNomodTest:await nomod?.privateTestState(user),replacementNomodTest:await nomod?.replacementTestState(user),smallNomodTest:await nomod?.smallTestState(user),setup:nomod?.setupState(user),diagnostic:nomod?.diagnosticState(user),ready:nomod?.ready()===true,requirements:nomod?.requirements,paymentMode:nomod?.paymentMode,webhooksEnabled:env.ASCORE_ENABLE_NOMOD_WEBHOOKS==='1',webhookDelivery:nomod?.webhookDeliveryState()})})
   // Production stays closed until the general API capture contract is verified.
   nomod=await createNomodCourses({db,env,readJson,origin,audit,webhookReporter:value=>console.info('Nomod webhook result:',JSON.stringify(value)),contractVerified:env.NOMOD_PAYMENT_MODE==='api-links'&&env.ASCORE_NOMOD_API_CONTRACT_VERIFIED==='1'&&(Object.values(courseCatalog).every(p=>p.priceMinor===4999)||env.ASCORE_ENABLE_PUBLIC_COURSE_TRIAL==='1'&&Object.values(courseCatalog).every(p=>p.priceMinor===200)),fetcher:options.nomodFetch||fetch,sendEmail:options.courseSender,pdfReader:coursePdfReader,now:options.now||Date.now,workerInterval:options.courseWorkerInterval})
+  const leadWorkspace=createLeadWorkspace({db,readJson,audit})
   const orderWorkspace=await createOrderWorkspace({db,readJson})
   const ga4=createGA4Reporting({env,fetcher:options.ga4Fetch||fetch,now:options.now||Date.now})
   const cloudSessions=await createCloudMetaSessions({db,env,readJson,audit,now:options.now||Date.now,paymentReady:()=>nomod.ready()})
@@ -243,6 +245,7 @@ export async function createPortalServer(options = {}) {
       if (request.method === 'GET' && path === '/api/workspace') return responseJson(response, 200, await workspace(user))
       if (user.role !== 'admin') fail(403, 'Agency access is required.')
       if(await cloudSessions.adminHandle(request,response,path,user,responseJson))return
+      if(await leadWorkspace.handle(request,response,path,user,responseJson))return
       if(await orderWorkspace.handle(request,response,path,user,responseJson))return
       if(await ga4.handle(request,response,path,user,responseJson))return
       if (await enquiries.adminHandle(request,response,path,responseJson)) return
@@ -283,22 +286,6 @@ export async function createPortalServer(options = {}) {
         data.status = choice(body.status,['pending','in_progress','completed'],'milestone status')
         ;(await db.prepare('UPDATE milestones SET data=? WHERE id=?').run(JSON.stringify(data),id)); await audit(user.id,'update_milestone',id)
         return responseJson(response,200,{...data,id,projectId:row.project_id})
-      }
-      if (request.method === 'POST' && path === '/api/leads') {
-        const body = await readJson(request), id = randomUUID()
-        const data = { name:text(body.name,'lead name',100), email:email(body.email), company:text(body.company || '', 'company',160,false), phone:text(body.phone || '', 'phone',40,false), notes:text(body.notes || '', 'notes',4000,false), status:'new', createdAt:new Date().toISOString() }
-        ;(await db.prepare('INSERT INTO leads VALUES (?,?)').run(id,JSON.stringify(data))); await audit(user.id,'create_lead',id)
-        return responseJson(response,201,{...data,id})
-      }
-      if (request.method === 'PATCH' && /^\/api\/leads\/[^/]+$/.test(path)) {
-        const id = path.split('/').at(-1), row = (await db.prepare('SELECT * FROM leads WHERE id=?').get(id))
-        if (!row) fail(404,'Lead not found.')
-        const body = await readJson(request), data = JSON.parse(row.data)
-        if (body.status !== undefined) data.status = choice(body.status,['new','contacted','qualified','proposal','won','lost'],'lead status')
-        if (body.notes !== undefined) data.notes = text(body.notes,'notes',4000,false)
-        data.updatedAt = new Date().toISOString()
-        ;(await db.prepare('UPDATE leads SET data=? WHERE id=?').run(JSON.stringify(data),id)); await audit(user.id,'update_lead',id)
-        return responseJson(response,200,{...data,id})
       }
       if (request.method === 'POST' && path === '/api/documents') {
         const body = await readJson(request), clientId = await client(body.clientId), id = randomUUID()
