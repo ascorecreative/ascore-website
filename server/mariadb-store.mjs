@@ -4,7 +4,9 @@ export function mariaDbPoolOptions(env){
  if((env.DB_HOST||'localhost')!=='localhost'||Number(env.DB_PORT||3306)!==3306)throw Error('Ascore database access is restricted to approved Hostinger localhost:3306.')
  for(const name of ['DB_NAME','DB_USER'])if(!/^[a-zA-Z0-9_]{1,64}$/.test(env[name]||''))throw Error('Configure the approved dedicated Ascore database and user.')
  if(typeof env.DB_PASSWORD!=='string'||!env.DB_PASSWORD||env.DB_PASSWORD.length>1024)throw Error('Enter the database password privately in server runtime configuration.')
- return {host:'localhost',port:3306,user:env.DB_USER,password:env.DB_PASSWORD,database:env.DB_NAME,charset:'utf8mb4',timezone:'Z',waitForConnections:true,connectionLimit:5,maxIdle:5,idleTimeout:60000,queueLimit:50,connectTimeout:10000,multipleStatements:false,supportBigNumbers:true,bigNumberStrings:false,decimalNumbers:true,maxPreparedStatements:128}
+ // All repositories parse their JSON text explicitly. MariaDB extended JSON
+ // metadata must not cause mysql2 to decode LONGTEXT into objects first.
+ return {host:'localhost',port:3306,user:env.DB_USER,password:env.DB_PASSWORD,database:env.DB_NAME,charset:'utf8mb4',timezone:'Z',jsonStrings:true,waitForConnections:true,connectionLimit:5,maxIdle:5,idleTimeout:60000,queueLimit:50,connectTimeout:10000,multipleStatements:false,supportBigNumbers:true,bigNumberStrings:false,decimalNumbers:true,maxPreparedStatements:128}
 }
 
 // Shared async repository adapter; production never falls back to SQLite.

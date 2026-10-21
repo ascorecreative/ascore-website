@@ -59,8 +59,8 @@ export default function PortalLayout() {
   const documentOpener=useRef(null)
   const [projectId,setProjectId]=useState('')
   const refresh=useCallback(async()=>{
-    try {setData(await portalRequest('/workspace'));setLoaded(true);setError('');setRefreshedAt(Date.now())}
-    catch(err){setError(err.message)}
+    try {setData(await portalRequest('/workspace'));setLoaded(true);setError('');setRefreshedAt(Date.now());return true}
+    catch(err){setError(err.message);return false}
   },[])
   useEffect(()=>{refresh()},[refresh])
   const mutate=async(path,body,method='POST')=>{

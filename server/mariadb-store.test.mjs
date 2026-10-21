@@ -2,8 +2,21 @@ import test from 'node:test'
 import assert from 'node:assert/strict'
 import { createMariaDbStore,mariaDbPoolOptions } from './mariadb-store.mjs'
 import { initializeMariaDbSchema,verifyMariaDbSchema,mariaDbSchema } from './mariadb-schema.mjs'
+import {createRequire} from 'node:module'
+import {dirname,join} from 'node:path'
 
 const env={DB_NAME:'synthetic_ascore_app',DB_USER:'synthetic_ascore_api',DB_PASSWORD:'synthetic test only'}
+test('MariaDB extended JSON metadata stays text for explicit repository decoding',()=>{
+ const require=createRequire(import.meta.url),driver=dirname(require.resolve('mysql2'))
+ const parser=require(join(driver,'lib/parsers/static_binary_parser.js'))
+ const fields=[{name:'data',columnType:252,extendedFormat:'json',encoding:'utf8',flags:0}]
+ const value=JSON.stringify({name:'Synthetic prospect',notes:'مرحبا',activities:[]})
+ const packet=()=>({readInt8:()=>0,readLengthCodedString:()=>value,parseJson:()=>JSON.parse(value)})
+ const options=mariaDbPoolOptions(env)
+ const result=new (parser(fields,{},options))().next(packet(),fields,{})
+ assert.equal(typeof result.data,'string');assert.deepEqual(JSON.parse(result.data),JSON.parse(value))
+ assert.equal(typeof new (parser(fields,{},{...options,jsonStrings:false}))().next(packet(),fields,{}).data,'object')
+})
 test('pool is bounded/local; connection credentials are required; prepared values remain separate',async()=>{
  assert.throws(()=>mariaDbPoolOptions({}));assert.throws(()=>mariaDbPoolOptions({...env,DB_HOST:'remote.invalid'}));assert.throws(()=>mariaDbPoolOptions({...env,DB_NAME:'bad;DROP database'}))
  const calls=[];let config,ended=0

@@ -43,7 +43,7 @@ export default function LeadsWorkspace({leads,onRefresh}){
   const save=async(path,body,method='POST')=>{
     if(pending.current)return false
     pending.current=true;setBusy(true);setError('');setNotice('')
-    try{const result=await portalRequest(path,{method,body});await onRefresh();setNotice(path==='/leads/import'?`Imported ${result.created.length} leads; ${result.skipped.length} existing numbers skipped.`:'Saved to your workspace.');return true}
+    try{const result=await portalRequest(path,{method,body});if(await onRefresh()===false){setError('Saved, but the list could not refresh. Refresh the workspace to verify your changes.');return false}setNotice(path==='/leads/import'?`Imported ${result.created.length} leads; ${result.skipped.length} existing numbers skipped.`:'Saved to your workspace.');return true}
     catch(err){setError(err.message);return false}finally{pending.current=false;setBusy(false)}
   }
   const matching=leads.filter(lead=>`${lead.name} ${lead.phone||''} ${(lead.phone||'').replace(/\D/g,'')} ${lead.email||''} ${lead.company||''} ${lead.notes||''}`.toLowerCase().includes(search.trim().toLowerCase())).filter(lead=>filter==='all'||(filter==='due'?due(lead):lead.status===filter))
